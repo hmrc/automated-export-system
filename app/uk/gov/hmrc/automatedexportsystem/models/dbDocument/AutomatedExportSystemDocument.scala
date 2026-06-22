@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem
+package uk.gov.hmrc.automatedexportsystem.models.dbDocument
 
-import play.api.{Configuration, Environment}
-import play.api.inject.{Binding, Module => AppModule}
+import play.api.libs.json._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import java.time.Clock
+import java.time.Instant
 
-class Module extends AppModule {
+final case class AutomatedExportSystemDocument(createdAt: Instant)
 
-  override def bindings(
-    environment:   Environment,
-    configuration: Configuration
-  ): Seq[Binding[_]] =
-    bind[Clock].toInstance(Clock.systemDefaultZone) :: // inject if current time needs to be controlled in unit tests
-      Nil
+object AutomatedExportSystemDocument {
+  implicit val instantFormat: Format[Instant]                        = MongoJavatimeFormats.instantFormat
+  implicit val mongoFormat:   OFormat[AutomatedExportSystemDocument] = Json.format[AutomatedExportSystemDocument]
 }
