@@ -10,8 +10,8 @@ lazy val microservice = Project("automated-export-system", file("."))
   .settings(
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
-    // suppress warnings in generated routes files
-    scalacOptions += "-Wconf:src=routes/.*:s",
+    // suppress warnings in generated app.routes files
+    scalacOptions += "-Wconf:src=app.routes/.*:s",
   )
   .settings(CodeCoverageSettings.settings: _*)
 
