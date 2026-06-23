@@ -27,7 +27,6 @@ import play.api.test.{DefaultAwaitTimeout, EssentialActionCaller, FutureAwaits, 
 
 abstract class BaseISpec
     extends AnyWordSpec
-    with CleanMongo
     with GuiceOneAppPerSuite
     with BeforeAndAfterEach
     with BeforeAndAfterAll
