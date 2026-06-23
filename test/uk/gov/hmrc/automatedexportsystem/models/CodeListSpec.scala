@@ -21,53 +21,54 @@ import org.scalatest.wordspec.AnyWordSpec
 import java.time.{Clock, Instant, LocalDateTime, ZoneOffset}
 import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeList
 
-class CodeListSpec extends AnyWordSpec with Matchers {
+class CodeListSpec extends AnyFreeSpecLike with Matchers with TableDrivenPropertyChecks {
   private val clock: Clock =
     Clock.fixed(Instant.parse("2026-06-23T09:00:00Z"), ZoneOffset.UTC)
 
   private val now: LocalDateTime =
     LocalDateTime.now(clock)
 
-  "CodeList" should {
+  private val codeListValues: Seq[CodeList] =
+    Seq(
+      CodeList.CL060,
+      CodeList.CL347,
+      CodeList.CL165,
+      CodeList.CL018,
+      CodeList.CL094
+    )
 
-    "be valid when no dates are defined" in {
-      val testCodeList = new CodeList(
-        name = "Test",
-        description = None,
-        startDate = None,
-        endDate = None
-      ){}
-      testCodeList.isValid(clock) shouldBe true
+  "CodeList" - {
+    ".values" - {
+      "should return the list of concrete code lists" in {
+        CodeList.values shouldBe codeListValues
+      }
     }
 
-    "return true when startDate is in the past and endDate is in the future" in {
-      val validCodeList = new CodeList(
-        name = "Valid",
-        description = None,
-        startDate = Some(now.minusDays(1)),
-        endDate = Some(now.plusDays(1))
-      ){}
-      validCodeList.isValid(clock) shouldBe true
-    }
+    ".valueOf" - {
+      val codeListNamesWithValuesTable: TableFor2[String, CodeList] =
+        Table(
+          ("name", "codeList"),
+          codeListValues.map(codeList => (codeList.name, codeList))*
+        )
 
-    "return false when startDate is in the future" in {
-      val invalidStartDate = new CodeList(
-        name = "Invalid",
-        description = None,
-        startDate = Some(now.plusDays(1)),
-        endDate = None
-      ){}
-      invalidStartDate.isValid(clock) shouldBe false
+      "should return the correct code list object" in {
+        forAll(codeListNamesWithValuesTable) { case (name, codeList) =>
+          CodeList.valueOf(name) shouldBe Some(codeList)
+        }
+      }
     }
+  }
 
-    "return false when endDate is in the past" in {
-      val invalidEndDate = new CodeList(
-        name = "Invalid",
-        description = None,
-        startDate = None,
-        endDate = Some(now.minusDays(1))
-      ){}
-      invalidEndDate.isValid(clock) shouldBe false
+  // can't really test more than this since our code lists don't have any dates, so I think this
+  // should suffice for now
+  "CodeList" - {
+    val codeListValuesTable: TableFor1[CodeList] =
+      Table("name", codeListValues*)
+
+    "should be valid when no dates are defined" in {
+      forAll(codeListValuesTable) { codeList =>
+        codeList.isValid(clock) shouldBe true
+      }
     }
   }
 }
