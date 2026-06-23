@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.codelist
+package uk.gov.hmrc.automatedexportsystem.models.codelists
 
 import java.time.LocalDateTime
+import java.time.Clock
 
-sealed abstract class CodeList(
+sealed class CodeList(
   val name: String,
   val description: Option[String],
   val startDate: Option[LocalDateTime],

@@ -14,60 +14,60 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.codelist
+package uk.gov.hmrc.automatedexportsystem.models.coelistd
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import java.time.LocalDateTime
+import java.time.{Clock, Instant, LocalDateTime, ZoneOffset}
+import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeList
 
 class CodeListSpec extends AnyWordSpec with Matchers {
+  private val clock: Clock =
+    Clock.fixed(Instant.parse("2026-06-23T09:00:00Z"), ZoneOffset.UTC)
 
-  object TestCodeList extends CodeList {
-    override val name: String = "Test"
-    override val description: Option[String] = None
-    override val startDate: Option[LocalDateTime] = None
-    override val endDate: Option[LocalDateTime] = None
-  }
+  private val now: LocalDateTime =
+    LocalDateTime.now(clock)
 
   "CodeList" should {
-    val now = LocalDateTime.now()
-    
+
     "be valid when no dates are defined" in {
-      TestCodeList.isValid shouldBe true
+      val testCodeList = CodeList(
+        name = "Test",
+        description = None,
+        startDate = None,
+        endDate = None
+      )
+      testCodeList.isValid(clock) shouldBe true
     }
 
     "return true when startDate is in the past and endDate is in the future" in {
-      object ValidCodeList extends CodeList {
-        override val name: String = "Valid"
-        override val description: Option[String] = None
-        override val startDate: Option[LocalDateTime] = Some(now.minusDays(1))
-        override val endDate: Option[LocalDateTime] = Some(now.plusDays(1))
-      }
-
-      ValidCodeList.isValid shouldBe true
+      val validCodeList = CodeList(
+        name = "Valid",
+        description = None,
+        startDate = Some(now.minusDays(1)),
+        endDate = Some(now.plusDays(1))
+      )
+      validCodeList.isValid(clock) shouldBe true
     }
 
     "return false when startDate is in the future" in {
-      object InvalidStartDate extends CodeList {
-        override val name: String = "Invalid"
-        override val description: Option[String] = None
-        override val startDate: Option[LocalDateTime] = Some(now.plusDays(1))
-        override val endDate: Option[LocalDateTime] = None
-      }
-
-      InvalidStartDate.isValid shouldBe false
+      val invalidStartDate = CodeList(
+        name = "Invalid",
+        description = None,
+        startDate = Some(now.plusDays(1)),
+        endDate = None
+      )
+      invalidStartDate.isValid(clock) shouldBe false
     }
 
     "return false when endDate is in the past" in {
-      object InvalidEndDate extends CodeList {
-        override val name: String = "Invalid"
-        override val description: Option[String] = None
-        override val startDate: Option[LocalDateTime] = None
-        override val endDate: Option[LocalDateTime] = Some(now.minusDays(1))
-      }
-
-      InvalidEndDate.isValid shouldBe false
+      val invalidEndDate = CodeList(
+        name = "Invalid",
+        description = None,
+        startDate = None,
+        endDate = Some(now.minusDays(1))
+      )
+      invalidEndDate.isValid(clock) shouldBe false
     }
   }
 }
-
