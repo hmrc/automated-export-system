@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.coelistd
+package uk.gov.hmrc.automatedexportsystem.models.codelists
 
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1, TableFor2}
+import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeList
 
 import java.time.{Clock, Instant, LocalDateTime, ZoneOffset}
-import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeList
 
 class CodeListSpec extends AnyFreeSpecLike with Matchers with TableDrivenPropertyChecks {
   private val clock: Clock =
