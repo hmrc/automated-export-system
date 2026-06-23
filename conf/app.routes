@@ -1,3 +1,9 @@
-# microservice specific routes
+GET /codelists/messagetype uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.messageType
 
-GET        /hello-world             uk.gov.hmrc.automatedexportsystem.controllers.MicroserviceHelloWorldController.hello
+GET /codelists/typeoflocation uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.typeoflocation
+
+GET /codelists/nationality uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.nationality
+
+GET /codelists/transportmode uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.transportmode
+
+GET /codelists/customsofficeexit uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.customsofficeexit
