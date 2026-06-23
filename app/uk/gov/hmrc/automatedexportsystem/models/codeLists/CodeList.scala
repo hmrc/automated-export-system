@@ -35,12 +35,19 @@ sealed abstract class CodeList(
       date => !date.isBefore(now)
     )
 
-case object CL060 extends CodeList("MessageType", None, None, None)
+object CodeList {
+  case object CL060 extends CodeList("MessageType", None, None, None)
 
-case object CL347 extends CodeList("TypeOfLocation", None, None, None)
+  case object CL347 extends CodeList("TypeOfLocation", None, None, None)
 
-case object CL165 extends CodeList("Nationality", None, None, None)
+  case object CL165 extends CodeList("Nationality", None, None, None)
 
-case object CL018 extends CodeList("TransportMode", None, None, None)
+  case object CL018 extends CodeList("TransportMode", None, None, None)
 
-case object CL094 extends CodeList("CustomsOfficeExit", None, None, None)
+  case object CL094 extends CodeList("CustomsOfficeExit", None, None, None)
+
+  lazy val values: Seq[CodeList] = Seq(CL060, CL347, CL165, CL018, CL094)
+
+  def valueOf(name: String): Option[CodeList] =
+    values.find(_.name == name)
+}

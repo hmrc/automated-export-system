@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.coelistd
 
+import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1, TableFor2}
+
 import java.time.{Clock, Instant, LocalDateTime, ZoneOffset}
 import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeList
 
