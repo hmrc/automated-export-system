@@ -31,42 +31,42 @@ class CodeListSpec extends AnyWordSpec with Matchers {
   "CodeList" should {
 
     "be valid when no dates are defined" in {
-      val testCodeList = CodeList(
+      val testCodeList = new CodeList(
         name = "Test",
         description = None,
         startDate = None,
         endDate = None
-      )
+      ){}
       testCodeList.isValid(clock) shouldBe true
     }
 
     "return true when startDate is in the past and endDate is in the future" in {
-      val validCodeList = CodeList(
+      val validCodeList = new CodeList(
         name = "Valid",
         description = None,
         startDate = Some(now.minusDays(1)),
         endDate = Some(now.plusDays(1))
-      )
+      ){}
       validCodeList.isValid(clock) shouldBe true
     }
 
     "return false when startDate is in the future" in {
-      val invalidStartDate = CodeList(
+      val invalidStartDate = new CodeList(
         name = "Invalid",
         description = None,
         startDate = Some(now.plusDays(1)),
         endDate = None
-      )
+      ){}
       invalidStartDate.isValid(clock) shouldBe false
     }
 
     "return false when endDate is in the past" in {
-      val invalidEndDate = CodeList(
+      val invalidEndDate = new CodeList(
         name = "Invalid",
         description = None,
         startDate = None,
         endDate = Some(now.minusDays(1))
-      )
+      ){}
       invalidEndDate.isValid(clock) shouldBe false
     }
   }

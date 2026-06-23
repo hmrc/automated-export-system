@@ -19,7 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.models.codelists
 import java.time.LocalDateTime
 import java.time.Clock
 
-sealed class CodeList(
+abstract class CodeList(
   val name: String,
   val description: Option[String],
   val startDate: Option[LocalDateTime],
