@@ -20,20 +20,16 @@ import java.time.LocalDateTime
 import java.time.Clock
 
 sealed abstract class CodeList(
-  val name: String,
+  val name:        String,
   val description: Option[String],
-  val startDate: Option[LocalDateTime],
-  val endDate: Option[LocalDateTime]
+  val startDate:   Option[LocalDateTime],
+  val endDate:     Option[LocalDateTime]
 ):
   def isValid(clock: Clock): Boolean =
     val now = LocalDateTime.now(clock)
 
-    startDate.forall(
-      date => !date.isAfter(now)
-    ) &&
-    endDate.forall(
-      date => !date.isBefore(now)
-    )
+    startDate.forall(date => !date.isAfter(now)) &&
+    endDate.forall(date => !date.isBefore(now))
 
 object CodeList {
   case object CL060 extends CodeList("MessageType", None, None, None)

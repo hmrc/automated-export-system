@@ -1,22 +1,33 @@
-import uk.gov.hmrc.DefaultBuildSettings
+import play.sbt.PlayImport.PlayKeys.playDefaultPort
+import scoverage.ScoverageKeys
+import uk.gov.hmrc.DefaultBuildSettings.{integrationTestSettings, scalaSettings}
 
-ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "3.3.6"
-ThisBuild / scalacOptions += "-Wconf:msg=Flag.*repeatedly:s"
+val appName = "automated-export-system"
 
-lazy val microservice = Project("automated-export-system", file("."))
+lazy val microservice = Project(appName, file("."))
+  .configs(IntegrationTest)
+  .settings(Defaults.itSettings: _*)
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
-  .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(
-    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
-    // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
-    // suppress warnings in generated routes files
-    scalacOptions += "-Wconf:src=routes/.*:s",
+    majorVersion := 0,
+    ScoverageKeys.coverageExcludedFiles := "<empty>;com.kenshoo.play.metrics.*;.*definition.*;prod.*;testOnlyDoNotUseInAppConf.*;.*test.*;" +
+      "app.*;.*BuildInfo.*;.*Routes.*;.*models.*;.*controllers.test.*;.*services.test.*;.*metrics.*",
+    ScoverageKeys.coverageMinimumStmtTotal := 10, //TODO: update to 90 following implementation of endpoints
+    ScoverageKeys.coverageFailOnMinimum := true,
+    ScoverageKeys.coverageHighlighting := true,
+    playDefaultPort := 5000,
+    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test
   )
-  .settings(CodeCoverageSettings.settings: _*)
-
-lazy val it = project
-  .enablePlugins(PlayScala)
-  .dependsOn(microservice % "test->test")
-  .settings(DefaultBuildSettings.itSettings())
-  .settings(libraryDependencies ++= AppDependencies.it)
+  .settings(scalaSettings: _*)
+  .settings(scalaVersion := "3.5.0")
+  .settings(integrationTestSettings(): _*)
+  .disablePlugins(JUnitXmlReportPlugin)
+  .settings(
+    Compile / scalafmtOnCompile := true,
+    Test / scalafmtOnCompile := true,
+    scalacOptions += "-Wconf:src=routes/.*:s", // Silence all warnings in generated routes
+    scalacOptions += "-language:postfixOps"
+  )
+  .settings(
+    addCommandAlias("runTestOnly", "run -Dplay.http.router=testOnlyDoNotUseInAppConf.Routes")
+  )
