@@ -23,7 +23,6 @@ import java.time.Instant
 
 final case class AutomatedExportSystemDocument(createdAt: Instant)
 
-object AutomatedExportSystemDocument {
+object AutomatedExportSystemDocument:
   implicit val instantFormat: Format[Instant]                        = MongoJavatimeFormats.instantFormat
   implicit val mongoFormat:   OFormat[AutomatedExportSystemDocument] = Json.format[AutomatedExportSystemDocument]
-}

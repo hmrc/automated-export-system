@@ -39,7 +39,7 @@ trait BaseSpec
     with BeforeAndAfterEach
     with ScalaFutures
     with OptionValues
-    with Status {
+    with Status:
 
   implicit lazy val ec:           ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
   implicit lazy val hc:           HeaderCarrier    = HeaderCarrier()
@@ -50,4 +50,3 @@ trait BaseSpec
 
   implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
     .withHeaders(contentType)
-}

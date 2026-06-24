@@ -16,6 +16,5 @@
 
 package uk.gov.hmrc.automatedexportsystem.errorHandlers
 
-sealed trait AesError {
+sealed trait AesError:
   val value: String = toString
-}

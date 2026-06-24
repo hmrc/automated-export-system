@@ -26,8 +26,7 @@ lazy val microservice = Project(appName, file("."))
     Compile / scalafmtOnCompile := true,
     Test / scalafmtOnCompile := true,
     scalacOptions += "-Wconf:src=routes/.*:s", // Silence all warnings in generated routes
-    scalacOptions += "-language:postfixOps",
-    scalacOptions += "-no-indent"
+    scalacOptions += "-language:postfixOps"
   )
   .settings(
     addCommandAlias("runTestOnly", "run -Dplay.http.router=testOnlyDoNotUseInAppConf.Routes")
