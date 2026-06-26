@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.config
+package uk.gov.hmrc.automatedexportsystem.errorHandlers
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-
-@Singleton
-class AppConfig @Inject() (config: Configuration):
-  val appName: String = config.get[String]("appName")
+sealed trait AesError:
+  val value: String = toString
