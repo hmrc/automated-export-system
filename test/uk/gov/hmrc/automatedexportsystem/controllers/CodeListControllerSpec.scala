@@ -67,7 +67,7 @@ class CodeListControllerISpec extends PlaySpec with GuiceOneAppPerSuite {
       val request = FakeRequest(GET, s"$baseUrl/messagetype")
       val result = route(app, request).get
 
-      val xmlString = contentAsString(result)
+      wwwval xmlString = contentAsString(result)
       noException should be thrownBy scala.xml.XML.loadString(xmlString)
     }
 
