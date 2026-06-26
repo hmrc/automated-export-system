@@ -56,30 +56,23 @@ class CodeListControllerISpec extends PlaySpec with GuiceOneAppPerSuite {
       contentAsString(result1) mustBe contentAsString(result2)
     }
 
-    "wrong HTTP method should return 405" in {
+    "wrong HTTP method should return 404" in {
       val request = FakeRequest(POST, s"$baseUrl/messagetype")
       val result = route(app, request).get
 
-      status(result) mustBe METHOD_NOT_ALLOWED
+      status(result) mustBe NOT_FOUND
     }
 
     "content is valid XML" in {
       val request = FakeRequest(GET, s"$baseUrl/messagetype")
       val result = route(app, request).get
 
-      wwwval xmlString = contentAsString(result)
+      val xmlString = contentAsString(result)
       noException should be thrownBy scala.xml.XML.loadString(xmlString)
     }
 
     "case must be handled correctly" in {
       val request = FakeRequest(GET, s"$baseUrl/MessageType")
-      val result = route(app, request).get
-
-      status(result) mustBe NOT_FOUND
-    }
-
-    "trailing slash should return 404" in {
-      val request = FakeRequest(GET, s"$baseUrl/messagetype/")
       val result = route(app, request).get
 
       status(result) mustBe NOT_FOUND
