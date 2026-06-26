@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.controllers
+package uk.gov.hmrc.automatedexportsystem.models.dbDocument
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import play.api.libs.json._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import javax.inject.{Inject, Singleton}
+import java.time.Instant
 
-@Singleton()
-class MicroserviceHelloWorldController @Inject()(
-  cc: ControllerComponents
-) extends BackendController(cc):
+final case class AutomatedExportSystemDocument(createdAt: Instant)
 
-  val hello: Action[AnyContent] =
-    Action:
-      implicit request =>
-        Ok("Hello world")
+object AutomatedExportSystemDocument:
+  implicit val instantFormat: Format[Instant]                        = MongoJavatimeFormats.instantFormat
+  implicit val mongoFormat:   OFormat[AutomatedExportSystemDocument] = Json.format[AutomatedExportSystemDocument]

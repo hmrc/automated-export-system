@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.config
+package helpers
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
+import org.mockito.Mockito.reset
+import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 
-@Singleton
-class AppConfig @Inject() (config: Configuration):
-  val appName: String = config.get[String]("appName")
+trait AllMocks extends MockitoSugar with BeforeAndAfterEach:
+  me: org.scalatest.Suite =>
+  val mockAppConfig: AppConfig = mock[AppConfig]
+
+  abstract override protected def beforeEach(): Unit =
+    super.beforeEach()
+
+    Seq[AnyRef](
+      mockAppConfig
+    ).foreach(reset(_))
