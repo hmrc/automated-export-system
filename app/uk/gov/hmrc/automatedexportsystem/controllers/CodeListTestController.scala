@@ -14,24 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.codelists
+package uk.gov.hmrc.automatedexportsystem.controllers
 
-case class MessageTypeCodeList(
-  values: Seq[CodeList]
-)
+import javax.inject.{Inject, Singleton}
+import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
+import play.api.mvc.Results.Ok
 
-case class TypeOfLocationCodeList(
-  values: Seq[CodeList]
-)
+@Singleton
+class CodeListTestController @Inject() (val controllerComponents: ControllerComponents) extends BaseController {
 
-case class NationalityCodeList(
-  values: Seq[CodeList]
-)
-
-case class TransportModeCodeList(
-  values: Seq[CodeList]
-)
-
-case class CustomsOfficeExitCodeList(
-  values: Seq[CodeList]
-)
+  def messageTypes: Action[AnyContent] = Action {
+    Ok(<messageTypes><type>test</type></messageTypes>).as("application/xml")
+  }
+}

@@ -1,1 +1,2 @@
 # microservice specific routes
+GET  /codelists/messagetype  uk.gov.hmrc.automatedexportsystem.controllers.CodeListTestController.messageTypes
