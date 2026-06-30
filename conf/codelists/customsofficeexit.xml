@@ -1,0 +1,20 @@
+<!--Placeholder XML dummy data !-->
+<codeList>
+    <item>
+        <name>GB000051</name>
+        <description>Dover Customs Office</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GB000060</name>
+        <description>Felixstowe Customs Office</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GB000070</name>
+        <description>Southampton Customs Office</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+</codeList>

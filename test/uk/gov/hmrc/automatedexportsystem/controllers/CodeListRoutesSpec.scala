@@ -21,6 +21,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.automatedexportsystem.services.CodeListService
+import uk.gov.hmrc.http.HeaderCarrier
 
 class CodeListRoutesSpec extends AnyWordSpec with Matchers {
 
@@ -29,12 +31,50 @@ class CodeListRoutesSpec extends AnyWordSpec with Matchers {
       val app = new GuiceApplicationBuilder().build()
 
       running(app) {
-        val request = FakeRequest(GET, "/automated-export-system/codelists/messagetype")
+        val request            = FakeRequest(GET, "/automated-export-system/codelists/messagetype")
         val Some(resultFuture) = route(app, request)
-        
-        status(resultFuture) shouldBe 200
+
+        status(resultFuture)      shouldBe 200
         contentType(resultFuture) shouldBe Some("application/xml")
       }
+    }
+  }
+
+  "retrieve message types from XML and populate MessageTypeCodeList" in {
+
+    val app = new GuiceApplicationBuilder().build()
+
+    running(app) {
+
+      given HeaderCarrier = HeaderCarrier()
+
+      val service =
+        app.injector.instanceOf[CodeListService]
+
+      val result =
+        await(service.getMessageTypes())
+
+      println()
+      println("===== MESSAGE TYPE CODE LIST =====")
+
+      result.values.foreach { codeList =>
+        println(
+          s"""
+             |Name        : ${codeList.name}
+             |Description : ${codeList.description.getOrElse("N/A")}
+             |Start Date  : ${codeList.startDate.getOrElse("N/A")}
+             |End Date    : ${codeList.endDate.getOrElse("N/A")}
+             |-----------------------------------
+             |""".stripMargin
+        )
+      }
+
+      println("==================================")
+      println()
+
+      result.values.nonEmpty shouldBe true
+
+      result.values.map(_.name) should contain("CD001B")
     }
   }
 }

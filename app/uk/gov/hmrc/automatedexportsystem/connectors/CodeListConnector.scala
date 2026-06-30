@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.controllers
+package uk.gov.hmrc.automatedexportsystem.connectors
 
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.StringContextOps
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
@@ -41,18 +40,18 @@ class CodeListConnector @Inject() (
 
   // endpoints
   def getMessageTypes()(using hc: HeaderCarrier): Future[String] =
-    get(s"$baseUrl/codelists/messagetype")
+    get(s"$baseUrl/automated-export-system/codelists/messagetype")
 
   def getTypeOfLocations()(using hc: HeaderCarrier): Future[String] =
-    get(s"$baseUrl/codelists/typeoflocation")
+    get(s"$baseUrl/automated-export-system/codelists/typeoflocation")
 
   def getNationalities()(using hc: HeaderCarrier): Future[String] =
-    get(s"$baseUrl/codelists/nationality")
+    get(s"$baseUrl/automated-export-system/codelists/nationality")
 
   def getTransportModes()(using hc: HeaderCarrier): Future[String] =
-    get(s"$baseUrl/codelists/transportmode")
+    get(s"$baseUrl/automated-export-system/codelists/transportmode")
 
   def getCustomsOfficeExits()(using hc: HeaderCarrier): Future[String] =
-    get(s"$baseUrl/codelists/customsofficeexit")
+    get(s"$baseUrl/automated-export-system/codelists/customsofficeexit")
 
 }

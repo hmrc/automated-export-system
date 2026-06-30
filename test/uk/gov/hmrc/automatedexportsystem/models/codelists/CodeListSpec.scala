@@ -18,59 +18,72 @@ package uk.gov.hmrc.automatedexportsystem.models.codelists
 
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1, TableFor2}
-import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeList
 
 import java.time.{Clock, Instant, LocalDateTime, ZoneOffset}
 
-class CodeListSpec extends AnyFreeSpecLike with Matchers with TableDrivenPropertyChecks {
+class CodeListSpec extends AnyFreeSpecLike with Matchers {
+
   private val clock: Clock =
-    Clock.fixed(Instant.parse("2026-06-23T09:00:00Z"), ZoneOffset.UTC)
+    Clock.fixed(
+      Instant.parse("2026-06-23T09:00:00Z"),
+      ZoneOffset.UTC
+    )
 
   private val now: LocalDateTime =
     LocalDateTime.now(clock)
 
-  private val codeListValues: Seq[CodeList] =
-    Seq(
-      CodeList.CL060,
-      CodeList.CL347,
-      CodeList.CL165,
-      CodeList.CL018,
-      CodeList.CL094
-    )
+  "CodeList.isValid" - {
 
-  "CodeList" - {
-    ".values" - {
-      "should return the list of concrete code lists" in {
-        CodeList.values shouldBe codeListValues
-      }
-    }
+    "should be valid when no dates are supplied" in {
 
-    ".valueOf" - {
-      val codeListNamesWithValuesTable: TableFor2[String, CodeList] =
-        Table(
-          ("name", "codeList"),
-          codeListValues.map(codeList => (codeList.name, codeList))*
+      val codeList =
+        CodeList(
+          name = "CD001B",
+          description = Some("Export Declaration"),
+          startDate = None,
+          endDate = None
         )
 
-      "should return the correct code list object" in {
-        forAll(codeListNamesWithValuesTable) { case (name, codeList) =>
-          CodeList.valueOf(name) shouldBe Some(codeList)
-        }
-      }
+      codeList.isValid(clock) shouldBe true
     }
-  }
 
-  // can't really test more than this since our code lists don't have any dates, so I think this
-  // should suffice for now
-  "CodeList" - {
-    val codeListValuesTable: TableFor1[CodeList] =
-      Table("name", codeListValues*)
+    "should be valid when current date falls between start and end date" in {
 
-    "should be valid when no dates are defined" in {
-      forAll(codeListValuesTable) { codeList =>
-        codeList.isValid(clock) shouldBe true
-      }
+      val codeList =
+        CodeList(
+          name = "CD001B",
+          description = Some("Export Declaration"),
+          startDate = Some(now.minusDays(1)),
+          endDate = Some(now.plusDays(1))
+        )
+
+      codeList.isValid(clock) shouldBe true
+    }
+
+    "should be invalid when start date is in the future" in {
+
+      val codeList =
+        CodeList(
+          name = "CD001B",
+          description = Some("Export Declaration"),
+          startDate = Some(now.plusDays(1)),
+          endDate = None
+        )
+
+      codeList.isValid(clock) shouldBe false
+    }
+
+    "should be invalid when end date is in the past" in {
+
+      val codeList =
+        CodeList(
+          name = "CD001B",
+          description = Some("Export Declaration"),
+          startDate = None,
+          endDate = Some(now.minusDays(1))
+        )
+
+      codeList.isValid(clock) shouldBe false
     }
   }
 }

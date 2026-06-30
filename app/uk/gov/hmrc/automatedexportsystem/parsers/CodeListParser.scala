@@ -14,19 +14,26 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.codelists
+package uk.gov.hmrc.automatedexportsystem.parsers
+
+import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeList
 
 import java.time.LocalDateTime
-import java.time.Clock
+import scala.xml.XML
 
-case class CodeList(
-  val name:        String,
-  val description: Option[String],
-  val startDate:   Option[LocalDateTime],
-  val endDate:     Option[LocalDateTime]
-):
-  def isValid(clock: Clock): Boolean =
-    val now = LocalDateTime.now(clock)
+object CodeListParser {
 
-    startDate.forall(date => !date.isAfter(now)) &&
-    endDate.forall(date => !date.isBefore(now))
+  def parse(xmlString: String): Seq[CodeList] = {
+
+    val xml = XML.loadString(xmlString)
+
+    (xml \ "item").map { item =>
+      CodeList(
+        name = (item \ "name").text,
+        description = (item \ "description").headOption.map(_.text),
+        startDate = (item \ "startDate").headOption.map(node => LocalDateTime.parse(node.text)),
+        endDate = (item \ "endDate").headOption.map(node => LocalDateTime.parse(node.text))
+      )
+    }
+  }
+}

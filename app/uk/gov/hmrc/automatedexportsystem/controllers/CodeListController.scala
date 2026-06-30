@@ -18,12 +18,39 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
-import play.api.mvc.Results.Ok
 
 @Singleton
-class CodeListTestController @Inject() (val controllerComponents: ControllerComponents) extends BaseController {
+class CodeListController @Inject() (
+  val controllerComponents: ControllerComponents
+) extends BaseController {
+
+  private def loadXml(fileName: String) =
+    scala.xml.XML.loadFile(
+      s"conf/codelists/$fileName"
+    )
 
   def messageTypes: Action[AnyContent] = Action {
-    Ok(<messageTypes><type>test</type></messageTypes>).as("application/xml")
+    Ok(loadXml("messagetype.xml"))
+      .as("application/xml")
+  }
+
+  def typeOfLocations: Action[AnyContent] = Action {
+    Ok(loadXml("typeoflocation.xml"))
+      .as("application/xml")
+  }
+
+  def nationalities: Action[AnyContent] = Action {
+    Ok(loadXml("nationality.xml"))
+      .as("application/xml")
+  }
+
+  def transportModes: Action[AnyContent] = Action {
+    Ok(loadXml("transportmode.xml"))
+      .as("application/xml")
+  }
+
+  def customsOfficeExits: Action[AnyContent] = Action {
+    Ok(loadXml("customsofficeexit.xml"))
+      .as("application/xml")
   }
 }

@@ -22,6 +22,7 @@ import play.api.{Configuration, Environment}
 import play.api.libs.concurrent.PekkoGuiceSupport
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import java.time.Clock
 import javax.inject.Singleton
 import scala.annotation.unused
 
@@ -45,5 +46,10 @@ class GuiceModule(@unused environment: Environment, configuration: Configuration
   @Singleton
   def eisEnvironmentProvider(servicesConfig: ServicesConfig): String =
     servicesConfig.getString("microservice.services.eis.environment")
+
+  @Provides
+  @Singleton
+  def clockProvider(): Clock =
+    Clock.systemUTC()
 
 }
