@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Contact xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <!-- VALID: too many phone numbers  -->
+    <Name>John Doe</Name>
+    <PhoneNumber>123 456 90</PhoneNumber>
+    <PhoneNumber>123 456 91</PhoneNumber>
+    <PhoneNumber>123 456 92</PhoneNumber>
+    <PhoneNumber>123 456 93</PhoneNumber>
+</Contact>

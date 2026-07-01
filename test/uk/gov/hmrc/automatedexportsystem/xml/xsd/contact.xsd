@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <!-- Root Element -->
+    <xs:element name="Contact">
+        <xs:complexType>
+            <xs:sequence>
+
+                <!-- Name: Mandatory, Alphanumeric with spaces, Max 20 chars -->
+                <xs:element name="Name">
+                    <xs:annotation>
+                        <xs:appinfo source="urn:hmrc:error-key">PERSON</xs:appinfo>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:minLength value="1"/>
+                            <xs:maxLength value="20"/>
+                            <xs:pattern value="[a-zA-Z0-9 ]+"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+
+                <!-- Phone Number: Optional, Max 3 occurrences, Numbers and spaces only -->
+                <xs:element name="PhoneNumber" minOccurs="0" maxOccurs="3">
+                    <xs:annotation>
+                        <xs:appinfo source="urn:hmrc:error-key">MOBILE</xs:appinfo>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:pattern value="[0-9 ]+"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

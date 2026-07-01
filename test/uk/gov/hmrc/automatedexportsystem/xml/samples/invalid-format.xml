@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Contact xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <!-- INVALID: invalid chars and over 20 chars -->
+    <Name>John Doe Product Manager</Name>
+    <PhoneNumber>123 456 7890</PhoneNumber>
+</Contact>

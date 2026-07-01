@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Contact xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <!-- All properties are present and correctly formatted -->
+    <Name>John Doe</Name>
+    <PhoneNumber>123 456 7890</PhoneNumber>
+</Contact>
