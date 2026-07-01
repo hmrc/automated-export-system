@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="note">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="to" type="person"/>
+                <xs:element name="from" type="person"/>
+                <xs:element name="date" type="xs:date"/>
+                <xs:element name="heading" type="xs:string"/>
+                <xs:element name="body" type="xs:string"/>
+                <xs:element name="id" type="xs:positiveInteger" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="person">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="kind" type="kind" use="required"/>
+                <xs:attribute name="initials" type="initials"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="kind">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="human"/>
+            <xs:enumeration value="alien"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="initials">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Z]{2,5}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>
