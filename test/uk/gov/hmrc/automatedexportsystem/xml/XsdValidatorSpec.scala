@@ -169,6 +169,33 @@ class XsdValidatorSpec extends AnyFreeSpecLike, Matchers, EitherValues, OptionVa
             result.left.value shouldBe error
           }
 
+          "where an element is duplicated" in {
+            val xml: Elem =
+              <note>
+                <to kind="human">"you"</to>
+                <from kind="alien">"me"</from>
+                <date>2077-01-01</date>
+                <heading>"hello there"</heading>
+                <body>"I've come in peace"</body>
+                <id>10231</id>
+                <id>10</id>
+              </note>
+
+            val result: Either[XmlFailedValidationError, Unit] = xsdValidator.validate(xml)
+
+            val error: XmlFailedValidationError = XmlFailedValidationError(
+              NonEmptyList.one(
+                XmlSchemaValidationError(
+                  8,
+                  21,
+                  "cvc-complex-type.2.4.d: Invalid content was found starting with element 'id'. No child element is expected at this point."
+                )
+              )
+            )
+
+            result.left.value shouldBe error
+          }
+
           "where there are multiple problems" in {
             val xml: Elem =
               <note>
