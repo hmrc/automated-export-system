@@ -19,24 +19,63 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.test.FakeRequest
-import play.api.test.Helpers.*
+import play.api.test.Helpers._
+import play.api.test.Helpers.stubControllerComponents
 
 class CodeListControllerSpec extends AnyWordSpec with Matchers {
 
+  private val controller =
+    new CodeListController(stubControllerComponents())
+
   "CodeListController" should {
 
-    "return message types XML" in {}
+    "return message types XML" in {
+      val result = controller.messageTypes()(FakeRequest())
 
-    "return type of locations XML" in {}
+      status(result)        shouldBe OK
+      contentAsString(result) should include("<codeList>")
+    }
 
-    "return nationalities XML" in {}
+    "return type of locations XML" in {
+      val result = controller.typeOfLocations()(FakeRequest())
 
-    "return transport modes XML" in {}
+      status(result)        shouldBe OK
+      contentAsString(result) should include("<codeList>")
+    }
 
-    "return customs office exits XML" in {}
+    "return nationalities XML" in {
+      val result = controller.nationalities()(FakeRequest())
 
-    "return content type application/xml" in {}
+      status(result)        shouldBe OK
+      contentAsString(result) should include("<codeList>")
+    }
 
-    "return OK for each code list endpoint" in {}
+    "return transport modes XML" in {
+      val result = controller.transportModes()(FakeRequest())
+
+      status(result)        shouldBe OK
+      contentAsString(result) should include("<codeList>")
+    }
+
+    "return customs office exits XML" in {
+      val result = controller.customsOfficeExits()(FakeRequest())
+
+      status(result)        shouldBe OK
+      contentAsString(result) should include("<codeList>")
+    }
+
+    "return content type application/xml" in {
+      contentType(
+        controller.messageTypes()(FakeRequest())
+      ) shouldBe Some("application/xml")
+    }
+
+    "return OK for each code list endpoint" in {
+      status(controller.messageTypes()(FakeRequest()))       shouldBe OK
+      status(controller.typeOfLocations()(FakeRequest()))    shouldBe OK
+      status(controller.nationalities()(FakeRequest()))      shouldBe OK
+      status(controller.transportModes()(FakeRequest()))     shouldBe OK
+      status(controller.customsOfficeExits()(FakeRequest())) shouldBe OK
+    }
   }
 }
