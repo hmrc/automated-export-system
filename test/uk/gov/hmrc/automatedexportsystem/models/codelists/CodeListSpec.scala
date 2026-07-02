@@ -21,14 +21,11 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1, TableFor2}
 import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeList
 
-import java.time.{Clock, Instant, LocalDateTime, ZoneOffset}
+import java.time.{Clock, Instant, ZoneOffset}
 
 class CodeListSpec extends AnyFreeSpecLike with Matchers with TableDrivenPropertyChecks {
   private val clock: Clock =
     Clock.fixed(Instant.parse("2026-06-23T09:00:00Z"), ZoneOffset.UTC)
-
-  private val now: LocalDateTime =
-    LocalDateTime.now(clock)
 
   private val codeListValues: Seq[CodeList] =
     Seq(
@@ -53,11 +50,10 @@ class CodeListSpec extends AnyFreeSpecLike with Matchers with TableDrivenPropert
           codeListValues.map(codeList => (codeList.name, codeList))*
         )
 
-      "should return the correct code list object" in {
+      "should return the correct code list object" in
         forAll(codeListNamesWithValuesTable) { case (name, codeList) =>
           CodeList.valueOf(name) shouldBe Some(codeList)
         }
-      }
     }
   }
 
@@ -67,10 +63,9 @@ class CodeListSpec extends AnyFreeSpecLike with Matchers with TableDrivenPropert
     val codeListValuesTable: TableFor1[CodeList] =
       Table("name", codeListValues*)
 
-    "should be valid when no dates are defined" in {
+    "should be valid when no dates are defined" in
       forAll(codeListValuesTable) { codeList =>
         codeList.isValid(clock) shouldBe true
       }
-    }
   }
 }
