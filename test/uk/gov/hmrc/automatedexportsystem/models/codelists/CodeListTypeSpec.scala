@@ -1,3 +1,19 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.automatedexportsystem.models.codelists
 
 import org.scalatest.matchers.should.Matchers
@@ -7,28 +23,16 @@ class CodeListTypeSpec extends AnyWordSpec with Matchers {
 
   "CodeListType" should {
 
-    "return CL060 for MessageType" in {
+    "return CL060 for MessageType" in {}
 
-    }
+    "return CL347 for TypeOfLocation" in {}
 
-    "return CL347 for TypeOfLocation" in {
+    "return CL165 for Nationality" in {}
 
-    }
+    "return CL018 for TransportMode" in {}
 
-    "return CL165 for Nationality" in {
+    "return CL094 for CustomsOfficeExit" in {}
 
-    }
-
-    "return CL018 for TransportMode" in {
-
-    }
-
-    "return CL094 for CustomsOfficeExit" in {
-
-    }
-
-    "allow each code list type to be treated as a CodeListType" in {
-
-    }
+    "allow each code list type to be treated as a CodeListType" in {}
   }
 }
