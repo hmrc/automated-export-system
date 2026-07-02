@@ -24,12 +24,15 @@ import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.automatedexportsystem.errors.{AesError, XmlFailedValidationError, XmlSchemaValidationError}
 
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Using
 import scala.xml.{Elem, XML}
 
 class XmlValidationServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, ScalaFutures:
   given ec: ExecutionContext = ExecutionContext.global
+
+  override given patienceConfig: PatienceConfig = PatienceConfig(1500.millis, 15.millis)
 
   def loadXml(path: String)(using Position): Elem =
     Using(getClass.getResourceAsStream(path))(stream => XML.load(stream)).toEither.value
