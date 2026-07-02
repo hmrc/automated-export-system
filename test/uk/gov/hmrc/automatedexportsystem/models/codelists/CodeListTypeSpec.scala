@@ -23,16 +23,44 @@ class CodeListTypeSpec extends AnyWordSpec with Matchers {
 
   "CodeListType" should {
 
-    "return CL060 for MessageType" in {}
+    "return CL060 for MessageType" in {
+      CodeListType.MessageType.code shouldBe "CL060"
+    }
 
-    "return CL347 for TypeOfLocation" in {}
+    "return CL347 for TypeOfLocation" in {
+      CodeListType.TypeOfLocation.code shouldBe "CL347"
+    }
 
-    "return CL165 for Nationality" in {}
+    "return CL165 for Nationality" in {
+      CodeListType.Nationality.code shouldBe "CL165"
+    }
 
-    "return CL018 for TransportMode" in {}
+    "return CL018 for TransportMode" in {
+      CodeListType.TransportMode.code shouldBe "CL018"
+    }
 
-    "return CL094 for CustomsOfficeExit" in {}
+    "return CL094 for CustomsOfficeExit" in {
+      CodeListType.CustomsOfficeExit.code shouldBe "CL094"
+    }
 
-    "allow each code list type to be treated as a CodeListType" in {}
+    "allow each code list type to be treated as a CodeListType" in {
+      val codeListTypes: Seq[CodeListType] = Seq(
+        CodeListType.MessageType,
+        CodeListType.TypeOfLocation,
+        CodeListType.Nationality,
+        CodeListType.TransportMode,
+        CodeListType.CustomsOfficeExit
+      )
+
+      codeListTypes should have size 5
+
+      codeListTypes.map(_.code) should contain allOf (
+        "CL060",
+        "CL347",
+        "CL165",
+        "CL018",
+        "CL094"
+      )
+    }
   }
 }

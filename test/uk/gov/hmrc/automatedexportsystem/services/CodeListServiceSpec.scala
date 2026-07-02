@@ -16,34 +16,210 @@
 
 package uk.gov.hmrc.automatedexportsystem.services
 
+import org.mockito.Mockito.{mock, when}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import uk.gov.hmrc.automatedexportsystem.connectors.CodeListConnector
+import uk.gov.hmrc.automatedexportsystem.models.codelists._
 import uk.gov.hmrc.http.HeaderCarrier
 
-class CodeListServiceSpec extends AnyWordSpec with Matchers {
+import java.time.{Clock, Instant, ZoneOffset}
+import scala.concurrent.{ExecutionContext, Future}
 
+class CodeListServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
+
+  given ExecutionContext = ExecutionContext.global
   given HeaderCarrier = HeaderCarrier()
+
+  private val clock =
+    Clock.fixed(
+      Instant.parse("2026-07-02T12:00:00Z"),
+      ZoneOffset.UTC
+    )
+
+  private def serviceWith(connector: CodeListConnector): CodeListService =
+    new CodeListService(connector, clock)
+
+  private val validXml =
+    """<root>
+      |  <item>
+      |    <name>Valid Code</name>
+      |    <description>Currently valid code</description>
+      |    <startDate>2026-07-01T00:00:00</startDate>
+      |    <endDate>2026-07-03T00:00:00</endDate>
+      |  </item>
+      |</root>""".stripMargin
+
+  private val expiredXml =
+    """<root>
+      |  <item>
+      |    <name>Expired Code</name>
+      |    <description>Expired code</description>
+      |    <startDate>2026-06-01T00:00:00</startDate>
+      |    <endDate>2026-06-30T00:00:00</endDate>
+      |  </item>
+      |</root>""".stripMargin
+
+  private val noEndDateXml =
+    """<root>
+      |  <item>
+      |    <name>No End Date Code</name>
+      |    <description>Still valid because it has no end date</description>
+      |    <startDate>2026-07-01T00:00:00</startDate>
+      |  </item>
+      |</root>""".stripMargin
+
+  private val mixedXml =
+    """<root>
+      |  <item>
+      |    <name>Valid Code</name>
+      |    <description>Currently valid code</description>
+      |    <startDate>2026-07-01T00:00:00</startDate>
+      |    <endDate>2026-07-03T00:00:00</endDate>
+      |  </item>
+      |  <item>
+      |    <name>Expired Code</name>
+      |    <description>Expired code</description>
+      |    <startDate>2026-06-01T00:00:00</startDate>
+      |    <endDate>2026-06-30T00:00:00</endDate>
+      |  </item>
+      |</root>""".stripMargin
 
   "CodeListService" should {
 
-    "return a MessageTypeCodeList from message type XML" in {}
+    "return a MessageTypeCodeList from message type XML" in {
+      val connector = mock(classOf[CodeListConnector])
 
-    "return a TypeOfLocationCodeList from type of location XML" in {}
+      when(connector.getMessageTypes())
+        .thenReturn(Future.successful(validXml))
 
-    "return a NationalityCodeList from nationality XML" in {}
+      val result =
+        serviceWith(connector).getMessageTypes().futureValue
 
-    "return a TransportModeCodeList from transport mode XML" in {}
+      result shouldBe a[MessageTypeCodeList]
+      result.values should have size 1
+      result.values.head.name shouldBe "Valid Code"
+    }
 
-    "return a CustomsOfficeExitCodeList from customs office exit XML" in {}
+    "return a TypeOfLocationCodeList from type of location XML" in {
+      val connector = mock(classOf[CodeListConnector])
 
-    "filter out expired code list values" in {}
+      when(connector.getTypeOfLocations())
+        .thenReturn(Future.successful(validXml))
 
-    "keep currently valid code list values" in {}
+      val result =
+        serviceWith(connector).getTypeOfLocations().futureValue
 
-    "keep code list values with no end date" in {}
+      result shouldBe a[TypeOfLocationCodeList]
+      result.values should have size 1
+      result.values.head.name shouldBe "Valid Code"
+    }
 
-    "return an empty collection when no valid values are found" in {}
+    "return a NationalityCodeList from nationality XML" in {
+      val connector = mock(classOf[CodeListConnector])
 
-    "propagate connector failures" in {}
+      when(connector.getNationalities())
+        .thenReturn(Future.successful(validXml))
+
+      val result =
+        serviceWith(connector).getNationalities().futureValue
+
+      result shouldBe a[NationalityCodeList]
+      result.values should have size 1
+      result.values.head.name shouldBe "Valid Code"
+    }
+
+    "return a TransportModeCodeList from transport mode XML" in {
+      val connector = mock(classOf[CodeListConnector])
+
+      when(connector.getTransportModes())
+        .thenReturn(Future.successful(validXml))
+
+      val result =
+        serviceWith(connector).getTransportModes().futureValue
+
+      result shouldBe a[TransportModeCodeList]
+      result.values should have size 1
+      result.values.head.name shouldBe "Valid Code"
+    }
+
+    "return a CustomsOfficeExitCodeList from customs office exit XML" in {
+      val connector = mock(classOf[CodeListConnector])
+
+      when(connector.getCustomsOfficeExits())
+        .thenReturn(Future.successful(validXml))
+
+      val result =
+        serviceWith(connector).getCustomsOfficeExits().futureValue
+
+      result shouldBe a[CustomsOfficeExitCodeList]
+      result.values should have size 1
+      result.values.head.name shouldBe "Valid Code"
+    }
+
+    "filter out expired code list values" in {
+      val connector = mock(classOf[CodeListConnector])
+
+      when(connector.getMessageTypes())
+        .thenReturn(Future.successful(mixedXml))
+
+      val result =
+        serviceWith(connector).getMessageTypes().futureValue
+
+      result.values should have size 1
+      result.values.map(_.name) should contain("Valid Code")
+      result.values.map(_.name) should not contain "Expired Code"
+    }
+
+    "keep currently valid code list values" in {
+      val connector = mock(classOf[CodeListConnector])
+
+      when(connector.getMessageTypes())
+        .thenReturn(Future.successful(validXml))
+
+      val result =
+        serviceWith(connector).getMessageTypes().futureValue
+
+      result.values should have size 1
+      result.values.head.name shouldBe "Valid Code"
+    }
+
+    "keep code list values with no end date" in {
+      val connector = mock(classOf[CodeListConnector])
+
+      when(connector.getMessageTypes())
+        .thenReturn(Future.successful(noEndDateXml))
+
+      val result =
+        serviceWith(connector).getMessageTypes().futureValue
+
+      result.values should have size 1
+      result.values.head.name shouldBe "No End Date Code"
+    }
+
+    "return an empty collection when no valid values are found" in {
+      val connector = mock(classOf[CodeListConnector])
+
+      when(connector.getMessageTypes())
+        .thenReturn(Future.successful(expiredXml))
+
+      val result =
+        serviceWith(connector).getMessageTypes().futureValue
+
+      result.values shouldBe empty
+    }
+
+    "propagate connector failures" in {
+      val connector = mock(classOf[CodeListConnector])
+
+      when(connector.getMessageTypes())
+        .thenReturn(Future.failed(new RuntimeException("connector failed")))
+
+      val result =
+        serviceWith(connector).getMessageTypes().failed.futureValue
+
+      result.getMessage shouldBe "connector failed"
+    }
   }
 }
