@@ -84,7 +84,11 @@ object XsdValidator:
     Either
       .catchNonFatal {
         val schemaFactory: SchemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-        val schema:        Schema        = schemaFactory.newSchema(getClass.getResource(path))
+        // needed because by default the XML parser restricts the maxOccurs attribute to 5000
+        // we either turn the secure processing off here, or change the maxOccurs that are > 5000 in
+        // the schemas to 5000
+        schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false)
+        val schema: Schema = schemaFactory.newSchema(getClass.getResource(path))
 
         XsdValidator(schema)
       }
