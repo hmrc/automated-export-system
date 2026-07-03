@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.services
 
+import cats.data.EitherT
 import uk.gov.hmrc.automatedexportsystem.errors.{AesError, SchemaError}
 import uk.gov.hmrc.automatedexportsystem.xml.{XsdPath, XsdValidator}
 
@@ -27,8 +28,8 @@ sealed abstract class XmlValidationService(xsdPath: XsdPath)(using ExecutionCont
   private lazy val xsdValidator: Either[SchemaError, XsdValidator] =
     XsdValidator.fromXsdPath(xsdPath.path)
 
-  def validate(xml: NodeSeq): Future[Either[AesError, Unit]] =
-    Future(xsdValidator.flatMap(v => v.validate(xml)))
+  def validate(xml: NodeSeq): EitherT[Future, AesError, Unit] =
+    EitherT(Future(xsdValidator.flatMap(v => v.validate(xml))))
 
 @Singleton
 class IE507XmlValidationService @Inject() ()(using ec: ExecutionContext) extends XmlValidationService(XsdPath.XsdIE507Path)
