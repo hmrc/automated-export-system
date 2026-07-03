@@ -17,14 +17,16 @@
 package uk.gov.hmrc.automatedexportsystem.errors
 
 import cats.data.NonEmptyList
+import uk.gov.hmrc.automatedexportsystem.errors.StatusCode.*
 
 import scala.xml.SAXParseException
 
-sealed abstract class AesError(val message: String, val statusCode: Int, val exception: Option[Exception])
+sealed abstract class AesError(val message: String, val statusCode: StatusCode, val exception: Option[Exception])
 
-enum SchemaError(msg: String, status: Int, ex: Option[Exception]) extends AesError(msg, status, ex):
-  case SchemaNotFoundError(xsdPath: String) extends SchemaError(s"XSD Schema not found: $xsdPath", 500, None)
-  case SchemaParseError(xsdError: SchemaError.XsdStructureError) extends SchemaError("XSD Schema could not be parsed", 422, None)
+enum SchemaError(override val message: String, override val statusCode: StatusCode, override val exception: Option[Exception])
+    extends AesError(message, statusCode, exception):
+  case SchemaNotFoundError(xsdPath: String) extends SchemaError(s"XSD Schema not found: $xsdPath", InternalServerError, None)
+  case SchemaParseError(xsdError: SchemaError.XsdStructureError) extends SchemaError("XSD Schema could not be parsed", UnprocessableEntity, None)
 
 object SchemaError:
   case class XsdStructureError(line: Int, column: Int, message: String)
@@ -40,4 +42,4 @@ object XmlSchemaValidationError:
   def fromSaxe(saxe: SAXParseException): XmlSchemaValidationError =
     XmlSchemaValidationError(saxe.getLineNumber, saxe.getColumnNumber, saxe.getMessage)
 
-case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationError]) extends AesError("XML failed schema validation", 400, None)
+case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationError]) extends AesError("XML failed schema validation", BadRequest, None)
