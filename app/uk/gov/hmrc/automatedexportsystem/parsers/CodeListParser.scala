@@ -19,13 +19,21 @@ package uk.gov.hmrc.automatedexportsystem.parsers
 import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeList
 
 import java.time.LocalDateTime
+import org.xml.sax.SAXParseException
 import scala.xml.XML
+import scala.xml.parsing.FatalError
 
 object CodeListParser {
 
   def parse(xmlString: String): Seq[CodeList] = {
 
-    val xml = XML.loadString(xmlString)
+    val xml =
+      try
+        XML.loadString(xmlString)
+      catch {
+        case e: SAXParseException =>
+          throw FatalError(s"Invalid XML: ${e.getMessage}")
+      }
 
     (xml \ "item").map { item =>
       CodeList(
