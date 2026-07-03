@@ -30,12 +30,12 @@ class CodeListController @Inject() (
     )
 
   def messageTypes: Action[AnyContent] = Action {
-    Ok(loadXml("messagetype.xml"))
+    Ok(loadXml("message-type.xml"))
       .as("application/xml")
   }
 
   def typeOfLocations: Action[AnyContent] = Action {
-    Ok(loadXml("typeoflocation.xml"))
+    Ok(loadXml("type-of-location.xml"))
       .as("application/xml")
   }
 
@@ -45,12 +45,12 @@ class CodeListController @Inject() (
   }
 
   def transportModes: Action[AnyContent] = Action {
-    Ok(loadXml("transportmode.xml"))
+    Ok(loadXml("transport-mode.xml"))
       .as("application/xml")
   }
 
   def customsOfficeExits: Action[AnyContent] = Action {
-    Ok(loadXml("customsofficeexit.xml"))
+    Ok(loadXml("customs-office-exit.xml"))
       .as("application/xml")
   }
 }

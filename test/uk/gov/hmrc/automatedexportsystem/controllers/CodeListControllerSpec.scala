@@ -32,35 +32,35 @@ class CodeListControllerSpec extends AnyWordSpec with Matchers {
     "return message types XML" in {
       val result = controller.messageTypes()(FakeRequest())
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsString(result) should include("<codeList>")
     }
 
     "return type of locations XML" in {
       val result = controller.typeOfLocations()(FakeRequest())
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsString(result) should include("<codeList>")
     }
 
     "return nationalities XML" in {
       val result = controller.nationalities()(FakeRequest())
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsString(result) should include("<codeList>")
     }
 
     "return transport modes XML" in {
       val result = controller.transportModes()(FakeRequest())
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsString(result) should include("<codeList>")
     }
 
     "return customs office exits XML" in {
       val result = controller.customsOfficeExits()(FakeRequest())
 
-      status(result) shouldBe OK
+      status(result)        shouldBe OK
       contentAsString(result) should include("<codeList>")
     }
 
