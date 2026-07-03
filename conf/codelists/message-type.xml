@@ -1,0 +1,27 @@
+<!--Placeholder XML dummy data !-->
+<codeList>
+    <item>
+        <name>CD001B</name>
+        <description>Export Declaration</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CD302A</name>
+        <description>Arrival Notification</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CC515C</name>
+        <description>Declaration Amendment</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CD801A</name>
+        <description>Exit Results Notification</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+        <endDate>2025-12-31T23:59:59</endDate>
+    </item>
+</codeList>

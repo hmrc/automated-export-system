@@ -1,0 +1,20 @@
+<!--Placeholder XML dummy data !-->
+<codeList>
+    <item>
+        <name>A</name>
+        <description>Designated Customs Location</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>B</name>
+        <description>Authorised Place</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>C</name>
+        <description>Temporary Storage Facility</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+</codeList>

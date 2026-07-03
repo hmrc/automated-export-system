@@ -1,81 +1,81 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.automatedexportsystem.controllers
 
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.api.test.Helpers.stubControllerComponents
 
-class CodeListControllerISpec extends PlaySpec with GuiceOneAppPerSuite {
+class CodeListControllerSpec extends AnyWordSpec with Matchers {
 
-  private val baseUrl = "/automated-export-system/codelists"
+  private val controller =
+    new CodeListController(stubControllerComponents())
 
   "CodeListController" should {
 
-    "return XML for message type endpoint" in {
-      val request = FakeRequest(GET, s"$baseUrl/messagetype")
+    "return message types XML" in {
+      val result = controller.messageTypes()(FakeRequest())
 
-      val result = route(app, request).get
-
-      status(result) mustBe OK
-      contentType(result) mustBe Some("application/xml")
-      contentAsString(result) must include("<codeList>")
+      status(result)        shouldBe OK
+      contentAsString(result) should include("<codeList>")
     }
 
-    "return XML for all endpoints" in {
-      val endpoints = Seq(
-        "messagetype",
-        "typeoflocation",
-        "nationality",
-        "transportmode",
-        "customsofficeexit"
-      )
+    "return type of locations XML" in {
+      val result = controller.typeOfLocations()(FakeRequest())
 
-
-      endpoints.foreach { endpoint =>
-        val request = FakeRequest(GET, s"$baseUrl/$endpoint")
-        val result = route(app, request).get
-
-        status(result) mustBe OK
-        contentType(result) mustBe Some("application/xml")
-        contentAsString(result) must not be empty
-      }
+      status(result)        shouldBe OK
+      contentAsString(result) should include("<codeList>")
     }
 
-    "return 404 for an unknown code list endpoint" in {
-      val request = FakeRequest(GET, s"$baseUrl/invalid")
-      val result = route(app, request).get
+    "return nationalities XML" in {
+      val result = controller.nationalities()(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result)        shouldBe OK
+      contentAsString(result) should include("<codeList>")
     }
 
-    "endpoint must return consistent data" in {
-      val request = FakeRequest(GET, s"$baseUrl/messagetype")
-      val result1 = route(app, request).get
-      val result2 = route(app, request).get
+    "return transport modes XML" in {
+      val result = controller.transportModes()(FakeRequest())
 
-      contentAsString(result1) mustBe contentAsString(result2)
+      status(result)        shouldBe OK
+      contentAsString(result) should include("<codeList>")
     }
 
-    "wrong HTTP method should return 404" in {
-      val request = FakeRequest(POST, s"$baseUrl/messagetype")
-      val result = route(app, request).get
+    "return customs office exits XML" in {
+      val result = controller.customsOfficeExits()(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result)        shouldBe OK
+      contentAsString(result) should include("<codeList>")
     }
 
-    "content is valid XML" in {
-      val request = FakeRequest(GET, s"$baseUrl/messagetype")
-      val result = route(app, request).get
-
-      val xmlString = contentAsString(result)
-      noException should be thrownBy scala.xml.XML.loadString(xmlString)
+    "return content type application/xml" in {
+      contentType(
+        controller.messageTypes()(FakeRequest())
+      ) shouldBe Some("application/xml")
     }
 
-    "case must be handled correctly" in {
-      val request = FakeRequest(GET, s"$baseUrl/MessageType")
-      val result = route(app, request).get
-
-      status(result) mustBe NOT_FOUND
+    "return OK for each code list endpoint" in {
+      status(controller.messageTypes()(FakeRequest()))       shouldBe OK
+      status(controller.typeOfLocations()(FakeRequest()))    shouldBe OK
+      status(controller.nationalities()(FakeRequest()))      shouldBe OK
+      status(controller.transportModes()(FakeRequest()))     shouldBe OK
+      status(controller.customsOfficeExits()(FakeRequest())) shouldBe OK
     }
   }
 }

@@ -16,17 +16,29 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.codelists
 
-import java.time.LocalDateTime
-import java.time.Clock
+sealed trait CodeListType {
+  def code: String
+}
 
-case class CodeList(
-  val name:        String,
-  val description: Option[String],
-  val startDate:   Option[LocalDateTime],
-  val endDate:     Option[LocalDateTime]
-):
-  def isValid(clock: Clock): Boolean =
-    val now = LocalDateTime.now(clock)
+object CodeListType {
 
-    startDate.forall(date => !date.isAfter(now)) &&
-    endDate.forall(date => !date.isBefore(now))
+  case object MessageType extends CodeListType {
+    val code = "CL060"
+  }
+
+  case object TypeOfLocation extends CodeListType {
+    val code = "CL347"
+  }
+
+  case object Nationality extends CodeListType {
+    val code = "CL165"
+  }
+
+  case object TransportMode extends CodeListType {
+    val code = "CL018"
+  }
+
+  case object CustomsOfficeExit extends CodeListType {
+    val code = "CL094"
+  }
+}

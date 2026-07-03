@@ -1,7 +1,26 @@
-<!--Placeholder for endpoints -->
+<!--Placeholder XML dummy data !-->
 <codeList>
-    <code>
-        <name>nationality</name>
-        <description>Example</description>
-    </code>
+    <item>
+        <name>GB</name>
+        <description>British</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IE</name>
+        <description>Irish</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FR</name>
+        <description>French</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DE</name>
+        <description>German</description>
+        <startDate>2025-01-01T00:00:00</startDate>
+    </item>
 </codeList>

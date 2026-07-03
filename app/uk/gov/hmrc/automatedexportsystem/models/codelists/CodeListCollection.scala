@@ -16,17 +16,22 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.codelists
 
-import java.time.LocalDateTime
-import java.time.Clock
+case class MessageTypeCodeList(
+  values: Seq[CodeList]
+)
 
-case class CodeList(
-  val name:        String,
-  val description: Option[String],
-  val startDate:   Option[LocalDateTime],
-  val endDate:     Option[LocalDateTime]
-):
-  def isValid(clock: Clock): Boolean =
-    val now = LocalDateTime.now(clock)
+case class TypeOfLocationCodeList(
+  values: Seq[CodeList]
+)
 
-    startDate.forall(date => !date.isAfter(now)) &&
-    endDate.forall(date => !date.isBefore(now))
+case class NationalityCodeList(
+  values: Seq[CodeList]
+)
+
+case class TransportModeCodeList(
+  values: Seq[CodeList]
+)
+
+case class CustomsOfficeExitCodeList(
+  values: Seq[CodeList]
+)

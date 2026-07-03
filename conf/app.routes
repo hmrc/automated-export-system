@@ -1,10 +1,10 @@
 # microservice specific routes
-GET /codelists/messagetype uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.messageType
+GET  /codelists/messagetype  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.messageTypes
 
-GET /codelists/typeoflocation uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.typeoflocation
+GET  /codelists/customsofficeexit  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.customsOfficeExits
 
-GET /codelists/nationality uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.nationality
+GET  /codelists/nationality  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.nationalities
 
-GET /codelists/transportmode uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.transportmode
+GET  /codelists/transportmode  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.transportModes
 
-GET /codelists/customsofficeexit uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.customsofficeexit
+GET  /codelists/typeoflocation  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.typeOfLocations
