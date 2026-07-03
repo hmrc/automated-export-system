@@ -21,8 +21,6 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import uk.gov.hmrc.automatedexportsystem.services.CodeListService
-import uk.gov.hmrc.http.HeaderCarrier
 
 class CodeListRoutesSpec extends AnyWordSpec with Matchers {
 
@@ -38,24 +36,53 @@ class CodeListRoutesSpec extends AnyWordSpec with Matchers {
         contentType(resultFuture) shouldBe Some("application/xml")
       }
     }
-  }
 
-  "retrieve message types from XML and populate MessageTypeCodeList" in {
-    val app = new GuiceApplicationBuilder().build()
+    "serve /codelists/customsofficeexit" in {
+      val app = new GuiceApplicationBuilder().build()
 
-    running(app) {
+      running(app) {
+        val request            = FakeRequest(GET, "/automated-export-system/codelists/customsofficeexit")
+        val Some(resultFuture) = route(app, request)
 
-      given HeaderCarrier = HeaderCarrier()
+        status(resultFuture)      shouldBe 200
+        contentType(resultFuture) shouldBe Some("application/xml")
+      }
+    }
 
-      val service =
-        app.injector.instanceOf[CodeListService]
+    "serve /codelists/nationality" in {
+      val app = new GuiceApplicationBuilder().build()
 
-      val result =
-        await(service.getMessageTypes())
+      running(app) {
+        val request            = FakeRequest(GET, "/automated-export-system/codelists/nationality")
+        val Some(resultFuture) = route(app, request)
 
-      result.values.nonEmpty shouldBe true
+        status(resultFuture)      shouldBe 200
+        contentType(resultFuture) shouldBe Some("application/xml")
+      }
+    }
 
-      result.values.map(_.name) should contain("CD001B")
+    "serve /codelists/transportmode" in {
+      val app = new GuiceApplicationBuilder().build()
+
+      running(app) {
+        val request            = FakeRequest(GET, "/automated-export-system/codelists/transportmode")
+        val Some(resultFuture) = route(app, request)
+
+        status(resultFuture)      shouldBe 200
+        contentType(resultFuture) shouldBe Some("application/xml")
+      }
+    }
+
+    "serve /codelists/typeoflocation" in {
+      val app = new GuiceApplicationBuilder().build()
+
+      running(app) {
+        val request            = FakeRequest(GET, "/automated-export-system/codelists/typeoflocation")
+        val Some(resultFuture) = route(app, request)
+
+        status(resultFuture)      shouldBe 200
+        contentType(resultFuture) shouldBe Some("application/xml")
+      }
     }
   }
 }
