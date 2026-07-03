@@ -17,28 +17,45 @@
 package uk.gov.hmrc.automatedexportsystem.connectors
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import com.github.tomakehurst.wiremock.http.Fault
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 
-class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures with BeforeAndAfterAll {
+class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures with BeforeAndAfterAll with BeforeAndAfterEach {
 
   given HeaderCarrier = HeaderCarrier()
 
-  private val wireMockServer = new WireMockServer(options().dynamicPort())
+  // to prevent failing test while WireMock initializes
+  implicit override val patienceConfig: PatienceConfig =
+    PatienceConfig(
+      timeout = Span(5, Seconds),
+      interval = Span(100, Millis)
+    )
+
+  private val wireMockServer =
+    new WireMockServer(options().dynamicPort())
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     wireMockServer.start()
     configureFor("localhost", wireMockServer.port())
+
+    println()
+    println(s"WireMock started on port ${wireMockServer.port()}")
+    println()
+  }
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    wireMockServer.resetAll()
   }
 
   override def afterAll(): Unit = {
@@ -67,8 +84,10 @@ class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures 
             ok("response")
           )
       )
+      val result =
+        connector.getMessageTypes().futureValue
 
-      connector.getMessageTypes().futureValue shouldBe "response"
+      result shouldBe "response"
     }
 
     "call the type of locations endpoint" in {
@@ -79,7 +98,10 @@ class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures 
           )
       )
 
-      connector.getTypeOfLocations().futureValue shouldBe "response"
+      val result =
+        connector.getTypeOfLocations().futureValue
+
+      result shouldBe "response"
     }
 
     "call the nationalities endpoint" in {
@@ -90,7 +112,10 @@ class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures 
           )
       )
 
-      connector.getNationalities().futureValue shouldBe "response"
+      val result =
+        connector.getNationalities().futureValue
+
+      result shouldBe "response"
     }
 
     "call the transport modes endpoint" in {
@@ -101,7 +126,10 @@ class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures 
           )
       )
 
-      connector.getTransportModes().futureValue shouldBe "response"
+      val result =
+        connector.getTransportModes().futureValue
+
+      result shouldBe "response"
     }
 
     "call the customs office exits endpoint" in {
@@ -112,15 +140,18 @@ class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures 
           )
       )
 
-      connector.getCustomsOfficeExits().futureValue shouldBe "response"
+      val result =
+        connector.getCustomsOfficeExits().futureValue
+
+      result shouldBe "response"
     }
 
     "return the response body as a String" in {
       val xml =
         """<codeList>
-          |  <code>
+          |  <item>
           |    <name>IE815</name>
-          |  </code>
+          |  </item>
           |</codeList>""".stripMargin
 
       wireMockServer.stubFor(
@@ -130,10 +161,13 @@ class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures 
           )
       )
 
-      connector.getMessageTypes().futureValue shouldBe xml
+      val result =
+        connector.getMessageTypes().futureValue
+
+      result shouldBe xml
     }
 
-    "fail when the downstream service returns an error" in {
+    "fail when the downstream service connection fails" in {
       wireMockServer.stubFor(
         get(urlEqualTo("/automated-export-system/codelists/messagetype"))
           .willReturn(
@@ -141,7 +175,6 @@ class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures 
               .withFault(Fault.CONNECTION_RESET_BY_PEER)
           )
       )
-
       connector.getMessageTypes().failed.futureValue
     }
   }

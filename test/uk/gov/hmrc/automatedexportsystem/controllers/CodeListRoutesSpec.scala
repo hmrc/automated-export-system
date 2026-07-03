@@ -41,7 +41,6 @@ class CodeListRoutesSpec extends AnyWordSpec with Matchers {
   }
 
   "retrieve message types from XML and populate MessageTypeCodeList" in {
-
     val app = new GuiceApplicationBuilder().build()
 
     running(app) {
@@ -53,24 +52,6 @@ class CodeListRoutesSpec extends AnyWordSpec with Matchers {
 
       val result =
         await(service.getMessageTypes())
-
-      println()
-      println("===== MESSAGE TYPE CODE LIST =====")
-
-      result.values.foreach { codeList =>
-        println(
-          s"""
-             |Name        : ${codeList.name}
-             |Description : ${codeList.description.getOrElse("N/A")}
-             |Start Date  : ${codeList.startDate.getOrElse("N/A")}
-             |End Date    : ${codeList.endDate.getOrElse("N/A")}
-             |-----------------------------------
-             |""".stripMargin
-        )
-      }
-
-      println("==================================")
-      println()
 
       result.values.nonEmpty shouldBe true
 

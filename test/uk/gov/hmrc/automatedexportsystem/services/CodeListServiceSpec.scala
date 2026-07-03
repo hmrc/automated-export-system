@@ -97,8 +97,8 @@ class CodeListServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
       val result =
         serviceWith(connector).getMessageTypes().futureValue
 
-      result                  shouldBe a[MessageTypeCodeList]
-      result.values             should have size 1
+      result shouldBe a[MessageTypeCodeList]
+      result.values should have size 1
       result.values.head.name shouldBe "Valid Code"
     }
 
@@ -111,8 +111,8 @@ class CodeListServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
       val result =
         serviceWith(connector).getTypeOfLocations().futureValue
 
-      result                  shouldBe a[TypeOfLocationCodeList]
-      result.values             should have size 1
+      result shouldBe a[TypeOfLocationCodeList]
+      result.values should have size 1
       result.values.head.name shouldBe "Valid Code"
     }
 
@@ -125,8 +125,8 @@ class CodeListServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
       val result =
         serviceWith(connector).getNationalities().futureValue
 
-      result                  shouldBe a[NationalityCodeList]
-      result.values             should have size 1
+      result shouldBe a[NationalityCodeList]
+      result.values should have size 1
       result.values.head.name shouldBe "Valid Code"
     }
 
@@ -139,8 +139,8 @@ class CodeListServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
       val result =
         serviceWith(connector).getTransportModes().futureValue
 
-      result                  shouldBe a[TransportModeCodeList]
-      result.values             should have size 1
+      result shouldBe a[TransportModeCodeList]
+      result.values should have size 1
       result.values.head.name shouldBe "Valid Code"
     }
 
@@ -153,8 +153,8 @@ class CodeListServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
       val result =
         serviceWith(connector).getCustomsOfficeExits().futureValue
 
-      result                  shouldBe a[CustomsOfficeExitCodeList]
-      result.values             should have size 1
+      result shouldBe a[CustomsOfficeExitCodeList]
+      result.values should have size 1
       result.values.head.name shouldBe "Valid Code"
     }
 
@@ -167,7 +167,7 @@ class CodeListServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
       val result =
         serviceWith(connector).getMessageTypes().futureValue
 
-      result.values             should have size 1
+      result.values should have size 1
       result.values.map(_.name) should contain("Valid Code")
       result.values.map(_.name) should not contain "Expired Code"
     }
@@ -181,7 +181,7 @@ class CodeListServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
       val result =
         serviceWith(connector).getMessageTypes().futureValue
 
-      result.values             should have size 1
+      result.values should have size 1
       result.values.head.name shouldBe "Valid Code"
     }
 
@@ -194,7 +194,7 @@ class CodeListServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
       val result =
         serviceWith(connector).getMessageTypes().futureValue
 
-      result.values             should have size 1
+      result.values should have size 1
       result.values.head.name shouldBe "No End Date Code"
     }
 
