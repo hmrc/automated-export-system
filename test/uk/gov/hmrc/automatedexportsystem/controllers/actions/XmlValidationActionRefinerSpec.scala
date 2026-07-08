@@ -34,10 +34,8 @@ import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidatio
 import uk.gov.hmrc.automatedexportsystem.models.actions.XmlPayloadRequest
 import uk.gov.hmrc.automatedexportsystem.services.XmlValidationService
 
-import java.io.StringReader
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Using
-import scala.xml.{Elem, XML}
+import scala.xml.Elem
 
 class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValues, DefaultAwaitTimeout, MockitoSugar:
   given ec: ExecutionContext = ExecutionContext.global
@@ -46,11 +44,6 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
   val xmlValidationActionRefiner: XmlValidationActionRefiner[XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
-
-  def contentAsXml(result: Future[Result])(using Position): Elem =
-    val xmlString: String = Helpers.contentAsString(result)
-
-    Using(StringReader(xmlString))(reader => XML.load(reader)).toEither.value
 
   "XmlValidationActionRefiner" - {
     ".invokeBlock" - {
@@ -104,7 +97,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
                 <message>XSD Schema not found: /schemas/dummy.xsd</message>
               </errorResponse>
 
-            val resultXml: Elem = contentAsXml(result)
+            val resultContent: String = Helpers.contentAsString(result)
+            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -135,7 +129,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
                 <message>XSD Schema could not be parsed</message>
               </errorResponse>
 
-            val resultXml: Elem = contentAsXml(result)
+            val resultContent: String = Helpers.contentAsString(result)
+            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.UNPROCESSABLE_ENTITY
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -180,7 +175,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
                 </errors>
               </errorResponse>
 
-            val resultXml: Elem = contentAsXml(result)
+            val resultContent: String = Helpers.contentAsString(result)
+            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -249,7 +245,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
                 </errors>
               </errorResponse>
 
-            val resultXml: Elem = contentAsXml(result)
+            val resultContent: String = Helpers.contentAsString(result)
+            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)

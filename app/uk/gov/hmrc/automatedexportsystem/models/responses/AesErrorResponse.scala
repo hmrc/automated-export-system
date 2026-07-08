@@ -73,4 +73,6 @@ extension (error: AesError)
           errorMessage,
           Some(errors.map(AesErrorResponseValidationError.fromXmlSchemaValidationError))
         )
+      case _: RequestError =>
+        AesErrorResponse(statusCode.status, statusCode.code, errorMessage, None)
 end extension

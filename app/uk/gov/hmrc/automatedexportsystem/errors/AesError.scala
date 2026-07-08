@@ -43,3 +43,7 @@ object XmlSchemaValidationError:
     XmlSchemaValidationError(saxe.getLineNumber, saxe.getColumnNumber, saxe.getMessage)
 
 case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationError]) extends AesError("XML failed schema validation", BadRequest, None)
+
+enum RequestError(override val message: String, override val statusCode: StatusCode, override val exception: Option[Exception])
+    extends AesError(message, statusCode, exception):
+  case ExpectedXmlBodyError extends RequestError("The body of the request is not valid XML", UnsupportedMediaType, None)

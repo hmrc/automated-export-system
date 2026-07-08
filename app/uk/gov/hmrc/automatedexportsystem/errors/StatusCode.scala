@@ -24,3 +24,4 @@ enum StatusCode(val status: Int, val code: String):
   case BadRequest extends StatusCode(BAD_REQUEST, "BAD_REQUEST")
   case UnprocessableEntity extends StatusCode(UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY")
   case InternalServerError extends StatusCode(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")
+  case UnsupportedMediaType extends StatusCode(UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_MEDIA_TYPE")

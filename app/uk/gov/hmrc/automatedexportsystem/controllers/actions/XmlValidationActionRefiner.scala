@@ -35,10 +35,10 @@ class XmlValidationActionRefiner[T <: XmlValidationService](xmlValidationService
         .validate(xml)
         .bimap(
           error => {
-            val status: Int = error.statusCode.status
-
             val errorResponse:    AesErrorResponse = error.toErrorResponse
             val errorResponseXml: Elem             = errorResponse.toXml
+
+            val status: Int = errorResponse.status
 
             Status(status)(errorResponseXml)
           },

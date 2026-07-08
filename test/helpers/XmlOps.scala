@@ -16,7 +16,9 @@
 
 package helpers
 
-import scala.xml.{Elem, Node, Text}
+import java.io.StringReader
+import scala.util.Using
+import scala.xml.{Elem, Node, Text, XML}
 
 /** Needed for XML normalization prior to assertion. ScalaTest will fail to acknowledge that 2 identical XMLs are equal, most likely due to the
   * complex nature of the [[scala.xml.Node]] class. The solution is to normalize the XMLs and compare their string equivalents.
@@ -55,4 +57,7 @@ object XmlOps:
 
         Elem(str, str1, data, binding, false, children*)
       case _ => n
+
+  def loadXml(xmlString: String): Either[Throwable, Elem] =
+    Using(StringReader(xmlString))(reader => XML.load(reader)).toEither
 end XmlOps
