@@ -1,1 +1,504 @@
-<?xml version="1.0" encoding="UTF-8"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://ecs.dgtaxud.ec" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" targetNamespace="http://ecs.dgtaxud.ec" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="60.4.15" vc:minVersion="1.1">	<!--================================================================================-->	<!--===== IE507: E_ARR_EXT                                                                -->	<!--===== ARRIVAL AT EXIT                                                                 -->	<!--===== AES P1 Phase Definition                                                         -->	<!--===== XSD Version 60.4.15                                                             -->	<!--================================================================================-->	<!--================================================================================-->	<!--===== Includes                                                                        -->	<!--================================================================================-->	<xs:include schemaLocation="aesIE507BaseTypes.xsd"/>	<!--================================================================================-->	<!--===== Root Element                                                                    -->	<!--================================================================================-->	<xs:element name="CC507C" type="CC507CType"/>	<!--================================================================================-->	<!--===== Root Element Content                                                            -->	<!--================================================================================-->	<xs:complexType name="CC507CType">		<xs:sequence>			<xs:element name="Header" minOccurs="1" maxOccurs="1">				<xs:complexType>					<xs:sequence>						<xs:annotation>							<xs:documentation>Used by all messages</xs:documentation>						</xs:annotation>						<xs:element name="messageSender" type="UK_AlphaNumeric35Type" minOccurs="1" maxOccurs="1">							<xs:annotation>								<xs:documentation>									<description value="Message sender"/>									<format value="an..35"/>									<xs:optionality value="R"/>								</xs:documentation>							</xs:annotation>						</xs:element>						<xs:element name="messageRecipient" type="UK_AlphaNumeric35Type" minOccurs="1" maxOccurs="1">							<xs:annotation>								<xs:documentation>									<description value="Message recipient (Can be hardcoded to NECA.XI)"/>									<format value="an..35"/>									<xs:optionality value="R"/>								</xs:documentation>							</xs:annotation>						</xs:element>						<xs:element name="preparationDateAndTime" type="UK_PreparationDateAndTimeContentType" minOccurs="1" maxOccurs="1">							<xs:annotation>								<xs:documentation>									<description value="Preparation date and time"/>									<format value="an19"/>									<xs:optionality value="R"/>								</xs:documentation>							</xs:annotation>						</xs:element>						<xs:element name="messageIdentification" type="UK_AlphaNumeric35Type" minOccurs="1" maxOccurs="1">							<xs:annotation>								<xs:documentation>									<description value="Message identification"/>									<format value="an..35"/>									<xs:optionality value="R"/>								</xs:documentation>							</xs:annotation>						</xs:element>						<xs:element name="messageType" type="UK_messageCode507">							<xs:annotation>								<xs:documentation>									<description value="Hard coded to CC507C"/>									<format value="an6"/>									<xs:optionality value="R"/>								</xs:documentation>							</xs:annotation>						</xs:element>					</xs:sequence>				</xs:complexType>			</xs:element>			<xs:element name="Body" minOccurs="1" maxOccurs="1">				<xs:complexType>					<xs:sequence>						<xs:element name="ExportOperation" minOccurs="1" maxOccurs="1">							<xs:complexType>								<xs:sequence>									<xs:element name="type" type="UK_OneToThreeType" minOccurs="1" maxOccurs="1">										<xs:annotation>											<xs:documentation>												<xs:description value="Type of 507: 1; Standard. 2; Amendment. 3; Cancellation"/>												<xs:format value="n1"/>												<xs:optionality value="R"/>											</xs:documentation>										</xs:annotation>									</xs:element>									<xs:element name="MRN" type="UK_MRNType" minOccurs="1" maxOccurs="1">										<xs:annotation>											<xs:documentation>												<description value="MRN"/>												<format value="an18"/>												<optionality value="R"/>											</xs:documentation>										</xs:annotation>									</xs:element>									<xs:element name="discrepanciesExist" type="UK_Flag" minOccurs="1" maxOccurs="1">										<xs:annotation>											<xs:documentation>												<description value="Discrepancies exist"/>												<format value="n1"/>												<optionality value="R"/>											</xs:documentation>										</xs:annotation>									</xs:element>									<!-- UK specific field -->									<xs:element name="splitIndicator" type="UK_Flag" minOccurs="1" maxOccurs="1">										<xs:annotation>											<xs:documentation>												<description value="Split indicator"/>												<format value="n1"/>												<optionality value="R"/>											</xs:documentation>										</xs:annotation>									</xs:element>								</xs:sequence>							</xs:complexType>						</xs:element>						<xs:element name="CustomsOfficeOfExitActual" minOccurs="1" maxOccurs="1">							<xs:complexType>								<xs:sequence>									<xs:annotation>										<xs:documentation>											<description value="CUSTOMS OFFICE OF EXIT (ACTUAL)"/>											<optionality value="R"/>										</xs:documentation>									</xs:annotation>									<xs:element name="referenceNumber" type="UK_ReferenceNumberType" minOccurs="1" maxOccurs="1">										<xs:annotation>											<xs:documentation>												<description value="Reference Number"/>												<format value="an8"/>												<optionality value="R"/>											</xs:documentation>										</xs:annotation>									</xs:element>								</xs:sequence>							</xs:complexType>						</xs:element>						<xs:element name="GoodsShipment" minOccurs="0" maxOccurs="1">							<xs:complexType>								<xs:sequence>									<xs:annotation>										<xs:documentation>											<description value="GOODS SHIPMENT"/>											<optionality value="O"/>										</xs:documentation>									</xs:annotation>									<!-- Consignment -->									<xs:element name="Consignment" minOccurs="1" maxOccurs="1">										<xs:complexType>											<xs:sequence>												<xs:element name="modeOfTransportAtTheBorder" type="UK_SingleDigit" minOccurs="0" maxOccurs="1">													<xs:annotation>														<xs:documentation>															<description value="Mode of transport at the border"/>															<format value="n1"/>															<optionality value="O"/>														</xs:documentation>													</xs:annotation>												</xs:element>												<xs:element name="referenceNumberUCR" type="UK_DUCRType" minOccurs="1" maxOccurs="1">													<xs:annotation>														<xs:documentation>															<description value="Reference number UCR"/>															<format value="an..35"/>															<optionality value="R"/>														</xs:documentation>													</xs:annotation>												</xs:element>												<xs:element name="parentUCRID" type="UK_ParentUCRType" minOccurs="0" maxOccurs="1">													<xs:annotation>														<xs:documentation>															<description value="Parent UCR ID"/>															<format value="an..35"/>															<optionality value="O"/>														</xs:documentation>													</xs:annotation>												</xs:element>												<!-- Transport equipment -->												<xs:element name="TransportEquipment" minOccurs="0" maxOccurs="9999">													<xs:complexType>														<xs:sequence>															<xs:element name="sequenceNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<xs:description value="Sequence number"/>																		<xs:format value="n5"/>																		<optionality value="O"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="containerIdentificationNumber" type="UK_ContainerIdentificationNumberType" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Container identification number"/>																		<format value="an..17"/>																		<optionality value="O"/>																		<xsdBaseType value="ContainerIdentificationNumber_NoSpaces"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="numberOfSeals" type="UK_NumericWithZero_4" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Number of seals"/>																		<format value="n..4"/>																		<optionality value="O"/>																		<xsdBaseType value="NumericWithZero_4"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="Seal" minOccurs="0" maxOccurs="99">																<xs:complexType>																	<xs:sequence>																		<xs:element name="sequenceNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">																			<xs:annotation>																				<xs:documentation>																					<xs:description value="Sequence number"/>																					<xs:format value="n..5"/>																					<optionality value="O"/>																				</xs:documentation>																			</xs:annotation>																		</xs:element>																		<xs:element name="identifier" type="UK_AlphaNumeric_MAX20_NoSpaces" minOccurs="0" maxOccurs="1">																			<xs:annotation>																				<xs:documentation>																					<description value="Identifier"/>																					<format value="an..20"/>																					<optionality value="O"/>																				</xs:documentation>																			</xs:annotation>																		</xs:element>																	</xs:sequence>																</xs:complexType>															</xs:element>															<xs:element name="GoodsReference" minOccurs="0" maxOccurs="999">																<xs:complexType>																	<xs:sequence>																		<xs:element name="sequenceNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">																			<xs:annotation>																				<xs:documentation>																					<xs:description value="Sequence number"/>																					<xs:format value="n..5"/>																					<optionality value="O"/>																				</xs:documentation>																			</xs:annotation>																		</xs:element>																		<xs:element name="declarationGoodsItemNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">																			<xs:annotation>																				<xs:documentation>																					<description value="Declaration goods item number"/>																					<format value="n..5"/>																					<optionality value="O"/>																				</xs:documentation>																			</xs:annotation>																		</xs:element>																	</xs:sequence>																</xs:complexType>															</xs:element>														</xs:sequence>													</xs:complexType>												</xs:element>												<xs:element name="LocationOfGoods" minOccurs="1" maxOccurs="1">													<xs:complexType>														<xs:sequence>															<xs:element name="typeOfLocation" type="UK_A-ZOneChar" minOccurs="1" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Type of location"/>																		<format value="a1"/>																		<optionality value="R"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="qualifierOfIdentification" type="UK_A-ZOneChar" minOccurs="1" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Qualifier of identification"/>																		<format value="a1"/>																		<optionality value="R"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="authorisationNumber" type="UK_AlphaNumeric35NoSpacesType" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Authorisation number"/>																		<format value="an..35"/>																		<optionality value="O"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="additionalIdentifier" type="UK_AlphaNumeric4NoSpacesType" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Additional identifier"/>																		<format value="an..4"/>																		<optionality value="O"/>																		<xsdBaseType value="AlphaNumeric4NoSpacesType"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="UNLocode" type="UK_AlphaNumeric17Type" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="UN LOCODE"/>																		<format value="an..17"/>																		<optionality value="O"/>																	</xs:documentation>																</xs:annotation>															</xs:element>														</xs:sequence>													</xs:complexType>												</xs:element>												<xs:element name="ActiveBorderTransportMeans" minOccurs="0" maxOccurs="1">													<xs:complexType>														<xs:sequence>															<xs:element name="typeOfIdentification" type="UK_DoubleDigit" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Type of identification"/>																		<format value="n2"/>																		<optionality value="O"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="identificationNumber" type="UK_AlphaNumeric35NoSpacesType" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Identification number"/>																		<format value="an..35"/>																		<optionality value="O"/>																		<xsdBaseType value="AlphaNumeric35NoSpacesType"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="nationality" type="UK_A-ZTwoChar" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Nationality"/>																		<format value="a2"/>																		<optionality value="O"/>																		<xsdBaseType value="AZTwoChar"/>																	</xs:documentation>																</xs:annotation>															</xs:element>														</xs:sequence>													</xs:complexType>												</xs:element>												<xs:element name="TransportDocument" minOccurs="0" maxOccurs="99">													<xs:complexType>														<xs:sequence>															<xs:element name="sequenceNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<xs:description value="Sequence number"/>																		<xs:format value="n..5"/>																		<xsdBaseType value="NumericWithoutZero_5"/>																		<optionality value="O"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="type" type="UK_NumericWithoutZero_4" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Type"/>																		<format value="an4"/>																		<optionality value="O"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="referenceNumber" type="UK_AlphaNumeric_MAX70_NoSpaces" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Reference number"/>																		<format value="an..70"/>																		<optionality value="O"/>																		<xsdBaseType value="AlphaNumeric_MAX70_NoSpaces"/>																	</xs:documentation>																</xs:annotation>															</xs:element>														</xs:sequence>													</xs:complexType>												</xs:element>											</xs:sequence>										</xs:complexType>									</xs:element>									<xs:element name="GoodsItem" minOccurs="0" maxOccurs="999">										<xs:complexType>											<xs:sequence>												<xs:element name="declarationGoodsItemNumber" type="UK_DeclarationGoodsItemNumberType_WithZero" minOccurs="0" maxOccurs="1">													<xs:annotation>														<xs:documentation>															<description value="Declaration goods item number"/>															<format value="n..5"/>															<optionality value="O"/>															<xsdBaseType value="DeclarationGoodsItemNumberType"/>														</xs:documentation>													</xs:annotation>												</xs:element>												<xs:element name="referenceNumberUCR" type="UK_UCRReferenceNumberType" minOccurs="0" maxOccurs="1">													<xs:annotation>														<xs:documentation>															<description value="Reference number UCR"/>															<format value="an..35"/>															<optionality value="O"/>															<xsdBaseType value="UCRReferenceNumberType"/>														</xs:documentation>													</xs:annotation>												</xs:element>												<xs:element name="Commodity" minOccurs="0" maxOccurs="1">													<xs:complexType>														<xs:sequence>															<!-- Goods measure -->															<xs:element name="GoodsMeasure" minOccurs="1" maxOccurs="1">																<xs:complexType>																	<xs:sequence>																		<xs:element name="grossMass" type="UK_DecimalWithZero_16_6">																			<xs:annotation>																				<xs:documentation>																					<description value="Gross mass"/>																					<format value="n..16,6"/>																					<optionality value="R"/>																					<xsdBaseType value="DecimalWithZero_16_6"/>																				</xs:documentation>																			</xs:annotation>																		</xs:element>																		<xs:element name="netMass" type="UK_DecimalWithZero_16_6">																			<xs:annotation>																				<xs:documentation>																					<description value="Net mass"/>																					<format value="n..16,6"/>																					<optionality value="R"/>																					<xsdBaseType value="DecimalWithZero_16_6"/>																				</xs:documentation>																			</xs:annotation>																		</xs:element>																	</xs:sequence>																</xs:complexType>															</xs:element>														</xs:sequence>													</xs:complexType>												</xs:element>												<xs:element name="Packaging" minOccurs="0" maxOccurs="99">													<xs:complexType>														<xs:sequence>															<xs:element name="sequenceNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Sequence number"/>																		<format value="n..5"/>																		<optionality value="O"/>																		<xsdBaseType value="NumericWithoutZero_5"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="typeOfPackages" type="UK_A-ZTwoChar" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Type of packages"/>																		<format value="an2"/>																		<optionality value="O"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="numberOfPackages" type="UK_NumericWithZero_8" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Number of packages"/>																		<format value="n..8"/>																		<optionality value="O"/>																		<xsdBaseType value="NumericWithZero_8"/>																	</xs:documentation>																</xs:annotation>															</xs:element>															<xs:element name="shippingMarks" type="UK_AlphaNumeric_MAX512_NoSpaces" minOccurs="0" maxOccurs="1">																<xs:annotation>																	<xs:documentation>																		<description value="Shipping marks"/>																		<format value="an..512"/>																		<optionality value="O"/>																		<xsdBaseType value="AlphaNumeric_MAX512_NoSpaces"/>																	</xs:documentation>																</xs:annotation>															</xs:element>														</xs:sequence>													</xs:complexType>												</xs:element>											</xs:sequence>										</xs:complexType>									</xs:element>								</xs:sequence>							</xs:complexType>						</xs:element>					</xs:sequence>				</xs:complexType>			</xs:element>		</xs:sequence>	</xs:complexType></xs:schema>
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://ecs.dgtaxud.ec" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" targetNamespace="http://ecs.dgtaxud.ec" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="60.4.15" vc:minVersion="1.1">
+	<!--================================================================================-->
+	<!--===== IE507: E_ARR_EXT                                                                -->
+	<!--===== ARRIVAL AT EXIT                                                                 -->
+	<!--===== AES P1 Phase Definition                                                         -->
+	<!--===== XSD Version 60.4.15                                                             -->
+	<!--================================================================================-->
+	<!--================================================================================-->
+	<!--===== Includes                                                                        -->
+	<!--================================================================================-->
+	<xs:include schemaLocation="aesIE507BaseTypes.xsd"/>
+	<!--================================================================================-->
+	<!--===== Root Element                                                                    -->
+	<!--================================================================================-->
+	<xs:element name="CC507C" type="CC507CType"/>
+	<!--================================================================================-->
+	<!--===== Root Element Content                                                            -->
+	<!--================================================================================-->
+	<xs:complexType name="CC507CType">
+		<xs:sequence>
+			<xs:element name="Header" minOccurs="1" maxOccurs="1">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:annotation>
+							<xs:documentation>Used by all messages</xs:documentation>
+						</xs:annotation>
+						<xs:element name="messageSender" type="UK_AlphaNumeric35Type" minOccurs="1" maxOccurs="1">
+							<xs:annotation>
+								<xs:documentation>
+									<description value="Message sender"/>
+									<format value="an..35"/>
+									<xs:optionality value="R"/>
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="messageRecipient" type="UK_AlphaNumeric35Type" minOccurs="1" maxOccurs="1">
+							<xs:annotation>
+								<xs:documentation>
+									<description value="Message recipient (Can be hardcoded to NECA.XI)"/>
+									<format value="an..35"/>
+									<xs:optionality value="R"/>
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="preparationDateAndTime" type="UK_PreparationDateAndTimeContentType" minOccurs="1" maxOccurs="1">
+							<xs:annotation>
+								<xs:documentation>
+									<description value="Preparation date and time"/>
+									<format value="an19"/>
+									<xs:optionality value="R"/>
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="messageIdentification" type="UK_AlphaNumeric35Type" minOccurs="1" maxOccurs="1">
+							<xs:annotation>
+								<xs:documentation>
+									<description value="Message identification"/>
+									<format value="an..35"/>
+									<xs:optionality value="R"/>
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="messageType" type="UK_messageCode507">
+							<xs:annotation>
+								<xs:documentation>
+									<description value="Hard coded to CC507C"/>
+									<format value="an6"/>
+									<xs:optionality value="R"/>
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Body" minOccurs="1" maxOccurs="1">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="ExportOperation" minOccurs="1" maxOccurs="1">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="type" type="UK_OneToThreeType" minOccurs="1" maxOccurs="1">
+										<xs:annotation>
+											<xs:documentation>
+												<xs:description value="Type of 507: 1; Standard. 2; Amendment. 3; Cancellation"/>
+												<xs:format value="n1"/>
+												<xs:optionality value="R"/>
+											</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="MRN" type="UK_MRNType" minOccurs="1" maxOccurs="1">
+										<xs:annotation>
+											<xs:documentation>
+												<description value="MRN"/>
+												<format value="an18"/>
+												<optionality value="R"/>
+											</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="discrepanciesExist" type="UK_Flag" minOccurs="1" maxOccurs="1">
+										<xs:annotation>
+											<xs:documentation>
+												<description value="Discrepancies exist"/>
+												<format value="n1"/>
+												<optionality value="R"/>
+											</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<!-- UK specific field -->
+									<xs:element name="splitIndicator" type="UK_Flag" minOccurs="1" maxOccurs="1">
+										<xs:annotation>
+											<xs:documentation>
+												<description value="Split indicator"/>
+												<format value="n1"/>
+												<optionality value="R"/>
+											</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="CustomsOfficeOfExitActual" minOccurs="1" maxOccurs="1">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:annotation>
+										<xs:documentation>
+											<description value="CUSTOMS OFFICE OF EXIT (ACTUAL)"/>
+											<optionality value="R"/>
+										</xs:documentation>
+									</xs:annotation>
+									<xs:element name="referenceNumber" type="UK_ReferenceNumberType" minOccurs="1" maxOccurs="1">
+										<xs:annotation>
+											<xs:documentation>
+												<description value="Reference Number"/>
+												<format value="an8"/>
+												<optionality value="R"/>
+											</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="GoodsShipment" minOccurs="0" maxOccurs="1">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:annotation>
+										<xs:documentation>
+											<description value="GOODS SHIPMENT"/>
+											<optionality value="O"/>
+										</xs:documentation>
+									</xs:annotation>
+									<!-- Consignment -->
+									<xs:element name="Consignment" minOccurs="1" maxOccurs="1">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="modeOfTransportAtTheBorder" type="UK_SingleDigit" minOccurs="0" maxOccurs="1">
+													<xs:annotation>
+														<xs:documentation>
+															<description value="Mode of transport at the border"/>
+															<format value="n1"/>
+															<optionality value="O"/>
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="referenceNumberUCR" type="UK_DUCRType" minOccurs="1" maxOccurs="1">
+													<xs:annotation>
+														<xs:documentation>
+															<description value="Reference number UCR"/>
+															<format value="an..35"/>
+															<optionality value="R"/>
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="parentUCRID" type="UK_ParentUCRType" minOccurs="0" maxOccurs="1">
+													<xs:annotation>
+														<xs:documentation>
+															<description value="Parent UCR ID"/>
+															<format value="an..35"/>
+															<optionality value="O"/>
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<!-- Transport equipment -->
+												<xs:element name="TransportEquipment" minOccurs="0" maxOccurs="9999">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="sequenceNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<xs:description value="Sequence number"/>
+																		<xs:format value="n5"/>
+																		<optionality value="O"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="containerIdentificationNumber" type="UK_ContainerIdentificationNumberType" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Container identification number"/>
+																		<format value="an..17"/>
+																		<optionality value="O"/>
+																		<xsdBaseType value="ContainerIdentificationNumber_NoSpaces"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="numberOfSeals" type="UK_NumericWithZero_4" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Number of seals"/>
+																		<format value="n..4"/>
+																		<optionality value="O"/>
+																		<xsdBaseType value="NumericWithZero_4"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="Seal" minOccurs="0" maxOccurs="99">
+																<xs:complexType>
+																	<xs:sequence>
+																		<xs:element name="sequenceNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">
+																			<xs:annotation>
+																				<xs:documentation>
+																					<xs:description value="Sequence number"/>
+																					<xs:format value="n..5"/>
+																					<optionality value="O"/>
+																				</xs:documentation>
+																			</xs:annotation>
+																		</xs:element>
+																		<xs:element name="identifier" type="UK_AlphaNumeric_MAX20_NoSpaces" minOccurs="0" maxOccurs="1">
+																			<xs:annotation>
+																				<xs:documentation>
+																					<description value="Identifier"/>
+																					<format value="an..20"/>
+																					<optionality value="O"/>
+																				</xs:documentation>
+																			</xs:annotation>
+																		</xs:element>
+																	</xs:sequence>
+																</xs:complexType>
+															</xs:element>
+															<xs:element name="GoodsReference" minOccurs="0" maxOccurs="999">
+																<xs:complexType>
+																	<xs:sequence>
+																		<xs:element name="sequenceNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">
+																			<xs:annotation>
+																				<xs:documentation>
+																					<xs:description value="Sequence number"/>
+																					<xs:format value="n..5"/>
+																					<optionality value="O"/>
+																				</xs:documentation>
+																			</xs:annotation>
+																		</xs:element>
+																		<xs:element name="declarationGoodsItemNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">
+																			<xs:annotation>
+																				<xs:documentation>
+																					<description value="Declaration goods item number"/>
+																					<format value="n..5"/>
+																					<optionality value="O"/>
+																				</xs:documentation>
+																			</xs:annotation>
+																		</xs:element>
+																	</xs:sequence>
+																</xs:complexType>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="LocationOfGoods" minOccurs="1" maxOccurs="1">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="typeOfLocation" type="UK_A-ZOneChar" minOccurs="1" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Type of location"/>
+																		<format value="a1"/>
+																		<optionality value="R"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="qualifierOfIdentification" type="UK_A-ZOneChar" minOccurs="1" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Qualifier of identification"/>
+																		<format value="a1"/>
+																		<optionality value="R"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="authorisationNumber" type="UK_AlphaNumeric35NoSpacesType" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Authorisation number"/>
+																		<format value="an..35"/>
+																		<optionality value="O"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="additionalIdentifier" type="UK_AlphaNumeric4NoSpacesType" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Additional identifier"/>
+																		<format value="an..4"/>
+																		<optionality value="O"/>
+																		<xsdBaseType value="AlphaNumeric4NoSpacesType"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="UNLocode" type="UK_AlphaNumeric17Type" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="UN LOCODE"/>
+																		<format value="an..17"/>
+																		<optionality value="O"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="ActiveBorderTransportMeans" minOccurs="0" maxOccurs="1">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="typeOfIdentification" type="UK_DoubleDigit" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Type of identification"/>
+																		<format value="n2"/>
+																		<optionality value="O"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="identificationNumber" type="UK_AlphaNumeric35NoSpacesType" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Identification number"/>
+																		<format value="an..35"/>
+																		<optionality value="O"/>
+																		<xsdBaseType value="AlphaNumeric35NoSpacesType"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="nationality" type="UK_A-ZTwoChar" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Nationality"/>
+																		<format value="a2"/>
+																		<optionality value="O"/>
+																		<xsdBaseType value="AZTwoChar"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="TransportDocument" minOccurs="0" maxOccurs="99">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="sequenceNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<xs:description value="Sequence number"/>
+																		<xs:format value="n..5"/>
+																		<xsdBaseType value="NumericWithoutZero_5"/>
+																		<optionality value="O"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="type" type="UK_NumericWithoutZero_4" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Type"/>
+																		<format value="an4"/>
+																		<optionality value="O"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="referenceNumber" type="UK_AlphaNumeric_MAX70_NoSpaces" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Reference number"/>
+																		<format value="an..70"/>
+																		<optionality value="O"/>
+																		<xsdBaseType value="AlphaNumeric_MAX70_NoSpaces"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="GoodsItem" minOccurs="0" maxOccurs="999">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="declarationGoodsItemNumber" type="UK_DeclarationGoodsItemNumberType_WithZero" minOccurs="0" maxOccurs="1">
+													<xs:annotation>
+														<xs:documentation>
+															<description value="Declaration goods item number"/>
+															<format value="n..5"/>
+															<optionality value="O"/>
+															<xsdBaseType value="DeclarationGoodsItemNumberType"/>
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="referenceNumberUCR" type="UK_UCRReferenceNumberType" minOccurs="0" maxOccurs="1">
+													<xs:annotation>
+														<xs:documentation>
+															<description value="Reference number UCR"/>
+															<format value="an..35"/>
+															<optionality value="O"/>
+															<xsdBaseType value="UCRReferenceNumberType"/>
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="Commodity" minOccurs="0" maxOccurs="1">
+													<xs:complexType>
+														<xs:sequence>
+															<!-- Goods measure -->
+															<xs:element name="GoodsMeasure" minOccurs="1" maxOccurs="1">
+																<xs:complexType>
+																	<xs:sequence>
+																		<xs:element name="grossMass" type="UK_DecimalWithZero_16_6">
+																			<xs:annotation>
+																				<xs:documentation>
+																					<description value="Gross mass"/>
+																					<format value="n..16,6"/>
+																					<optionality value="R"/>
+																					<xsdBaseType value="DecimalWithZero_16_6"/>
+																				</xs:documentation>
+																			</xs:annotation>
+																		</xs:element>
+																		<xs:element name="netMass" type="UK_DecimalWithZero_16_6">
+																			<xs:annotation>
+																				<xs:documentation>
+																					<description value="Net mass"/>
+																					<format value="n..16,6"/>
+																					<optionality value="R"/>
+																					<xsdBaseType value="DecimalWithZero_16_6"/>
+																				</xs:documentation>
+																			</xs:annotation>
+																		</xs:element>
+																	</xs:sequence>
+																</xs:complexType>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="Packaging" minOccurs="0" maxOccurs="99">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="sequenceNumber" type="UK_NumericWithoutZero_5" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Sequence number"/>
+																		<format value="n..5"/>
+																		<optionality value="O"/>
+																		<xsdBaseType value="NumericWithoutZero_5"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="typeOfPackages" type="UK_A-ZTwoChar" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Type of packages"/>
+																		<format value="an2"/>
+																		<optionality value="O"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="numberOfPackages" type="UK_NumericWithZero_8" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Number of packages"/>
+																		<format value="n..8"/>
+																		<optionality value="O"/>
+																		<xsdBaseType value="NumericWithZero_8"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="shippingMarks" type="UK_AlphaNumeric_MAX512_NoSpaces" minOccurs="0" maxOccurs="1">
+																<xs:annotation>
+																	<xs:documentation>
+																		<description value="Shipping marks"/>
+																		<format value="an..512"/>
+																		<optionality value="O"/>
+																		<xsdBaseType value="AlphaNumeric_MAX512_NoSpaces"/>
+																	</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
