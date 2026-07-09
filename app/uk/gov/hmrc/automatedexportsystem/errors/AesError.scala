@@ -17,14 +17,14 @@
 package uk.gov.hmrc.automatedexportsystem.errors
 
 import cats.data.NonEmptyList
-import uk.gov.hmrc.automatedexportsystem.errors.StatusCode.*
+import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode.*
 
 import scala.xml.SAXParseException
 
-sealed abstract class AesError(val message: String, val statusCode: StatusCode, val exception: Option[Exception])
+sealed abstract class AesError(val message: String, val responseCode: ResponseCode, val exception: Option[Exception])
 
-enum SchemaError(override val message: String, override val statusCode: StatusCode, override val exception: Option[Exception])
-    extends AesError(message, statusCode, exception):
+enum SchemaError(override val message: String, override val responseCode: ResponseCode, override val exception: Option[Exception])
+    extends AesError(message, responseCode, exception):
   case SchemaNotFoundError(xsdPath: String) extends SchemaError(s"XSD Schema not found: $xsdPath", InternalServerError, None)
   case SchemaParseError(xsdError: SchemaError.XsdStructureError) extends SchemaError("XSD Schema could not be parsed", UnprocessableEntity, None)
 
@@ -44,6 +44,6 @@ object XmlSchemaValidationError:
 
 case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationError]) extends AesError("XML failed schema validation", BadRequest, None)
 
-enum RequestError(override val message: String, override val statusCode: StatusCode, override val exception: Option[Exception])
-    extends AesError(message, statusCode, exception):
+enum RequestError(override val message: String, override val responseCode: ResponseCode, override val exception: Option[Exception])
+    extends AesError(message, responseCode, exception):
   case ExpectedXmlBodyError extends RequestError("The body of the request is not valid XML", UnsupportedMediaType, None)

@@ -17,6 +17,8 @@
 package uk.gov.hmrc.automatedexportsystem.models.responses
 
 import cats.data.NonEmptyList
+import play.api.mvc.Result
+import play.api.mvc.Results.Status
 import uk.gov.hmrc.automatedexportsystem.errors.*
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.AesErrorResponseValidationError
 
@@ -48,6 +50,9 @@ final case class AesErrorResponse(status: Int, code: String, message: String, er
       </errorResponse>
 
     xml
+  end toXml
+
+  def toResult: Result = Status(status)(toXml)
 end AesErrorResponse
 
 object AesErrorResponse:
@@ -56,23 +61,29 @@ object AesErrorResponse:
   object AesErrorResponseValidationError:
     def fromXmlSchemaValidationError(error: XmlSchemaValidationError): AesErrorResponseValidationError =
       AesErrorResponseValidationError(error.line, error.column, error.message)
+
+  def fromResponseCode(responseCode: ResponseCode, message: String): AesErrorResponse =
+    fromStatusAndCode(responseCode.status, responseCode.code, message)
+
+  def fromStatusAndCode(status: Int, code: String, message: String): AesErrorResponse =
+    AesErrorResponse(status, code, message, None)
 end AesErrorResponse
 
 extension (error: AesError)
   def toErrorResponse: AesErrorResponse =
-    val statusCode:   StatusCode = error.statusCode
-    val errorMessage: String     = error.message
+    val responseCode: ResponseCode = error.responseCode
+    val errorMessage: String       = error.message
 
     error match
       case _: SchemaError =>
-        AesErrorResponse(statusCode.status, statusCode.code, errorMessage, None)
+        AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
       case XmlFailedValidationError(errors) =>
         AesErrorResponse(
-          statusCode.status,
-          statusCode.code,
+          responseCode.status,
+          responseCode.code,
           errorMessage,
           Some(errors.map(AesErrorResponseValidationError.fromXmlSchemaValidationError))
         )
       case _: RequestError =>
-        AesErrorResponse(statusCode.status, statusCode.code, errorMessage, None)
+        AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
 end extension

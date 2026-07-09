@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 
-import play.api.mvc.Results.Status
 import play.api.mvc.{ActionRefiner, AnyContentAsXml, Request, Result}
 import uk.gov.hmrc.automatedexportsystem.errors.RequestError
 import uk.gov.hmrc.automatedexportsystem.models.actions.XmlPayloadRequest
 import uk.gov.hmrc.automatedexportsystem.models.responses.{AesErrorResponse, toErrorResponse}
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.{Elem, NodeSeq}
+import scala.xml.NodeSeq
 
-class XmlPayloadActionRefiner(using protected val executionContext: ExecutionContext) extends ActionRefiner[Request, XmlPayloadRequest]:
+@Singleton
+class XmlPayloadActionRefiner @Inject() ()(using protected val executionContext: ExecutionContext) extends ActionRefiner[Request, XmlPayloadRequest]:
   protected def refine[A](request: Request[A]): Future[Either[Result, XmlPayloadRequest[A]]] =
     Future.successful(
       request.body match
@@ -34,11 +35,8 @@ class XmlPayloadActionRefiner(using protected val executionContext: ExecutionCon
         case anyContentAsXml: AnyContentAsXml =>
           Right(XmlPayloadRequest(anyContentAsXml.xml, request))
         case _ =>
-          val error:            RequestError     = RequestError.ExpectedXmlBodyError
-          val errorResponse:    AesErrorResponse = error.toErrorResponse
-          val errorResponseXml: Elem             = errorResponse.toXml
+          val error:         RequestError     = RequestError.ExpectedXmlBodyError
+          val errorResponse: AesErrorResponse = error.toErrorResponse
 
-          val status: Int = errorResponse.status
-
-          Left(Status(status)(errorResponseXml))
+          Left(errorResponse.toResult)
     )

@@ -32,4 +32,4 @@ sealed abstract class XmlValidationService(xsdPath: XsdPath)(using ExecutionCont
     EitherT(Future(xsdValidator.flatMap(v => v.validate(xml))))
 
 @Singleton
-class IE507XmlValidationService @Inject() ()(using ec: ExecutionContext) extends XmlValidationService(XsdPath.XsdIE507Path)
+class IE507XmlValidationService @Inject() ()(using ExecutionContext) extends XmlValidationService(XsdPath.XsdIE507Path)

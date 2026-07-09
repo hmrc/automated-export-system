@@ -16,17 +16,19 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 
-import play.api.mvc.Results.Status
 import play.api.mvc.{ActionRefiner, Result}
 import uk.gov.hmrc.automatedexportsystem.models.actions.{ValidatedXmlRequest, XmlPayloadRequest}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{AesErrorResponse, toErrorResponse}
 import uk.gov.hmrc.automatedexportsystem.services.XmlValidationService
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.{Elem, NodeSeq}
+import scala.xml.NodeSeq
 
-class XmlValidationActionRefiner[T <: XmlValidationService](xmlValidationService: T)(using protected val executionContext: ExecutionContext)
-    extends ActionRefiner[XmlPayloadRequest, ValidatedXmlRequest]:
+@Singleton
+class XmlValidationActionRefiner[T <: XmlValidationService] @Inject() (xmlValidationService: T)(using
+  protected val executionContext: ExecutionContext
+) extends ActionRefiner[XmlPayloadRequest, ValidatedXmlRequest]:
   protected def refine[A](request: XmlPayloadRequest[A]): Future[Either[Result, ValidatedXmlRequest[A]]] =
     val xml: NodeSeq = request.xml
 
@@ -35,12 +37,9 @@ class XmlValidationActionRefiner[T <: XmlValidationService](xmlValidationService
         .validate(xml)
         .bimap(
           error => {
-            val errorResponse:    AesErrorResponse = error.toErrorResponse
-            val errorResponseXml: Elem             = errorResponse.toXml
+            val errorResponse: AesErrorResponse = error.toErrorResponse
 
-            val status: Int = errorResponse.status
-
-            Status(status)(errorResponseXml)
+            errorResponse.toResult
           },
           _ => ValidatedXmlRequest(xml, request)
         )

@@ -18,10 +18,12 @@ package uk.gov.hmrc.automatedexportsystem.errors
 
 import play.api.http.Status.*
 
-enum StatusCode(val status: Int, val code: String):
-  case Ok extends StatusCode(OK, "OK")
-  case Accepted extends StatusCode(ACCEPTED, "ACCEPTED")
-  case BadRequest extends StatusCode(BAD_REQUEST, "BAD_REQUEST")
-  case UnprocessableEntity extends StatusCode(UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY")
-  case InternalServerError extends StatusCode(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")
-  case UnsupportedMediaType extends StatusCode(UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_MEDIA_TYPE")
+enum ResponseCode(val status: Int, val code: String):
+  case Ok extends ResponseCode(OK, "OK")
+  case Accepted extends ResponseCode(ACCEPTED, "ACCEPTED")
+  case BadRequest extends ResponseCode(BAD_REQUEST, "BAD_REQUEST")
+  case Forbidden extends ResponseCode(FORBIDDEN, "FORBIDDEN")
+  case NotFound extends ResponseCode(NOT_FOUND, "NOT_FOUND")
+  case UnsupportedMediaType extends ResponseCode(UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_MEDIA_TYPE")
+  case UnprocessableEntity extends ResponseCode(UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY")
+  case InternalServerError extends ResponseCode(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")
