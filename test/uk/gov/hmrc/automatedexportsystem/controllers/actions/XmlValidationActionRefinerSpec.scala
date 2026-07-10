@@ -46,7 +46,9 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
     XmlValidationActionRefiner(xmlValidationService)
 
   "XmlValidationActionRefiner" - {
+
     ".invokeBlock" - {
+
       "should return a Result" - {
         val successfulBlock: Request[AnyContent] => Future[Result] = _ =>
           Future.successful(
@@ -73,6 +75,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
         }
 
         "when XML validation fails" - {
+
           "due to a SchemaNotFoundError" in {
             val xml: Elem =
               <element>validate me</element>

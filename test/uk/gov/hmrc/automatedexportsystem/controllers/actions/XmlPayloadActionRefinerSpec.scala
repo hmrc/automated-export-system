@@ -34,7 +34,9 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
   val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
 
   "XmlPayloadActionRefiner" - {
+
     ".invokeBlock" - {
+
       "should return a Result" - {
         val successfulBlockNodeSeq: Request[NodeSeq] => Future[Result] = _ =>
           Future.successful(
@@ -45,6 +47,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
           Future.successful(
             Status(StatusValues.OK)
           )
+
         "when the body of the request is XML (NodeSeq)" in {
           val xml: Elem =
             <element>I'm XML</element>

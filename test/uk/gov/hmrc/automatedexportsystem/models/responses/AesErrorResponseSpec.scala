@@ -26,8 +26,11 @@ import scala.xml.*
 
 class AesErrorResponseSpec extends AnyFreeSpecLike, Matchers:
   "AesErrorResponse" - {
+
     ".toXml" - {
+
       "should render the response into an XML document" - {
+
         "when there are no validation errors" in {
           val aesErrorResponse: AesErrorResponse =
             AesErrorResponse(400, "BAD_REQUEST", "Request was bad", None)
@@ -47,6 +50,7 @@ class AesErrorResponseSpec extends AnyFreeSpecLike, Matchers:
         }
 
         "when there are validation errors" - {
+
           "one validation error" in {
             val aesErrorResponse: AesErrorResponse =
               AesErrorResponse(

@@ -17,15 +17,15 @@
 package uk.gov.hmrc.automatedexportsystem.xml
 
 import cats.data.NonEmptyList
+import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{EitherValues, OptionValues}
 import uk.gov.hmrc.automatedexportsystem.errors.SchemaError.{SchemaNotFoundError, SchemaParseError}
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
 
 import scala.xml.Elem
 
-class XsdValidatorSpec extends AnyFreeSpecLike, Matchers, EitherValues, OptionValues:
+class XsdValidatorSpec extends AnyFreeSpecLike, Matchers, EitherValues:
   "XsdValidator" - {
 
     ".fromXsdPath" - {
@@ -248,4 +248,3 @@ class XsdValidatorSpec extends AnyFreeSpecLike, Matchers, EitherValues, OptionVa
       }
     }
   }
-end XsdValidatorSpec
