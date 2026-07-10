@@ -8,3 +8,5 @@ GET  /codelists/nationality  uk.gov.hmrc.automatedexportsystem.controllers.CodeL
 GET  /codelists/transportmode  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.transportModes
 
 GET  /codelists/typeoflocation  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.typeOfLocations
+
+POST /message uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController.message

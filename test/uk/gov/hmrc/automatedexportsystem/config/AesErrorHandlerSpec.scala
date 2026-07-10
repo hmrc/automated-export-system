@@ -43,10 +43,7 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
   val router:        Provider[Router]     = mock[Provider[Router]]
 
   "AesErrorHandler" - {
-    val request: FakeRequest[AnyContent] = FakeRequest(
-      HttpVerbs.DELETE,
-      "/dummy/path"
-    )
+    val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.DELETE, "/dummy/path")
 
     ".onClientError" - {
       when(environment.mode).thenReturn(Mode.Dev)
@@ -72,7 +69,7 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -91,7 +88,7 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.FORBIDDEN
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -110,7 +107,7 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.NOT_FOUND
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -129,7 +126,7 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.UNPROCESSABLE_ENTITY
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -148,7 +145,7 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.IM_A_TEAPOT
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -182,7 +179,7 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -207,7 +204,7 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)

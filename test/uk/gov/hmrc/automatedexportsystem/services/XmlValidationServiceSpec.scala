@@ -17,6 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.services
 
 import cats.data.{EitherT, NonEmptyList}
+import helpers.XmlOps
 import org.scalactic.source.Position
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
@@ -26,16 +27,12 @@ import uk.gov.hmrc.automatedexportsystem.errors.{AesError, XmlFailedValidationEr
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Using
-import scala.xml.{Elem, XML}
+import scala.xml.Elem
 
 class XmlValidationServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, ScalaFutures:
   given ec: ExecutionContext = ExecutionContext.global
 
   override given patienceConfig: PatienceConfig = PatienceConfig(1500.millis, 15.millis)
-
-  def loadXml(path: String)(using Position): Elem =
-    Using(getClass.getResourceAsStream(path))(stream => XML.load(stream)).toEither.value
 
   "IE507XmlValidationService" - {
     val xmlValidationService: XmlValidationService = IE507XmlValidationService()
@@ -45,7 +42,7 @@ class XmlValidationServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
       "successfully" - {
 
         "when processing an IE507 document conforming to the XSD schema" in {
-          val xml: Elem = loadXml("/testdata/aesIE507RequestValid.xml")
+          val xml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestValid.xml").value
 
           val result: EitherT[Future, AesError, Unit] = xmlValidationService.validate(xml)
 
@@ -53,7 +50,7 @@ class XmlValidationServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         }
 
         "when processing an IE507 document conforming to the XSD schema, with no optionals" in {
-          val xml: Elem = loadXml("/testdata/aesIE507RequestValidNoOptionals.xml")
+          val xml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestValidNoOptionals.xml").value
 
           val result: EitherT[Future, AesError, Unit] = xmlValidationService.validate(xml)
 
@@ -64,7 +61,7 @@ class XmlValidationServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
       "unsuccessfully" - {
 
         "when processing an IE507 document with missing required elements" in {
-          val xml: Elem = loadXml("/testdata/aesIE507RequestInvalidMissingRequired.xml")
+          val xml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestInvalidMissingRequired.xml").value
 
           val result: EitherT[Future, AesError, Unit] = xmlValidationService.validate(xml)
 
@@ -90,7 +87,7 @@ class XmlValidationServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         }
 
         "when processing an IE507 document where elements don't match the patterns" in {
-          val xml: Elem = loadXml("/testdata/aesIE507RequestInvalidBadPatterns.xml")
+          val xml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestInvalidBadPatterns.xml").value
 
           val result: EitherT[Future, AesError, Unit] = xmlValidationService.validate(xml)
 

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 
 import helpers.XmlOps
+import org.apache.pekko.util.ByteString
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
@@ -52,43 +53,36 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
           val xml: Elem =
             <element>I'm XML</element>
 
-          val request: FakeRequest[NodeSeq] = FakeRequest
-            .apply(
-              HttpVerbs.GET,
-              "/dummy/path"
-            )
-            .withBody(xml)
+          val request: FakeRequest[NodeSeq] =
+            FakeRequest(HttpVerbs.GET, "/dummy/path")
+              .withBody(xml)
 
           val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(request, successfulBlockNodeSeq)
 
-          Helpers.status(result) shouldBe StatusValues.OK
+          Helpers.status(result)         shouldBe StatusValues.OK
+          Helpers.contentAsBytes(result) shouldBe ByteString.empty
         }
 
         "when the body of the request is XML (AnyContent)" in {
           val xml: Elem =
             <element>I'm XML</element>
 
-          val request: FakeRequest[AnyContentAsXml] = FakeRequest
-            .apply(
-              HttpVerbs.GET,
-              "/dummy/path"
-            )
-            .withXmlBody(xml)
+          val request: FakeRequest[AnyContentAsXml] =
+            FakeRequest(HttpVerbs.GET, "/dummy/path")
+              .withXmlBody(xml)
 
           val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(request, successfulBlockAnyContent)
 
-          Helpers.status(result) shouldBe StatusValues.OK
+          Helpers.status(result)         shouldBe StatusValues.OK
+          Helpers.contentAsBytes(result) shouldBe ByteString.empty
         }
 
         "when the body of the request is not XML" in {
           val text: String = "<element>I'm XML in disguise</element>"
 
-          val request: FakeRequest[AnyContentAsText] = FakeRequest
-            .apply(
-              HttpVerbs.GET,
-              "/dummy/path"
-            )
-            .withTextBody(text)
+          val request: FakeRequest[AnyContentAsText] =
+            FakeRequest(HttpVerbs.GET, "/dummy/path")
+              .withTextBody(text)
 
           val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(request, successfulBlockAnyContent)
 
@@ -100,7 +94,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
             </errorResponse>
 
           val resultContent: String = Helpers.contentAsString(result)
-          val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+          val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
           Helpers.status(result)               shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
           Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)

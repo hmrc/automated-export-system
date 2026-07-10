@@ -59,10 +59,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
           val xml: Elem =
             <element>validate me</element>
 
-          val request: FakeRequest[AnyContent] = FakeRequest.apply(
-            HttpVerbs.POST,
-            "/dummy/path"
-          )
+          val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
 
           val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request)
 
@@ -80,10 +77,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val xml: Elem =
               <element>validate me</element>
 
-            val request: FakeRequest[AnyContent] = FakeRequest.apply(
-              HttpVerbs.POST,
-              "/dummy/path"
-            )
+            val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
 
             val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request)
 
@@ -101,7 +95,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -112,10 +106,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val xml: Elem =
               <element>validate me</element>
 
-            val request: FakeRequest[AnyContent] = FakeRequest.apply(
-              HttpVerbs.POST,
-              "/dummy/path"
-            )
+            val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
 
             val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request)
 
@@ -133,7 +124,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.UNPROCESSABLE_ENTITY
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -144,10 +135,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val xml: Elem =
               <element>validate me</element>
 
-            val request: FakeRequest[AnyContent] = FakeRequest.apply(
-              HttpVerbs.POST,
-              "/dummy/path"
-            )
+            val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
 
             val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request)
 
@@ -179,7 +167,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
@@ -190,10 +178,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val xml: Elem =
               <element>validate me</element>
 
-            val request: FakeRequest[AnyContent] = FakeRequest.apply(
-              HttpVerbs.POST,
-              "/dummy/path"
-            )
+            val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
 
             val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request)
 
@@ -249,7 +234,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
               </errorResponse>
 
             val resultContent: String = Helpers.contentAsString(result)
-            val resultXml:     Elem   = XmlOps.loadXml(resultContent).value
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
             Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
