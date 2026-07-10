@@ -116,7 +116,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
 
-            val schemaNotFoundErrorResponseXml: Elem =
+            val schemaParseErrorResponseXml: Elem =
               <errorResponse>
                 <status>422</status>
                 <code>UNPROCESSABLE_ENTITY</code>
@@ -128,7 +128,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             Helpers.status(result)               shouldBe StatusValues.UNPROCESSABLE_ENTITY
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(schemaNotFoundErrorResponseXml).toString
+            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(schemaParseErrorResponseXml).toString
           }
 
           "due to an XmlSchemaValidationError" in {
@@ -152,7 +152,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
 
-            val schemaNotFoundErrorResponseXml: Elem =
+            val xmlFailedValidationErrorResponseXml: Elem =
               <errorResponse>
                 <status>400</status>
                 <code>BAD_REQUEST</code>
@@ -171,7 +171,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(schemaNotFoundErrorResponseXml).toString
+            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
           }
 
           "due to many XmlSchemaValidationError" in {
@@ -199,7 +199,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
 
-            val schemaNotFoundErrorResponseXml: Elem =
+            val xmlFailedValidationErrorResponseXml: Elem =
               <errorResponse>
                 <status>400</status>
                 <code>BAD_REQUEST</code>
@@ -238,7 +238,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(schemaNotFoundErrorResponseXml).toString
+            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
           }
         }
       }
