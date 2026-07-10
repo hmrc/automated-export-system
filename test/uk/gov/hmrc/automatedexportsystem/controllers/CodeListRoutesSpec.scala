@@ -16,21 +16,22 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers
 
+import org.scalatest.OptionValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 
-class CodeListRoutesSpec extends AnyWordSpec with Matchers {
+class CodeListRoutesSpec extends AnyWordSpec with Matchers with OptionValues {
 
   "the application routes" should {
     "serve /codelists/messagetype" in {
       val app = new GuiceApplicationBuilder().build()
 
       running(app) {
-        val request            = FakeRequest(GET, "/automated-export-system/codelists/messagetype")
-        val Some(resultFuture) = route(app, request)
+        val request      = FakeRequest(GET, "/automated-export-system/codelists/messagetype")
+        val resultFuture = route(app, request).value
 
         status(resultFuture)      shouldBe 200
         contentType(resultFuture) shouldBe Some("application/xml")
@@ -41,8 +42,8 @@ class CodeListRoutesSpec extends AnyWordSpec with Matchers {
       val app = new GuiceApplicationBuilder().build()
 
       running(app) {
-        val request            = FakeRequest(GET, "/automated-export-system/codelists/customsofficeexit")
-        val Some(resultFuture) = route(app, request)
+        val request      = FakeRequest(GET, "/automated-export-system/codelists/customsofficeexit")
+        val resultFuture = route(app, request).value
 
         status(resultFuture)      shouldBe 200
         contentType(resultFuture) shouldBe Some("application/xml")
@@ -53,8 +54,8 @@ class CodeListRoutesSpec extends AnyWordSpec with Matchers {
       val app = new GuiceApplicationBuilder().build()
 
       running(app) {
-        val request            = FakeRequest(GET, "/automated-export-system/codelists/nationality")
-        val Some(resultFuture) = route(app, request)
+        val request      = FakeRequest(GET, "/automated-export-system/codelists/nationality")
+        val resultFuture = route(app, request).value
 
         status(resultFuture)      shouldBe 200
         contentType(resultFuture) shouldBe Some("application/xml")
@@ -65,8 +66,8 @@ class CodeListRoutesSpec extends AnyWordSpec with Matchers {
       val app = new GuiceApplicationBuilder().build()
 
       running(app) {
-        val request            = FakeRequest(GET, "/automated-export-system/codelists/transportmode")
-        val Some(resultFuture) = route(app, request)
+        val request      = FakeRequest(GET, "/automated-export-system/codelists/transportmode")
+        val resultFuture = route(app, request).value
 
         status(resultFuture)      shouldBe 200
         contentType(resultFuture) shouldBe Some("application/xml")
@@ -77,8 +78,8 @@ class CodeListRoutesSpec extends AnyWordSpec with Matchers {
       val app = new GuiceApplicationBuilder().build()
 
       running(app) {
-        val request            = FakeRequest(GET, "/automated-export-system/codelists/typeoflocation")
-        val Some(resultFuture) = route(app, request)
+        val request      = FakeRequest(GET, "/automated-export-system/codelists/typeoflocation")
+        val resultFuture = route(app, request).value
 
         status(resultFuture)      shouldBe 200
         contentType(resultFuture) shouldBe Some("application/xml")
