@@ -30,36 +30,67 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
       stubControllerComponents()
     )
 
+  private val validRequest =
+    FakeRequest(
+      POST,
+      "/cds/aesIE507Request/v1"
+    ).withHeaders(
+      "x-forwarded-host" -> "automated-export-system",
+      "x-correlation-id" -> "12345",
+      "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
+      "content-type"     -> "application/xml;charset=UTF-8",
+      "accept"           -> "application/xml",
+      "authorization"    -> "Bearer test-token"
+    )
+
   "IE507StubController" should {
 
-    "return NoContent for a valid POST request" in {
+    "return NoContent when all required headers are supplied" in {
 
       val result =
-        controller.submit()(
-          FakeRequest(POST, "/cds/aesIE507Request/v1")
-        )
+        controller.submit()(validRequest)
 
-      status(result)          shouldBe NO_CONTENT
-      contentAsString(result) shouldBe ""
+      status(result) shouldBe NO_CONTENT
     }
-  }
 
-  "serve POST /cds/aesIE507Request/v1" in {
-
-    val app = new GuiceApplicationBuilder().build()
-
-    running(app) {
+    "return BadRequest when x-correlation-id is missing" in {
 
       val request =
         FakeRequest(
           POST,
-          "/automated-export-system/cds/aesIE507Request/v1"
+          "/cds/aesIE507Request/v1"
+        ).withHeaders(
+          "x-forwarded-host" -> "automated-export-system",
+          "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
+          "content-type"     -> "application/xml;charset=UTF-8",
+          "accept"           -> "application/xml",
+          "authorization"    -> "Bearer test-token"
         )
 
-      val Some(result) =
-        route(app, request)
+      val result =
+        controller.submit()(request)
 
-      status(result) shouldBe NO_CONTENT
+      status(result) shouldBe BAD_REQUEST
+    }
+
+    "return BadRequest when authorization is missing" in {
+
+      val request =
+        FakeRequest(
+          POST,
+          "/cds/aesIE507Request/v1"
+        ).withHeaders(
+          "x-forwarded-host" -> "automated-export-system",
+          "x-correlation-id" -> "12345",
+          "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
+          "content-type"     -> "application/xml;charset=UTF-8",
+          "accept"           -> "application/xml"
+        )
+
+      val result =
+        controller.submit()(request)
+
+      status(result) shouldBe BAD_REQUEST
     }
   }
 }

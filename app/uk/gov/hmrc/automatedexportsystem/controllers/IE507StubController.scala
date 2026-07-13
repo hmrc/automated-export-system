@@ -24,8 +24,24 @@ class IE507StubController @Inject() (
   val controllerComponents: ControllerComponents
 ) extends BaseController {
 
+  private val RequiredHeaders = Seq(
+    "x-forwarded-host",
+    "x-correlation-id",
+    "date",
+    "content-type",
+    "accept",
+    "authorization"
+  )
+
   def submit: Action[AnyContent] =
     Action { request =>
-      NoContent
+
+      val missingHeaders =
+        RequiredHeaders.filterNot(request.headers.get(_).isDefined)
+
+      if (missingHeaders.nonEmpty)
+        BadRequest("Missing required headers")
+      else
+        NoContent
     }
 }
