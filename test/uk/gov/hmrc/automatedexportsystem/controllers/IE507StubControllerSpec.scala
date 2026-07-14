@@ -36,10 +36,11 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
     ).withHeaders(
       "x-forwarded-host" -> "automated-export-system",
       "x-correlation-id" -> "12345",
-      "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
-      "content-type"     -> "application/xml;charset=UTF-8",
-      "accept"           -> "application/xml",
-      "authorization"    -> "Bearer test-token"
+      "date" -> "Mon, 13 Jul 2026 12:00:00 GMT",
+      "content-type" -> "application/xml",
+      "accept" -> "application/xml",
+      "authorization" -> "Bearer test-token",
+      "x-message-type" -> "aesIE507Request"
     )
 
   "IE507StubController" should {
@@ -76,10 +77,11 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
           "/cds/aesIE507Request/v1"
         ).withHeaders(
           "x-forwarded-host" -> "automated-export-system",
-          "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
-          "content-type"     -> "application/xml;charset=UTF-8",
-          "accept"           -> "application/xml",
-          "authorization"    -> "Bearer test-token"
+          "date" -> "Mon, 13 Jul 2026 12:00:00 GMT",
+          "content-type" -> "application/xml",
+          "accept" -> "application/xml",
+          "authorization" -> "Bearer test-token",
+          "x-message-type" -> "aesIE507Request"
         )
 
       val result =
@@ -97,9 +99,31 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
         ).withHeaders(
           "x-forwarded-host" -> "automated-export-system",
           "x-correlation-id" -> "12345",
-          "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
-          "content-type"     -> "application/xml;charset=UTF-8",
-          "accept"           -> "application/xml"
+          "date" -> "Mon, 13 Jul 2026 12:00:00 GMT",
+          "content-type" -> "application/xml",
+          "accept" -> "application/xml",
+          "x-message-type" -> "aesIE507Request"
+        )
+
+      val result =
+        controller.submit()(request)
+
+      status(result) shouldBe BAD_REQUEST
+    }
+
+    "return BadRequest when x-message-type is missing" in {
+
+      val request =
+        FakeRequest(
+          POST,
+          "/cds/aesIE507Request/v1"
+        ).withHeaders(
+          "x-forwarded-host" -> "automated-export-system",
+          "x-correlation-id" -> "12345",
+          "date" -> "Mon, 13 Jul 2026 12:00:00 GMT",
+          "content-type" -> "application/xml",
+          "accept" -> "application/xml",
+          "authorization" -> "Bearer test-token"
         )
 
       val result =
@@ -109,3 +133,4 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
     }
   }
 }
+

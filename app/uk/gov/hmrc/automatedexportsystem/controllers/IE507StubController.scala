@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers
 
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
+
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @Singleton
 class IE507StubController @Inject() (
@@ -32,7 +33,8 @@ class IE507StubController @Inject() (
     "date",
     "content-type",
     "accept",
-    "authorization"
+    "authorization",
+    "x-message-type"
   )
 
   def submit: Action[AnyContent] =
@@ -41,9 +43,9 @@ class IE507StubController @Inject() (
       val missingHeaders =
         RequiredHeaders.filterNot(request.headers.get(_).isDefined)
 
-      if (missingHeaders.nonEmpty) {
+      if (missingHeaders.nonEmpty)
         BadRequest("Missing required headers")
-      } else {
+      else {
 
         val correlationId =
           request.headers.get("x-correlation-id").getOrElse("")
