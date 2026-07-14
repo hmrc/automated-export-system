@@ -23,7 +23,6 @@ import uk.gov.hmrc.automatedexportsystem.services.IE507XmlValidationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
 import scala.xml.NodeSeq
 
 @Singleton
@@ -33,7 +32,6 @@ class SubmissionController @Inject() (
   xmlValidationActionRefiner: XmlValidationActionRefiner[IE507XmlValidationService]
 ) extends BackendController(cc):
   def message: Action[NodeSeq] =
-    Action
+    Action(parse.xml)
       .andThen(xmlPayloadActionRefiner)
-      .andThen(xmlValidationActionRefiner)
-      .async(parse.xml)(_ => Future.successful(Status(ResponseCode.Accepted.status)))
+      .andThen(xmlValidationActionRefiner)(_ => Status(ResponseCode.Accepted.status))
