@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers
 
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
 
@@ -39,9 +41,18 @@ class IE507StubController @Inject() (
       val missingHeaders =
         RequiredHeaders.filterNot(request.headers.get(_).isDefined)
 
-      if (missingHeaders.nonEmpty)
+      if (missingHeaders.nonEmpty) {
         BadRequest("Missing required headers")
-      else
-        NoContent
+      } else {
+
+        val correlationId =
+          request.headers.get("x-correlation-id").getOrElse("")
+
+        NoContent.withHeaders(
+          "x-correlation-id" -> correlationId,
+          "date" -> DateTimeFormatter.RFC_1123_DATE_TIME
+            .format(ZonedDateTime.now())
+        )
+      }
     }
 }
