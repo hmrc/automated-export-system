@@ -18,7 +18,6 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import play.api.test.Helpers.stubControllerComponents
@@ -51,6 +50,22 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
         controller.submit()(validRequest)
 
       status(result) shouldBe NO_CONTENT
+    }
+
+    "return x-correlation-id header in the response" in {
+
+      val result =
+        controller.submit()(validRequest)
+
+      header("x-correlation-id", result) shouldBe Some("12345")
+    }
+
+    "return date header in the response" in {
+
+      val result =
+        controller.submit()(validRequest)
+
+      header("date", result).isDefined shouldBe true
     }
 
     "return BadRequest when x-correlation-id is missing" in {
