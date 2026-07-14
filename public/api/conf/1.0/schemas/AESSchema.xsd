@@ -286,7 +286,7 @@
 															</xs:element>
 															<xs:element name="additionalIdentifier" type="UK_AlphaNumeric4NoSpacesType" minOccurs="0" maxOccurs="1">
 																<xs:annotation>
-																	<xs:appinfo source="urn:hmrc:error-key">AUTHORISATION_IDENTIFIER</xs:appinfo>
+																	<xs:appinfo source="urn:hmrc:error-key">ADDITIONAL_IDENTIFIER</xs:appinfo>
 																	<xs:documentation>
 																		<description value="Additional identifier"/>
 																		<format value="an..4"/>

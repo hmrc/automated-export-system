@@ -107,7 +107,7 @@
 									</xs:element>
 									<xs:element name="discrepanciesExist" type="UK_Flag" minOccurs="1" maxOccurs="1">
 										<xs:annotation>
-											<xs:appinfo source="urn:hmrc:error-key">DISCREPANCIES_FLAG</xs:appinfo>
+											<xs:appinfo source="urn:hmrc:error-key">DISCREPANCY_FLAG</xs:appinfo>
 											<xs:documentation>
 												<description value="Discrepancies exist"/>
 												<format value="n1"/>
@@ -468,8 +468,8 @@
 																			</xs:annotation>
 																		</xs:element>
 																		<xs:element name="netMass" type="UK_DecimalWithZero_16_6">
-																			<xs:appinfo source="urn:hmrc:error-key">COMMODITY_NET_MASS</xs:appinfo>
 																			<xs:annotation>
+																				<xs:appinfo source="urn:hmrc:error-key">COMMODITY_NET_MASS</xs:appinfo>
 																				<xs:documentation>
 																					<description value="Net mass"/>
 																					<format value="n..16,6"/>
