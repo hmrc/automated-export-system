@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://ecs.dgtaxud.ec" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" elementFormDefault="qualified" version="60.4.15" targetNamespace="http://ecs.dgtaxud.ec" attributeFormDefault="unqualified" vc:minVersion="1.1">
-	<xs:simpleType name="UK_AlphaNumeric7Type">
+	<xs:simpleType name="UK_AlphaNumeric4Type">
+		<xs:restriction base="xs:token">
+			<xs:pattern value=".{1,4}"/>
+		</xs:restriction>
+	</xs:simpleType>	
+    <xs:simpleType name="UK_AlphaNumeric7Type">
 		<xs:restriction base="xs:token">
 			<xs:pattern value=".{1,7}"/>
 		</xs:restriction>
@@ -198,7 +203,7 @@
 	</xs:simpleType>
 	<xs:simpleType name="UK_A-ZTwoChar">
 		<xs:restriction base="xs:token">
-			<xs:pattern value="[A-Za-z]{1}"/>
+			<xs:pattern value="[A-Za-z]{2}"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="UK_DecimalWithZero_16_6">
