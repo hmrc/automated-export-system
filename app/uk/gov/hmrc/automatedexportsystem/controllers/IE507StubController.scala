@@ -24,8 +24,8 @@ import java.time.format.DateTimeFormatter
 
 @Singleton
 class IE507StubController @Inject() (
-  val controllerComponents: ControllerComponents
-) extends BaseController {
+                                      val controllerComponents: ControllerComponents
+                                    ) extends BaseController {
 
   private val RequiredHeaders = Seq(
     "x-forwarded-host",
@@ -37,13 +37,19 @@ class IE507StubController @Inject() (
     "x-message-type"
   )
 
+
   def submit: Action[AnyContent] =
     Action { request =>
+
+      val hasMissingAuthorizationHeader =
+        request.headers.get("authorization").isEmpty
 
       val hasMissingRequiredHeaders =
         RequiredHeaders.exists(request.headers.get(_).isEmpty)
 
-      if (hasMissingRequiredHeaders)
+      if (hasMissingAuthorizationHeader)
+        Unauthorized
+      else if (hasMissingRequiredHeaders)
         BadRequest("Missing required headers")
       else {
 
@@ -57,4 +63,5 @@ class IE507StubController @Inject() (
         )
       }
     }
+
 }
