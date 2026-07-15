@@ -69,7 +69,7 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
       header("date", result).isDefined shouldBe true
     }
 
-    "return BadRequest when x-correlation-id is missing" in {
+    "return Unauthorized when authorization is missing" in {
 
       val request =
         FakeRequest(
@@ -77,17 +77,17 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
           "/cds/aesIE507Request/v1"
         ).withHeaders(
           "x-forwarded-host" -> "automated-export-system",
+          "x-correlation-id" -> "12345",
           "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
           "content-type"     -> "application/xml",
           "accept"           -> "application/xml",
-          "authorization"    -> "Bearer test-token",
           "x-message-type"   -> "aesIE507Request"
         )
 
       val result =
         controller.submit()(request)
 
-      status(result) shouldBe BAD_REQUEST
+      status(result) shouldBe UNAUTHORIZED
     }
 
     "return BadRequest when authorization is missing" in {
@@ -130,6 +130,28 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
         controller.submit()(request)
 
       status(result) shouldBe BAD_REQUEST
+    }
+
+    "return NoContent when authorization header is present but empty" in {
+
+      val request =
+        FakeRequest(
+          POST,
+          "/cds/aesIE507Request/v1"
+        ).withHeaders(
+          "x-forwarded-host" -> "automated-export-system",
+          "x-correlation-id" -> "12345",
+          "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
+          "content-type"     -> "application/xml",
+          "accept"           -> "application/xml",
+          "authorization"    -> "",
+          "x-message-type"   -> "aesIE507Request"
+        )
+
+      val result =
+        controller.submit()(request)
+
+      status(result) shouldBe NO_CONTENT
     }
   }
 }

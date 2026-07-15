@@ -24,8 +24,8 @@ import java.time.format.DateTimeFormatter
 
 @Singleton
 class IE507StubController @Inject() (
-                                      val controllerComponents: ControllerComponents
-                                    ) extends BaseController {
+  val controllerComponents: ControllerComponents
+) extends BaseController {
 
   private val RequiredHeaders = Seq(
     "x-forwarded-host",
@@ -37,10 +37,8 @@ class IE507StubController @Inject() (
     "x-message-type"
   )
 
-
   def submit: Action[AnyContent] =
     Action { request =>
-
       val hasMissingAuthorizationHeader =
         request.headers.get("authorization").isEmpty
 
@@ -58,7 +56,7 @@ class IE507StubController @Inject() (
 
         NoContent.withHeaders(
           "x-correlation-id" -> correlationId,
-          "date" -> DateTimeFormatter.RFC_1123_DATE_TIME
+          "date"             -> DateTimeFormatter.RFC_1123_DATE_TIME
             .format(ZonedDateTime.now())
         )
       }
