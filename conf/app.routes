@@ -1,4 +1,5 @@
-# microservice specific routes
+# GET REQUESTS
+
 GET  /codelists/messagetype  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.messageTypes
 
 GET  /codelists/customsofficeexit  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.customsOfficeExits
@@ -8,5 +9,10 @@ GET  /codelists/nationality  uk.gov.hmrc.automatedexportsystem.controllers.CodeL
 GET  /codelists/transportmode  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.transportModes
 
 GET  /codelists/typeoflocation  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.typeOfLocations
+
+
+# POST REQUESTS
+
+POST /cds/aesIE507Request/v1 uk.gov.hmrc.automatedexportsystem.controllers.IE507StubController.submit
 
 POST /message uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController.message
