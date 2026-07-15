@@ -40,10 +40,10 @@ class IE507StubController @Inject() (
   def submit: Action[AnyContent] =
     Action { request =>
 
-      val missingHeaders =
-        RequiredHeaders.filterNot(request.headers.get(_).isDefined)
+      val hasMissingRequiredHeaders =
+        RequiredHeaders.exists(request.headers.get(_).isEmpty)
 
-      if (missingHeaders.nonEmpty)
+      if (hasMissingRequiredHeaders)
         BadRequest("Missing required headers")
       else {
 
