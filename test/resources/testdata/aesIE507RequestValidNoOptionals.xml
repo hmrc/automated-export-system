@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<n2:CC507C xmlns:n2="http://ecs.dgtaxud.ec">
+    <Submission>
+        <submissionId>AH1237HAS</submissionId>
+        <status>ST91823ZX</status>
+        <ExportOperation>
+            <type>1</type>
+            <MRN>26GB0000X6524786A9</MRN>
+            <discrepanciesExist>0</discrepanciesExist>
+            <splitIndicator>0</splitIndicator>
+        </ExportOperation>
+        <CustomsOfficeOfExitActual>
+            <referenceNumber>IEARK100</referenceNumber>
+        </CustomsOfficeOfExitActual>
+    </Submission>
+</n2:CC507C>

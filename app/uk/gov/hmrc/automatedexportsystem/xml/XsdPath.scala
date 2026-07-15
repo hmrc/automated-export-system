@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.errorHandlers
+package uk.gov.hmrc.automatedexportsystem.xml
 
-sealed trait AesError:
-  val value: String = toString
+enum XsdPath(val path: String):
+  case EisIE507XsdPath extends XsdPath("/1.0/schemas/EISSchema.xsd")
+  case AesIE507XsdPath extends XsdPath("/1.0/schemas/AESSchema.xsd")

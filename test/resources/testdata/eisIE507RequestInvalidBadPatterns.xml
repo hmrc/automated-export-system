@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<n1:CC507C xmlns:n1="http://ecs.dgtaxud.ec">
+    <Header>
+        <messageSender>AH1237HAS</messageSender>
+        <messageRecipient>NTA.XI</messageRecipient>
+        <preparationDateAndTime>2026-01-01</preparationDateAndTime>
+        <messageIdentification>12828HAH12</messageIdentification>
+        <messageType>CC507</messageType>
+    </Header>
+    <Body>
+        <ExportOperation>
+            <type>1</type>
+            <MRN>45ABABCDEFGH0789</MRN>
+            <discrepanciesExist>1</discrepanciesExist>
+            <splitIndicator>0</splitIndicator>
+        </ExportOperation>
+        <CustomsOfficeOfExitActual>
+            <referenceNumber>EFX0K19</referenceNumber>
+        </CustomsOfficeOfExitActual>
+    </Body>
+</n1:CC507C>
