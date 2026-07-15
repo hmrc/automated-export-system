@@ -19,7 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{XmlPayloadActionRefiner, XmlValidationActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
-import uk.gov.hmrc.automatedexportsystem.services.IE507XmlValidationService
+import uk.gov.hmrc.automatedexportsystem.services.AesIE507XmlValidationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -29,7 +29,7 @@ import scala.xml.NodeSeq
 class SubmissionController @Inject() (
   cc:                         ControllerComponents,
   xmlPayloadActionRefiner:    XmlPayloadActionRefiner,
-  xmlValidationActionRefiner: XmlValidationActionRefiner[IE507XmlValidationService]
+  xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService]
 ) extends BackendController(cc):
   def message: Action[NodeSeq] =
     Action(parse.xml)

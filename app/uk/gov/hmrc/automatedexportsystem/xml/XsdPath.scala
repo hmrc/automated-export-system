@@ -17,4 +17,5 @@
 package uk.gov.hmrc.automatedexportsystem.xml
 
 enum XsdPath(val path: String):
-  case XsdIE507Path extends XsdPath("/schemas/aesIE507Request.xsd")
+  case EisIE507XsdPath extends XsdPath("/1.0/schemas/EISSchema.xsd")
+  case AesIE507XsdPath extends XsdPath("/1.0/schemas/AESSchema.xsd")

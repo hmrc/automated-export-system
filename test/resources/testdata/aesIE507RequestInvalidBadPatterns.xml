@@ -1,21 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ecs:CC507C xmlns:ecs="http://ecs.dgtaxud.ec">
-    <Header>
-        <messageSender>AH1237HAS</messageSender>
-        <messageRecipient>NTA.XI</messageRecipient>
-        <preparationDateAndTime>2026-01-01</preparationDateAndTime>
-        <messageIdentification>12828HAH12</messageIdentification>
-        <messageType>CC507</messageType>
-    </Header>
-    <Body>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<n2:CC507C xmlns:n2="http://ecs.dgtaxud.ec">
+    <Submission>
+        <submissionId></submissionId>
+        <status></status>
         <ExportOperation>
-            <type>1</type>
-            <MRN>45ABABCDEFGH0789</MRN>
-            <discrepanciesExist>1</discrepanciesExist>
-            <splitIndicator>0</splitIndicator>
+            <type></type>
+            <MRN></MRN>
+            <discrepanciesExist></discrepanciesExist>
+            <splitIndicator></splitIndicator>
         </ExportOperation>
         <CustomsOfficeOfExitActual>
-            <referenceNumber>EFX0K19</referenceNumber>
+            <referenceNumber></referenceNumber>
         </CustomsOfficeOfExitActual>
-    </Body>
-</ecs:CC507C>
+    </Submission>
+</n2:CC507C>

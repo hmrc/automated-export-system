@@ -1,74 +1,117 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ecs:CC507C xmlns:ecs="http://ecs.dgtaxud.ec">
-    <Header>
-        <messageSender>AH1237HAS</messageSender>
-        <messageRecipient>NTA.XI</messageRecipient>
-        <preparationDateAndTime>2026-01-01T00:00:00</preparationDateAndTime>
-        <messageIdentification>12828HAH12</messageIdentification>
-        <messageType>CC507C</messageType>
-    </Header>
-    <Body>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<n2:CC507C xmlns:n2="http://ecs.dgtaxud.ec">
+    <Submission>
+        <submissionId>AH1237HAS</submissionId>
+        <status>ST91823ZX</status>
         <ExportOperation>
             <type>1</type>
-            <MRN>45ABABCDEFGH0789D1</MRN>
-            <discrepanciesExist>1</discrepanciesExist>
+            <MRN>26GB0000X6524786A9</MRN>
+            <discrepanciesExist>0</discrepanciesExist>
             <splitIndicator>0</splitIndicator>
         </ExportOperation>
         <CustomsOfficeOfExitActual>
-            <referenceNumber>EFX0K19G</referenceNumber>
+            <referenceNumber>IEARK100</referenceNumber>
         </CustomsOfficeOfExitActual>
         <GoodsShipment>
             <Consignment>
                 <modeOfTransportAtTheBorder>1</modeOfTransportAtTheBorder>
-                <referenceNumberUCR>4AA09AZ(-//)</referenceNumberUCR>
-                <parentUCRID>GB/AS9-0ZK129J81</parentUCRID>
+                <referenceNumberUCR>6GB536187624189-S458</referenceNumberUCR>
+                <parentUCRID>GB/ABC-12345</parentUCRID>
                 <TransportEquipment>
-                    <sequenceNumber>709</sequenceNumber>
-                    <containerIdentificationNumber>#81237181</containerIdentificationNumber>
-                    <numberOfSeals>9</numberOfSeals>
+                    <sequenceNumber>1</sequenceNumber>
+                    <containerIdentificationNumber>CONT1234567890123</containerIdentificationNumber>
+                    <numberOfSeals>2</numberOfSeals>
                     <Seal>
-                        <sequenceNumber>12</sequenceNumber>
-                        <identifier>X12931293192S</identifier>
+                        <sequenceNumber>1</sequenceNumber>
+                        <identifier>SEAL123</identifier>
+                    </Seal>
+                    <Seal>
+                        <sequenceNumber>2</sequenceNumber>
+                        <identifier>SEAL124</identifier>
                     </Seal>
                     <GoodsReference>
-                        <sequenceNumber>812</sequenceNumber>
-                        <declarationGoodsItemNumber>4122</declarationGoodsItemNumber>
+                        <sequenceNumber>1</sequenceNumber>
+                        <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                    </GoodsReference>
+                    <GoodsReference>
+                        <sequenceNumber>2</sequenceNumber>
+                        <declarationGoodsItemNumber>10</declarationGoodsItemNumber>
+                    </GoodsReference>
+                    <GoodsReference>
+                        <sequenceNumber>3</sequenceNumber>
+                        <declarationGoodsItemNumber>11</declarationGoodsItemNumber>
+                    </GoodsReference>
+                    <GoodsReference>
+                        <sequenceNumber>4</sequenceNumber>
+                        <declarationGoodsItemNumber>12</declarationGoodsItemNumber>
                     </GoodsReference>
                 </TransportEquipment>
                 <LocationOfGoods>
-                    <typeOfLocation>z</typeOfLocation>
+                    <typeOfLocation>A</typeOfLocation>
                     <qualifierOfIdentification>B</qualifierOfIdentification>
-                    <authorisationNumber>J8182381</authorisationNumber>
-                    <additionalIdentifier>AZ89</additionalIdentifier>
-                    <UNLocode>JASJD812</UNLocode>
+                    <authorisationNumber>AUTH12345</authorisationNumber>
+                    <additionalIdentifier>AD01</additionalIdentifier>
+                    <UNLocode>UNLOCODE123</UNLocode>
                 </LocationOfGoods>
                 <ActiveBorderTransportMeans>
-                    <typeOfIdentification>23</typeOfIdentification>
-                    <identificationNumber>AJS81824K</identificationNumber>
+                    <typeOfIdentification>20</typeOfIdentification>
+                    <identificationNumber>IDNUMBER123</identificationNumber>
                     <nationality>GB</nationality>
                 </ActiveBorderTransportMeans>
                 <TransportDocument>
-                    <sequenceNumber>83712</sequenceNumber>
-                    <type>3812</type>
-                    <referenceNumber>AJSDJASDKAK1238138AJSD3145KAJHZH1</referenceNumber>
+                    <sequenceNumber>1</sequenceNumber>
+                    <type>2</type>
+                    <referenceNumber>REF123</referenceNumber>
+                </TransportDocument>
+                <TransportDocument>
+                    <sequenceNumber>2</sequenceNumber>
+                    <type>2</type>
+                    <referenceNumber>REF124</referenceNumber>
                 </TransportDocument>
             </Consignment>
             <GoodsItem>
-                <declarationGoodsItemNumber>42</declarationGoodsItemNumber>
-                <referenceNumberUCR>#1293911</referenceNumberUCR>
+                <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
+                <referenceNumberUCR>4AA09AZ(-//)</referenceNumberUCR>
                 <Commodity>
                     <GoodsMeasure>
-                        <grossMass>189.00</grossMass>
-                        <netMass>150.25</netMass>
+                        <grossMass>1000.500000</grossMass>
+                        <netMass>900.500000</netMass>
                     </GoodsMeasure>
                 </Commodity>
                 <Packaging>
-                    <sequenceNumber>482</sequenceNumber>
-                    <typeOfPackages>XX</typeOfPackages>
-                    <numberOfPackages>981722</numberOfPackages>
-                    <shippingMarks>KLMYAJAS26DH9182371</shippingMarks>
+                    <sequenceNumber>1</sequenceNumber>
+                    <typeOfPackages>PA</typeOfPackages>
+                    <numberOfPackages>10</numberOfPackages>
+                    <shippingMarks>MARKS123</shippingMarks>
+                </Packaging>
+                <Packaging>
+                    <sequenceNumber>2</sequenceNumber>
+                    <typeOfPackages>PA</typeOfPackages>
+                    <numberOfPackages>10</numberOfPackages>
+                    <shippingMarks>MARKS1234</shippingMarks>
+                </Packaging>
+            </GoodsItem>
+            <GoodsItem>
+                <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                <Commodity>
+                    <GoodsMeasure>
+                        <grossMass>1000.500000</grossMass>
+                        <netMass>900.500000</netMass>
+                    </GoodsMeasure>
+                </Commodity>
+                <Packaging>
+                    <sequenceNumber>1</sequenceNumber>
+                    <typeOfPackages>PA</typeOfPackages>
+                    <numberOfPackages>10</numberOfPackages>
+                    <shippingMarks>MARKS123</shippingMarks>
+                </Packaging>
+                <Packaging>
+                    <sequenceNumber>2</sequenceNumber>
+                    <typeOfPackages>PA</typeOfPackages>
+                    <numberOfPackages>10</numberOfPackages>
+                    <shippingMarks>MARKS1234</shippingMarks>
                 </Packaging>
             </GoodsItem>
         </GoodsShipment>
-    </Body>
-</ecs:CC507C>
+    </Submission>
+</n2:CC507C>

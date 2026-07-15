@@ -31,9 +31,12 @@ import scala.xml.{Elem, NodeSeq}
 
 class SubmissionControllerITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuite, EitherValues, OptionValues, DefaultAwaitTimeout:
   "SubmissionController" - {
+
     "should process an incoming POST request to the /message endpoint" - {
+
       "and return a 202 response" - {
-        "when the request contains a IE507 XML body with all optional elements" in {
+
+        "when the request contains a valid AES IE507 XML body with all optional elements" in {
           val requestXml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestValid.xml").value
 
           val request: FakeRequest[NodeSeq] = FakeRequest(HttpVerbs.POST, "/automated-export-system/message")
@@ -46,7 +49,7 @@ class SubmissionControllerITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppP
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
         }
 
-        "when the request contains a IE507 XML body without optional elements" in {
+        "when the request contains an valid AES IE507 XML body without optional elements" in {
           val requestXml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestValidNoOptionals.xml").value
 
           val request: FakeRequest[NodeSeq] = FakeRequest(HttpVerbs.POST, "/automated-export-system/message")
@@ -61,7 +64,9 @@ class SubmissionControllerITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppP
       }
 
       "and return a 400 response" - {
-        "when the request contains a valid XML body that doesn't pass IE507 request schema validation" - {
+
+        "when the request contains a valid XML body that doesn't pass AES IE507 request schema validation" - {
+
           "due to missing required elements" in {
             val requestXml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestInvalidMissingRequired.xml").value
 
@@ -75,19 +80,29 @@ class SubmissionControllerITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppP
                 <message>XML failed schema validation</message>
                 <errors>
                   <error>
-                    <line>7</line>
-                    <column>14</column>
-                    <message>cvc-complex-type.2.4.b: The content of element 'Header' is not complete. One of '{{messageType}}' is expected.</message>
+                    <line>4</line>
+                    <column>26</column>
+                    <message>cvc-complex-type.2.4.a: Invalid content was found starting with element 'ExportOperation'. One of '{{status}}' is expected.</message>
                   </error>
                   <error>
-                    <line>13</line>
-                    <column>27</column>
-                    <message>cvc-complex-type.2.4.b: The content of element 'ExportOperation' is not complete. One of '{{splitIndicator}}' is expected.</message>
+                    <line>6</line>
+                    <column>33</column>
+                    <message>cvc-complex-type.2.4.a: Invalid content was found starting with element 'discrepanciesExist'. One of '{{MRN}}' is expected.</message>
                   </error>
                   <error>
                     <line>15</line>
-                    <column>37</column>
-                    <message>cvc-complex-type.2.4.b: The content of element 'CustomsOfficeOfExitActual' is not complete. One of '{{referenceNumber}}' is expected.</message>
+                    <column>34</column>
+                    <message>cvc-complex-type.2.4.a: Invalid content was found starting with element 'LocationOfGoods'. One of '{{referenceNumberUCR}}' is expected.</message>
+                  </error>
+                  <error>
+                    <line>17</line>
+                    <column>35</column>
+                    <message>cvc-complex-type.2.4.b: The content of element 'LocationOfGoods' is not complete. One of '{{qualifierOfIdentification}}' is expected.</message>
+                  </error>
+                  <error>
+                    <line>33</line>
+                    <column>34</column>
+                    <message>cvc-complex-type.2.4.a: Invalid content was found starting with element 'netMass'. One of '{{grossMass}}' is expected.</message>
                   </error>
                 </errors>
               </errorResponse>
@@ -114,44 +129,74 @@ class SubmissionControllerITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppP
                 <message>XML failed schema validation</message>
                 <errors>
                   <error>
-                    <line>5</line>
-                    <column>68</column>
-                    <message>cvc-pattern-valid: Value '2026-01-01' is not facet-valid with respect to pattern '\d{{4}}-\d{{2}}-\d{{2}}T\d{{2}}:\d{{2}}:\d{{2}}' for type 'UK_PreparationDateAndTimeContentType'.</message>
+                    <line>3</line>
+                    <column>24</column>
+                    <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '.{{1,35}}' for type 'UK_AlphaNumeric35Type'.</message>
                   </error>
                   <error>
-                    <line>5</line>
-                    <column>68</column>
-                    <message>cvc-type.3.1.3: The value '2026-01-01' of element 'preparationDateAndTime' is not valid.</message>
+                    <line>3</line>
+                    <column>24</column>
+                    <message>cvc-type.3.1.3: The value '' of element 'submissionId' is not valid.</message>
+                  </error>
+                  <error>
+                    <line>4</line>
+                    <column>18</column>
+                    <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '.{{1,35}}' for type 'UK_AlphaNumeric35Type'.</message>
+                  </error>
+                  <error>
+                    <line>4</line>
+                    <column>18</column>
+                    <message>cvc-type.3.1.3: The value '' of element 'status' is not valid.</message>
+                  </error>
+                  <error>
+                    <line>6</line>
+                    <column>20</column>
+                    <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '[1-3]{{1}}' for type 'UK_OneToThreeType'.</message>
+                  </error>
+                  <error>
+                    <line>6</line>
+                    <column>20</column>
+                    <message>cvc-type.3.1.3: The value '' of element 'type' is not valid.</message>
                   </error>
                   <error>
                     <line>7</line>
-                    <column>41</column>
-                    <message>cvc-pattern-valid: Value 'CC507' is not facet-valid with respect to pattern 'CC507C' for type 'UK_messageCode507'.</message>
+                    <column>19</column>
+                    <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '([2][4-9]|[3-9][0-9])[A-Z]{{2}}[A-Z0-9]{{12}}[A-E][0-9]' for type 'UK_MRNType'.</message>
                   </error>
                   <error>
                     <line>7</line>
-                    <column>41</column>
-                    <message>cvc-type.3.1.3: The value 'CC507' of element 'messageType' is not valid.</message>
+                    <column>19</column>
+                    <message>cvc-type.3.1.3: The value '' of element 'MRN' is not valid.</message>
+                  </error>
+                  <error>
+                    <line>8</line>
+                    <column>34</column>
+                    <message>cvc-enumeration-valid: Value '' is not facet-valid with respect to enumeration '[0, 1]'. It must be a value from the enumeration.</message>
+                  </error>
+                  <error>
+                    <line>8</line>
+                    <column>34</column>
+                    <message>cvc-type.3.1.3: The value '' of element 'discrepanciesExist' is not valid.</message>
+                  </error>
+                  <error>
+                    <line>9</line>
+                    <column>30</column>
+                    <message>cvc-enumeration-valid: Value '' is not facet-valid with respect to enumeration '[0, 1]'. It must be a value from the enumeration.</message>
+                  </error>
+                  <error>
+                    <line>9</line>
+                    <column>30</column>
+                    <message>cvc-type.3.1.3: The value '' of element 'splitIndicator' is not valid.</message>
                   </error>
                   <error>
                     <line>12</line>
-                    <column>40</column>
-                    <message>cvc-pattern-valid: Value '45ABABCDEFGH0789' is not facet-valid with respect to pattern '([2][4-9]|[3-9][0-9])[A-Z]{{2}}[A-Z0-9]{{12}}[A-E][0-9]' for type 'UK_MRNType'.</message>
+                    <column>31</column>
+                    <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '[A-Z]{{2}}[A-Z0-9]{{6}}' for type 'UK_ReferenceNumberType'.</message>
                   </error>
                   <error>
                     <line>12</line>
-                    <column>40</column>
-                    <message>cvc-type.3.1.3: The value '45ABABCDEFGH0789' of element 'MRN' is not valid.</message>
-                  </error>
-                  <error>
-                    <line>17</line>
-                    <column>55</column>
-                    <message>cvc-pattern-valid: Value 'EFX0K19' is not facet-valid with respect to pattern '[A-Z]{{2}}[A-Z0-9]{{6}}' for type 'UK_ReferenceNumberType'.</message>
-                  </error>
-                  <error>
-                    <line>17</line>
-                    <column>55</column>
-                    <message>cvc-type.3.1.3: The value 'EFX0K19' of element 'referenceNumber' is not valid.</message>
+                    <column>31</column>
+                    <message>cvc-type.3.1.3: The value '' of element 'referenceNumber' is not valid.</message>
                   </error>
                 </errors>
               </errorResponse>

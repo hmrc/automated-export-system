@@ -1,18 +1,46 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ecs:CC507C xmlns:ecs="http://ecs.dgtaxud.ec">
-    <Header>
-        <messageSender>AH1237HAS</messageSender>
-        <messageRecipient>NTA.XI</messageRecipient>
-        <preparationDateAndTime>2026-01-01T00:00:00</preparationDateAndTime>
-        <messageIdentification>12828HAH12</messageIdentification>
-    </Header>
-    <Body>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<n2:CC507C xmlns:n2="http://ecs.dgtaxud.ec">
+    <Submission>
+        <submissionId>AH1237HAS</submissionId>
         <ExportOperation>
             <type>1</type>
-            <MRN>45ABABCDEFGH0789D1</MRN>
-            <discrepanciesExist>1</discrepanciesExist>
+            <discrepanciesExist>0</discrepanciesExist>
+            <splitIndicator>0</splitIndicator>
         </ExportOperation>
         <CustomsOfficeOfExitActual>
+            <referenceNumber>IEARK100</referenceNumber>
         </CustomsOfficeOfExitActual>
-    </Body>
-</ecs:CC507C>
+        <GoodsShipment>
+            <Consignment>
+                <modeOfTransportAtTheBorder>1</modeOfTransportAtTheBorder>
+                <LocationOfGoods>
+                    <typeOfLocation>A</typeOfLocation>
+                </LocationOfGoods>
+                <ActiveBorderTransportMeans>
+                    <typeOfIdentification>20</typeOfIdentification>
+                    <identificationNumber>IDNUMBER123</identificationNumber>
+                </ActiveBorderTransportMeans>
+                <TransportDocument>
+                    <sequenceNumber>1</sequenceNumber>
+                    <type>2</type>
+                    <referenceNumber>REF123</referenceNumber>
+                </TransportDocument>
+            </Consignment>
+            <GoodsItem>
+                <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                <referenceNumberUCR>4AA09AZ(-//)</referenceNumberUCR>
+                <Commodity>
+                    <GoodsMeasure>
+                        <netMass>900.500000</netMass>
+                    </GoodsMeasure>
+                </Commodity>
+                <Packaging>
+                    <sequenceNumber>1</sequenceNumber>
+                    <typeOfPackages>PA</typeOfPackages>
+                    <numberOfPackages>10</numberOfPackages>
+                    <shippingMarks>MARKS123</shippingMarks>
+                </Packaging>
+            </GoodsItem>
+        </GoodsShipment>
+    </Submission>
+</n2:CC507C>

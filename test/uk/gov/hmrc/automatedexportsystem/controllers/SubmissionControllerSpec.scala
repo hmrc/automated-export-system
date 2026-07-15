@@ -30,7 +30,7 @@ import play.api.mvc.{ControllerComponents, Result}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{XmlPayloadActionRefiner, XmlValidationActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
-import uk.gov.hmrc.automatedexportsystem.services.IE507XmlValidationService
+import uk.gov.hmrc.automatedexportsystem.services.AesIE507XmlValidationService
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
@@ -42,9 +42,9 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
 
   val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
 
-  val xmlValidationService: IE507XmlValidationService = mock[IE507XmlValidationService]
+  val xmlValidationService: AesIE507XmlValidationService = mock[AesIE507XmlValidationService]
 
-  val xmlValidationActionRefiner: XmlValidationActionRefiner[IE507XmlValidationService] =
+  val xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
 
   val submissionController: SubmissionController =
@@ -81,6 +81,7 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         }
 
         "that returns a 500 Result" - {
+
           "when applied with a Request containing a valid XML body but XSD schema cannot be found" in {
             val requestXml: Elem =
               <element>I'm valid XML</element>
@@ -113,6 +114,7 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         }
 
         "that returns a 422 Result" - {
+
           "when applied with a Request containing a valid XML body but XSD schema cannot be parsed" in {
             val requestXml: Elem =
               <element>I'm valid XML</element>
@@ -146,7 +148,9 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         }
 
         "that returns a 400 Result" - {
+
           "when applied with a Request containing a valid XML body that doesn't pass IE507 request schema validation" - {
+
             "due to an XmlSchemaValidationError" in {
               val requestXml: Elem =
                 <element>I'm valid XML</element>
