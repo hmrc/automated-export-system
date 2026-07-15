@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.automatedexportsystem.repositories
 
-import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.models.dbDocument.AutomatedExportSystemDocument
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -26,8 +25,7 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class AutomatedExportSystemRepository @Inject() (
-  mongo:     MongoComponent,
-  appConfig: AppConfig
+  mongo: MongoComponent
 )(protected implicit val executionContext: ExecutionContext)
     extends PlayMongoRepository[AutomatedExportSystemDocument](
       collectionName = "aes-records",

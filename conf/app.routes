@@ -12,4 +12,7 @@ GET  /codelists/typeoflocation  uk.gov.hmrc.automatedexportsystem.controllers.Co
 
 
 # POST REQUESTS
+
 POST /cds/aesIE507Request/v1 uk.gov.hmrc.automatedexportsystem.controllers.IE507StubController.submit
+
+POST /message uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController.message
