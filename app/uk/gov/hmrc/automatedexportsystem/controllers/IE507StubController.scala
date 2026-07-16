@@ -21,11 +21,13 @@ import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import play.api.Logging
 
 @Singleton
 class IE507StubController @Inject() (
   val controllerComponents: ControllerComponents
-) extends BaseController {
+) extends BaseController
+    with Logging {
 
   private val RequiredHeaders = Seq(
     "x-forwarded-host",
@@ -33,17 +35,22 @@ class IE507StubController @Inject() (
     "date",
     "content-type",
     "accept",
-    "authorization",
     "x-message-type"
   )
 
   def submit: Action[AnyContent] =
     Action { request =>
+      val hasMissingAuthorizationHeader =
+        request.headers.get("authorization").isEmpty
 
       val hasMissingRequiredHeaders =
         RequiredHeaders.exists(request.headers.get(_).isEmpty)
 
-      if (hasMissingRequiredHeaders)
+      if (hasMissingAuthorizationHeader) {
+        logger.warn("IE507 request rejected: missing authorization header")
+        Unauthorized
+      } else if (hasMissingRequiredHeaders)
+        logger.warn("IE507 request rejected: missing required header")
         BadRequest("Missing required headers")
       else {
 
@@ -52,7 +59,7 @@ class IE507StubController @Inject() (
 
         NoContent.withHeaders(
           "x-correlation-id" -> correlationId,
-          "date" -> DateTimeFormatter.RFC_1123_DATE_TIME
+          "date"             -> DateTimeFormatter.RFC_1123_DATE_TIME
             .format(ZonedDateTime.now())
         )
       }
