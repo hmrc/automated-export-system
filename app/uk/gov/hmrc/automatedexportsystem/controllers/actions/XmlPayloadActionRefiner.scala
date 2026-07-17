@@ -19,7 +19,8 @@ package uk.gov.hmrc.automatedexportsystem.controllers.actions
 import play.api.mvc.{ActionRefiner, AnyContentAsXml, Request, Result}
 import uk.gov.hmrc.automatedexportsystem.errors.RequestError
 import uk.gov.hmrc.automatedexportsystem.models.actions.XmlPayloadRequest
-import uk.gov.hmrc.automatedexportsystem.models.responses.{AesErrorResponse, toErrorResponse}
+import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse
+import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

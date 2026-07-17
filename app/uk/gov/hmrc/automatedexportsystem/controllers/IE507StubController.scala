@@ -39,7 +39,6 @@ class IE507StubController @Inject() (
 
   def submit: Action[AnyContent] =
     Action { request =>
-
       val hasMissingRequiredHeaders =
         RequiredHeaders.exists(request.headers.get(_).isEmpty)
 
@@ -52,7 +51,7 @@ class IE507StubController @Inject() (
 
         NoContent.withHeaders(
           "x-correlation-id" -> correlationId,
-          "date" -> DateTimeFormatter.RFC_1123_DATE_TIME
+          "date"             -> DateTimeFormatter.RFC_1123_DATE_TIME
             .format(ZonedDateTime.now())
         )
       }

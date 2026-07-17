@@ -67,23 +67,22 @@ object AesErrorResponse:
 
   def fromStatusAndCode(status: Int, code: String, message: String): AesErrorResponse =
     AesErrorResponse(status, code, message, None)
+
+  extension (error: AesError)
+    def toErrorResponse: AesErrorResponse =
+      val responseCode: ResponseCode = error.responseCode
+      val errorMessage: String       = error.message
+
+      error match
+        case _: SchemaError =>
+          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
+        case XmlFailedValidationError(errors) =>
+          AesErrorResponse(
+            responseCode.status,
+            responseCode.code,
+            errorMessage,
+            Some(errors.map(AesErrorResponseValidationError.fromXmlSchemaValidationError))
+          )
+        case _: RequestError =>
+          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
 end AesErrorResponse
-
-extension (error: AesError)
-  def toErrorResponse: AesErrorResponse =
-    val responseCode: ResponseCode = error.responseCode
-    val errorMessage: String       = error.message
-
-    error match
-      case _: SchemaError =>
-        AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
-      case XmlFailedValidationError(errors) =>
-        AesErrorResponse(
-          responseCode.status,
-          responseCode.code,
-          errorMessage,
-          Some(errors.map(AesErrorResponseValidationError.fromXmlSchemaValidationError))
-        )
-      case _: RequestError =>
-        AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
-end extension
