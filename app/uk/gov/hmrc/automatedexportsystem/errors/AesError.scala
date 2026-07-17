@@ -21,10 +21,12 @@ import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode.*
 
 import scala.xml.SAXParseException
 
-sealed abstract class AesError(val message: String, val responseCode: ResponseCode, val exception: Option[Exception])
+sealed trait AesError:
+  val message:      String
+  val responseCode: ResponseCode
+  val exception:    Option[Exception]
 
-enum SchemaError(override val message: String, override val responseCode: ResponseCode, override val exception: Option[Exception])
-    extends AesError(message, responseCode, exception):
+enum SchemaError(val message: String, val responseCode: ResponseCode, val exception: Option[Exception]) extends AesError:
   case SchemaNotFoundError(xsdPath: String) extends SchemaError(s"XSD Schema not found: $xsdPath", InternalServerError, None)
   case SchemaParseError(xsdError: SchemaError.XsdStructureError) extends SchemaError("XSD Schema could not be parsed", UnprocessableEntity, None)
 
@@ -42,8 +44,17 @@ object XmlSchemaValidationError:
   def fromSaxe(saxe: SAXParseException): XmlSchemaValidationError =
     XmlSchemaValidationError(saxe.getLineNumber, saxe.getColumnNumber, saxe.getMessage)
 
-case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationError]) extends AesError("XML failed schema validation", BadRequest, None)
+case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationError]) extends AesError:
+  val message:      String            = "XML failed schema validation"
+  val responseCode: ResponseCode      = BadRequest
+  val exception:    Option[Exception] = None
 
-enum RequestError(override val message: String, override val responseCode: ResponseCode, override val exception: Option[Exception])
-    extends AesError(message, responseCode, exception):
+enum RequestError(val message: String, val responseCode: ResponseCode, val exception: Option[Exception]) extends AesError:
   case ExpectedXmlBodyError extends RequestError("The body of the request is not valid XML", UnsupportedMediaType, None)
+
+enum XmlReaderError(val path: String, val message: String) extends AesError:
+  val responseCode: ResponseCode      = BadRequest
+  val exception:    Option[Exception] = None
+
+  case MissingOrEmpty(override val path: String) extends XmlReaderError(path, "Element is empty or missing")
+  case ParseError(override val path: String, override val message: String) extends XmlReaderError(path, message)
