@@ -16,20 +16,28 @@
 
 package uk.gov.hmrc.automatedexportsystem.repositories
 
-import uk.gov.hmrc.automatedexportsystem.models.dbDocument.AutomatedExportSystemDocument
+import com.google.inject.ImplementedBy
+import uk.gov.hmrc.automatedexportsystem.models.aesRequest.{EoriNumber, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
+@ImplementedBy(classOf[AesIE507RepositoryImpl])
+trait AesIE507Repository:
+  def getMessage(eori: EoriNumber): MongoAesIE507Message
+
+  def getMessage(eori: EoriNumber, submissionId: SubmissionId): MongoAesIE507Message
+
 @Singleton
-class AutomatedExportSystemRepository @Inject() (
+class AesIE507RepositoryImpl @Inject() (
   mongo: MongoComponent
 )(protected implicit val executionContext: ExecutionContext)
-    extends PlayMongoRepository[AutomatedExportSystemDocument](
-      collectionName = "aes-records",
+    extends PlayMongoRepository[MongoAesIE507Message](
+      collectionName = "aes-ie507",
       mongoComponent = mongo,
-      domainFormat = AutomatedExportSystemDocument.mongoFormat,
+      domainFormat = MongoAesIE507Message.mongoFormat,
       indexes = Seq.empty
     )
