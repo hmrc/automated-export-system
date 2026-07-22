@@ -1,5 +1,7 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesRequest
 
+import play.api.libs.json.*
+
 case class ExportOperation(
   exportOperationType: ExportOperationType,
   mrn:                 Mrn,
@@ -7,7 +9,5 @@ case class ExportOperation(
   splitIndicator:      SplitIndicator
 )
 
-enum ExportOperationType(val status: Int):
-  case Standard extends ExportOperationType(1)
-  case Amend extends ExportOperationType(2)
-  case Cancel extends ExportOperationType(3)
+object ExportOperation:
+  given mongoFormat: Format[ExportOperation] = Json.format[ExportOperation]
