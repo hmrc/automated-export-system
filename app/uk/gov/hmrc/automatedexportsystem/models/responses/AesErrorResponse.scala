@@ -87,4 +87,6 @@ object AesErrorResponse:
           AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
         case _: XmlReaderError =>
           AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
+        case _: MongoError =>
+          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
 end AesErrorResponse
