@@ -1,3 +1,19 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.automatedexportsystem.models.mongo.write
 
 import cats.data.NonEmptyList
@@ -21,8 +37,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
         _id = id,
         submissionId = SubmissionId("submissionId"),
         eoriNumber = EoriNumber("eoriNumber"),
-        created = instant,
-        lastUpdated = instant,
+        createdAt = instant,
+        updatedAt = instant,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -118,8 +134,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "submissionId" : "submissionId",
           |  "eoriNumber" : "eoriNumber",
-          |  "created" : "2026-07-21T00:00:00Z",
-          |  "lastUpdated" : "2026-07-21T00:00:00Z",
+          |  "createdAt" : "2026-07-21T00:00:00Z",
+          |  "updatedAt" : "2026-07-21T00:00:00Z",
           |  "exportOperation" : {
           |    "exportOperationType" : 1,
           |    "mrn" : "mrn",
@@ -187,8 +203,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
         _id = id,
         submissionId = SubmissionId("submissionId"),
         eoriNumber = EoriNumber("eoriNumber"),
-        created = instant,
-        lastUpdated = instant,
+        createdAt = instant,
+        updatedAt = instant,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -207,8 +223,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "submissionId" : "submissionId",
           |  "eoriNumber" : "eoriNumber",
-          |  "created" : "2026-07-21T00:00:00Z",
-          |  "lastUpdated" : "2026-07-21T00:00:00Z",
+          |  "createdAt" : "2026-07-21T00:00:00Z",
+          |  "updatedAt" : "2026-07-21T00:00:00Z",
           |  "exportOperation" : {
           |    "exportOperationType" : 1,
           |    "mrn" : "mrn",
@@ -226,8 +242,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
         _id = id,
         submissionId = SubmissionId("submissionId"),
         eoriNumber = EoriNumber("eoriNumber"),
-        created = instant,
-        lastUpdated = instant,
+        createdAt = instant,
+        updatedAt = instant,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -323,8 +339,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "submissionId" : "submissionId",
           |  "eoriNumber" : "eoriNumber",
-          |  "created" : "2026-07-21T00:00:00Z",
-          |  "lastUpdated" : "2026-07-21T00:00:00Z",
+          |  "createdAt" : "2026-07-21T00:00:00Z",
+          |  "updatedAt" : "2026-07-21T00:00:00Z",
           |  "exportOperation" : {
           |    "exportOperationType" : 1,
           |    "mrn" : "mrn",
@@ -363,8 +379,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
         _id = id,
         submissionId = SubmissionId("submissionId"),
         eoriNumber = EoriNumber("eoriNumber"),
-        created = instant,
-        lastUpdated = instant,
+        createdAt = instant,
+        updatedAt = instant,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -410,8 +426,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "submissionId" : "submissionId",
           |  "eoriNumber" : "eoriNumber",
-          |  "created" : "2026-07-21T00:00:00Z",
-          |  "lastUpdated" : "2026-07-21T00:00:00Z",
+          |  "createdAt" : "2026-07-21T00:00:00Z",
+          |  "updatedAt" : "2026-07-21T00:00:00Z",
           |  "exportOperation" : {
           |    "exportOperationType" : 1,
           |    "mrn" : "mrn",

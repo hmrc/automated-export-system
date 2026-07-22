@@ -24,9 +24,9 @@ import scala.xml.SAXParseException
 sealed trait AesError:
   val message:      String
   val responseCode: ResponseCode
-  val exception:    Option[Exception]
+  val exception:    Option[Throwable]
 
-enum SchemaError(val message: String, val responseCode: ResponseCode, val exception: Option[Exception]) extends AesError:
+enum SchemaError(val message: String, val responseCode: ResponseCode, val exception: Option[Throwable]) extends AesError:
   case SchemaNotFoundError(xsdPath: String) extends SchemaError(s"XSD Schema not found: $xsdPath", InternalServerError, None)
   case SchemaParseError(xsdError: SchemaError.XsdStructureError) extends SchemaError("XSD Schema could not be parsed", UnprocessableEntity, None)
 
@@ -49,12 +49,16 @@ case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationErro
   val responseCode: ResponseCode      = BadRequest
   val exception:    Option[Exception] = None
 
-enum RequestError(val message: String, val responseCode: ResponseCode, val exception: Option[Exception]) extends AesError:
+enum RequestError(val message: String, val responseCode: ResponseCode, val exception: Option[Throwable]) extends AesError:
   case ExpectedXmlBodyError extends RequestError("The body of the request is not valid XML", UnsupportedMediaType, None)
 
 enum XmlReaderError(val path: String, val message: String) extends AesError:
   val responseCode: ResponseCode      = BadRequest
-  val exception:    Option[Exception] = None
+  val exception:    Option[Throwable] = None
 
   case MissingOrEmpty(override val path: String) extends XmlReaderError(path, "Element is empty or missing")
   case ParseError(override val path: String, override val message: String) extends XmlReaderError(path, message)
+
+enum MongoError(val message: String, val responseCode: ResponseCode, val exception: Option[Throwable]) extends AesError:
+  case DocumentNotFound(details: String) extends MongoError(s"Document not found: $details", BadRequest, None)
+  case UnexpectedError(ex: Throwable) extends MongoError("Unexpected error encountered while performing DB query", InternalServerError, Some(ex))

@@ -16,9 +16,17 @@
 
 package uk.gov.hmrc.automatedexportsystem.config
 
-import javax.inject.{Inject, Singleton}
 import play.api.Configuration
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class AppConfig @Inject() (config: Configuration):
-  val appName: String = config.get[String]("appName")
+  lazy val appName: String = config.get[String]("appName")
+
+  lazy val documentTtl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
+
+  // hardcoded for now; if always true, we can remove this
+  lazy val replaceIndexes: Boolean = config.get[Boolean]("mongodb.replaceIndexes")
+
+  lazy val mongoRetryAttempts: Int = config.get[Int]("mongodb.retryAttempts")
