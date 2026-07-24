@@ -18,10 +18,13 @@ lazy val microservice = Project(appName, file("."))
   .settings(libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test)
   .settings(PlayKeys.playDefaultPort := 5000)
   .settings(CodeCoverageSettings.settings)
-  // needed to eliminate "-Flag set repeatedly" warnings
   .settings(scalacOptions ~= (options => options.distinct))
   .settings(
     addCommandAlias("runTestOnly", "run -Dplay.http.router=testOnlyDoNotUseInAppConf.Routes")
+  )
+ .settings(
+    Test / fork := false,
+    Test / parallelExecution := false,
   )
 
 lazy val it = project
@@ -31,3 +34,8 @@ lazy val it = project
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(scalacOptions ~= (options => options.distinct))
   .settings(DefaultBuildSettings.itSettings())
+  //.settings(
+    // Keep integration tests in-process to avoid ScalaTest SocketReporter broken-pipe errors
+  //  Test / fork := false,
+  //  Test / parallelExecution := false
+ // )

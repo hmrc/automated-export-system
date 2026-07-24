@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package helpers
+package uk.gov.hmrc.automatedexportsystem.helpers
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.Materializer
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.MarkerContext
 import play.api.http.Status
@@ -32,7 +32,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.ExecutionContext
 
 trait BaseSpec
-    extends AnyWordSpec
+    extends AnyFreeSpecLike
     with Matchers
     with DefaultAwaitTimeout
     with MockitoSugar

@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers
 
-import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.{XmlPayloadActionRefiner, XmlValidationActionRefiner}
+import play.api.mvc.{Action, ControllerComponents, EssentialAction}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, XmlPayloadActionRefiner, XmlValidationActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
 import uk.gov.hmrc.automatedexportsystem.services.AesIE507XmlValidationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -28,10 +28,18 @@ import scala.xml.NodeSeq
 @Singleton
 class SubmissionController @Inject() (
   cc:                         ControllerComponents,
+  aesAuthEssentialAction:     AesAuthAction,
   xmlPayloadActionRefiner:    XmlPayloadActionRefiner,
   xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService]
-) extends BackendController(cc):
-  def message: Action[NodeSeq] =
+) extends BackendController(cc) {
+
+  private val xmlValidatedAction: Action[NodeSeq] =
     Action(parse.xml)
       .andThen(xmlPayloadActionRefiner)
-      .andThen(xmlValidationActionRefiner)(_ => Status(ResponseCode.Accepted.status))
+      .andThen(xmlValidationActionRefiner) { _ =>
+        Status(ResponseCode.Accepted.status)
+      }
+
+  def message: EssentialAction =
+    aesAuthEssentialAction(xmlValidatedAction)
+}

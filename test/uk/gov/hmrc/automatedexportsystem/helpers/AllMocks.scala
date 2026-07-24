@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-package helpers
+package uk.gov.hmrc.automatedexportsystem.helpers
 
 import org.mockito.Mockito.reset
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 
 trait AllMocks extends MockitoSugar with BeforeAndAfterEach:
   me: org.scalatest.Suite =>
-  val mockAppConfig: AppConfig = mock[AppConfig]
+  val mockAppConfig:     AppConfig     = mock[AppConfig]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
   abstract override protected def beforeEach(): Unit =
     super.beforeEach()
 
     Seq[AnyRef](
-      mockAppConfig
+      mockAppConfig,
+      mockAuthConnector
     ).foreach(reset(_))
