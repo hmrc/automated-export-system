@@ -20,13 +20,14 @@ import cats.data.NonEmptyList
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 
 import java.time.Instant
 import java.util.UUID
 
-class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
+class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, ScalaCheckDrivenPropertyChecks, MongoAesIE507MessageGenerator:
   object TestData:
     val id: UUID = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
 
@@ -543,6 +544,15 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
               TestData.mongoAesIE507MessageNoObjOptionalsJson
           }
         }
+      }
+
+      "should read and write" - {
+
+        "successfully" in forAll((mongoAesIE507Message: MongoAesIE507Message) =>
+          val json: JsValue = MongoAesIE507Message.mongoFormat.writes(mongoAesIE507Message)
+
+          MongoAesIE507Message.mongoFormat.reads(json).asEither.value shouldBe mongoAesIE507Message
+        )
       }
     }
   }
