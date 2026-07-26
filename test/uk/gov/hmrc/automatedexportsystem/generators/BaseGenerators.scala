@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models
+package uk.gov.hmrc.automatedexportsystem.generators
 
 import cats.data.NonEmptyList
 import org.scalacheck.{Arbitrary, Gen}
@@ -27,9 +27,12 @@ trait BaseGenerators:
     // realistic ~10 years offset
     val maxOffset: Long = 315360000L
 
+    val minSeconds: Long = Instant.EPOCH.getEpochSecond
+    val maxSeconds: Long = minSeconds + maxOffset * 10
+
     Arbitrary {
       for
-        seconds <- Gen.choose(Instant.EPOCH.getEpochSecond, Instant.MAX.getEpochSecond - maxOffset)
+        seconds <- Gen.choose(minSeconds, maxSeconds)
         instant1 = Instant.ofEpochSecond(seconds)
         offset <- Gen.choose(minOffset, maxOffset)
         instant2 = instant1.plusSeconds(offset)

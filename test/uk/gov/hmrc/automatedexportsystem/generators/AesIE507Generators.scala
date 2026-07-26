@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.aesIE507
+package uk.gov.hmrc.automatedexportsystem.generators
 
 import cats.data.NonEmptyList
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
-import uk.gov.hmrc.automatedexportsystem.models.BaseGenerators
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 
 import java.util.UUID
@@ -29,6 +29,7 @@ trait AesIE507Generators extends BaseGenerators:
     Arbitrary {
       arbitrary[UUID].map(SubmissionId.apply)
     }
+
   given eoriNumberArb: Arbitrary[EoriNumber] =
     Arbitrary {
       Gen.asciiStr.map(EoriNumber.apply)
@@ -240,12 +241,12 @@ trait AesIE507Generators extends BaseGenerators:
 
   given grossMassArb: Arbitrary[GrossMass] =
     Arbitrary {
-      arbitrary[BigDecimal].map(GrossMass.apply)
+      arbitrary[Double].map(d => GrossMass.apply(BigDecimal(d)))
     }
 
   given netMassArb: Arbitrary[NetMass] =
     Arbitrary {
-      arbitrary[BigDecimal].map(NetMass.apply)
+      arbitrary[Double].map(d => NetMass.apply(BigDecimal(d)))
     }
 
   given commodityArb: Arbitrary[Commodity] =
