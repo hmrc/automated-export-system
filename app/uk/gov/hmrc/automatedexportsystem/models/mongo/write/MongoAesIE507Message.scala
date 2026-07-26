@@ -17,14 +17,12 @@
 package uk.gov.hmrc.automatedexportsystem.models.mongo.write
 
 import play.api.libs.json.{Format, Json, OFormat}
-import uk.gov.hmrc.automatedexportsystem.models.aesRequest.*
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 
 import java.time.Instant
-import java.util.UUID
 
 case class MongoAesIE507Message(
-  _id:                       UUID,
-  submissionId:              SubmissionId,
+  _id:                       SubmissionId,
   eoriNumber:                EoriNumber,
   createdAt:                 Instant,
   updatedAt:                 Instant,

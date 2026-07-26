@@ -21,7 +21,7 @@ import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.automatedexportsystem.models.aesRequest.*
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 
 import java.time.Instant
 import java.util.UUID
@@ -34,8 +34,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
 
     val mongoAesIE507MessageAllFields: MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = id,
-        submissionId = SubmissionId("submissionId"),
+        _id = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
         createdAt = instant,
         updatedAt = instant,
@@ -132,7 +131,6 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
       Json.parse("""
           |{
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
-          |  "submissionId" : "submissionId",
           |  "eoriNumber" : "eoriNumber",
           |  "createdAt" : "2026-07-21T00:00:00Z",
           |  "updatedAt" : "2026-07-21T00:00:00Z",
@@ -200,8 +198,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
 
     val mongoAesIE507MessageNoOptionalGoodsShipment: MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = id,
-        submissionId = SubmissionId("submissionId"),
+        _id = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
         createdAt = instant,
         updatedAt = instant,
@@ -221,7 +218,6 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
       Json.parse("""
           |{
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
-          |  "submissionId" : "submissionId",
           |  "eoriNumber" : "eoriNumber",
           |  "createdAt" : "2026-07-21T00:00:00Z",
           |  "updatedAt" : "2026-07-21T00:00:00Z",
@@ -239,8 +235,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
 
     val mongoAesIE507MessageNoObjOptionals: MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = id,
-        submissionId = SubmissionId("submissionId"),
+        _id = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
         createdAt = instant,
         updatedAt = instant,
@@ -337,7 +332,6 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
       Json.parse("""
           |{
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
-          |  "submissionId" : "submissionId",
           |  "eoriNumber" : "eoriNumber",
           |  "createdAt" : "2026-07-21T00:00:00Z",
           |  "updatedAt" : "2026-07-21T00:00:00Z",
@@ -376,8 +370,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
 
     val mongoAesIE507MessageEmptyLists: MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = id,
-        submissionId = SubmissionId("submissionId"),
+        _id = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
         createdAt = instant,
         updatedAt = instant,
@@ -424,7 +417,6 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
       Json.parse("""
           |{
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
-          |  "submissionId" : "submissionId",
           |  "eoriNumber" : "eoriNumber",
           |  "createdAt" : "2026-07-21T00:00:00Z",
           |  "updatedAt" : "2026-07-21T00:00:00Z",
