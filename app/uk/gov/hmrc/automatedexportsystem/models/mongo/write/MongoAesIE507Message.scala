@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.mongo.write
 
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 
 import java.time.Instant
@@ -32,4 +32,6 @@ case class MongoAesIE507Message(
 )
 
 object MongoAesIE507Message:
+  import uk.gov.hmrc.automatedexportsystem.models.formats.MongoFormats.mongoDateInstantFormat
+
   val mongoFormat: Format[MongoAesIE507Message] = Json.format[MongoAesIE507Message]

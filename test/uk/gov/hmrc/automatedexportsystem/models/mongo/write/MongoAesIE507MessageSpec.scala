@@ -31,14 +31,14 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
   object TestData:
     val id: UUID = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
 
-    val instant: Instant = Instant.parse("2026-07-21T00:00:00.000Z")
+    val instant: Long = Instant.parse("2026-07-21T00:00:00.000Z").toEpochMilli
 
     val mongoAesIE507MessageAllFields: MongoAesIE507Message =
       MongoAesIE507Message(
         _id = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
-        createdAt = instant,
-        updatedAt = instant,
+        createdAt = Instant.ofEpochMilli(instant),
+        updatedAt = Instant.ofEpochMilli(instant),
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -129,12 +129,20 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
       )
 
     val mongoAesIE507MessageAllFieldsJson: JsValue =
-      Json.parse("""
+      Json.parse(s"""
           |{
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "eoriNumber" : "eoriNumber",
-          |  "createdAt" : "2026-07-21T00:00:00Z",
-          |  "updatedAt" : "2026-07-21T00:00:00Z",
+          |  "createdAt" : {
+          |    "$$date" : {
+          |      "$$numberLong" : "$instant"
+          |    }
+          |  },
+          |  "updatedAt" : {
+          |    "$$date" : {
+          |      "$$numberLong" : "$instant"
+          |    }
+          |  },
           |  "exportOperation" : {
           |    "exportOperationType" : 1,
           |    "mrn" : "mrn",
@@ -201,8 +209,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
       MongoAesIE507Message(
         _id = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
-        createdAt = instant,
-        updatedAt = instant,
+        createdAt = Instant.ofEpochMilli(instant),
+        updatedAt = Instant.ofEpochMilli(instant),
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -216,12 +224,20 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
       )
 
     val mongoAesIE507MessageNoOptionalGoodsShipmentJson: JsValue =
-      Json.parse("""
+      Json.parse(s"""
           |{
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "eoriNumber" : "eoriNumber",
-          |  "createdAt" : "2026-07-21T00:00:00Z",
-          |  "updatedAt" : "2026-07-21T00:00:00Z",
+          |  "createdAt" : {
+          |    "$$date" : {
+          |      "$$numberLong" : "$instant"
+          |    }
+          |  },
+          |  "updatedAt" : {
+          |    "$$date" : {
+          |      "$$numberLong" : "$instant"
+          |    }
+          |  },
           |  "exportOperation" : {
           |    "exportOperationType" : 1,
           |    "mrn" : "mrn",
@@ -238,8 +254,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
       MongoAesIE507Message(
         _id = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
-        createdAt = instant,
-        updatedAt = instant,
+        createdAt = Instant.ofEpochMilli(instant),
+        updatedAt = Instant.ofEpochMilli(instant),
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -330,12 +346,20 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
       )
 
     val mongoAesIE507MessageNoObjOptionalsJson: JsValue =
-      Json.parse("""
+      Json.parse(s"""
           |{
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "eoriNumber" : "eoriNumber",
-          |  "createdAt" : "2026-07-21T00:00:00Z",
-          |  "updatedAt" : "2026-07-21T00:00:00Z",
+          |  "createdAt" : {
+          |    "$$date" : {
+          |      "$$numberLong" : "$instant"
+          |    }
+          |  },
+          |  "updatedAt" : {
+          |    "$$date" : {
+          |      "$$numberLong" : "$instant"
+          |    }
+          |  },
           |  "exportOperation" : {
           |    "exportOperationType" : 1,
           |    "mrn" : "mrn",
@@ -373,8 +397,8 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
       MongoAesIE507Message(
         _id = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
-        createdAt = instant,
-        updatedAt = instant,
+        createdAt = Instant.ofEpochMilli(instant),
+        updatedAt = Instant.ofEpochMilli(instant),
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -415,12 +439,20 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
       )
 
     val mongoAesIE507MessageEmptyListsJson: JsValue =
-      Json.parse("""
+      Json.parse(s"""
           |{
           |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "eoriNumber" : "eoriNumber",
-          |  "createdAt" : "2026-07-21T00:00:00Z",
-          |  "updatedAt" : "2026-07-21T00:00:00Z",
+          |  "createdAt" : {
+          |    "$$date" : {
+          |      "$$numberLong" : "$instant"
+          |    }
+          |  },
+          |  "updatedAt" : {
+          |    "$$date" : {
+          |      "$$numberLong" : "$instant"
+          |    }
+          |  },
           |  "exportOperation" : {
           |    "exportOperationType" : 1,
           |    "mrn" : "mrn",
