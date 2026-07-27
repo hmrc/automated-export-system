@@ -22,7 +22,7 @@ import com.mongodb.client.model.{IndexModel, IndexOptions}
 import org.apache.pekko.pattern.RetrySupport
 import org.mongodb.scala.AggregateObservable
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.{Filters, Indexes}
+import org.mongodb.scala.model.{Aggregates, Filters, Indexes}
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
@@ -61,7 +61,7 @@ class AesIE507RepositoryImpl @Inject() (
         IndexModel(
           Indexes.compoundIndex(
             Indexes.ascending("eoriNumber"),
-            Indexes.ascending("submissionId")
+            Indexes.ascending("_id")
           )
         )
       )
@@ -69,7 +69,7 @@ class AesIE507RepositoryImpl @Inject() (
       AesIE507Repository,
       Logging:
   def getMessages(eori: EoriNumber): EitherT[Future, MongoError, Seq[MongoAesIE507Message]] =
-    val filter: Bson = Filters.eq("eoriNumber", eori.value)
+    val filter: Bson = Aggregates.filter(Filters.eq("eoriNumber", eori.value))
 
     val pipeline: Seq[Bson] = Seq(filter)
 
@@ -81,15 +81,14 @@ class AesIE507RepositoryImpl @Inject() (
             Left(MongoError.DocumentNotFound(s"No documents found for EORI: ${eori.value}"))
           case seq => Right(seq)
         }
-        .recover { case NonFatal(ex) =>
-          Left(MongoError.UnexpectedError(ex))
-        }
     )
 
   def getMessage(eori: EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message] =
-    val filter: Bson = Filters.and(
-      Filters.eq("eoriNumber", eori.value),
-      Filters.eq("submissionId", submissionId.value)
+    val filter: Bson = Aggregates.filter(
+      Filters.and(
+        Filters.eq("eoriNumber", eori.value),
+        Filters.eq("_id", submissionId.value.toString)
+      )
     )
 
     val pipeline: Seq[Bson] = Seq(filter)
@@ -108,15 +107,24 @@ class AesIE507RepositoryImpl @Inject() (
     )
 
   private def retryPipeline[T: ClassTag, R](
-    pipeline: => Seq[Bson]
+    pipeline: Seq[Bson]
   )(transform: AggregateObservable[T] => Future[Either[MongoError, R]]): EitherT[Future, MongoError, R] = {
     def func(): Future[Either[MongoError, R]] =
       transform(collection.aggregate[T](pipeline))
 
     EitherT(
-      RetrySupport.retry(
-        attempt = func,
-        attempts = appConfig.mongoRetryAttempts
-      )
+      RetrySupport
+        .retry(
+          attempt = func,
+          attempts = appConfig.mongoRetryAttempts
+        )
+        .recover { case NonFatal(ex) =>
+          logger.error(
+            s"Aggregation pipeline ${pipeline.mkString} failed after" +
+              s" ${appConfig.mongoRetryAttempts + 1} attempts with error: $ex"
+          )
+
+          Left(MongoError.UnexpectedError(ex))
+        }
     )
   }
