@@ -26,7 +26,6 @@ class AppConfig @Inject() (config: Configuration):
 
   lazy val documentTtl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
 
-  // hardcoded for now; if always true, we can remove this
   lazy val replaceIndexes: Boolean = config.get[Boolean]("mongodb.replaceIndexes")
 
   lazy val mongoRetryAttempts: Int = config.get[Int]("mongodb.retryAttempts")
