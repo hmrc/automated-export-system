@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.config
+package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
-import play.api.Configuration
+import cats.data.NonEmptyList
+import play.api.libs.json.{Format, Json}
 
-import javax.inject.{Inject, Singleton}
+final case class GoodsItem(
+  declarationGoodsItemNumber: Option[DeclarationGoodsItemNumber],
+  commodity:                  Commodity,
+  packaging:                  Option[NonEmptyList[Packaging]]
+)
 
-@Singleton
-class AppConfig @Inject() (config: Configuration):
-  lazy val appName: String = config.get[String]("appName")
-
-  lazy val documentTtl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
-
-  lazy val replaceIndexes: Boolean = config.get[Boolean]("mongodb.replaceIndexes")
-
-  lazy val mongoRetryAttempts: Int = config.get[Int]("mongodb.retryAttempts")
+object GoodsItem:
+  import uk.gov.hmrc.automatedexportsystem.models.formats.NonEmptyListFormat.nonEmptyListFormat
+  given mongoFormat: Format[GoodsItem] = Json.format[GoodsItem]

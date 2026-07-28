@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.config
+package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
-import play.api.Configuration
+import play.api.libs.json.{Format, Json}
 
-import javax.inject.{Inject, Singleton}
+final case class DeclarationGoodsItemNumber(value: Int) extends AnyVal
 
-@Singleton
-class AppConfig @Inject() (config: Configuration):
-  lazy val appName: String = config.get[String]("appName")
-
-  lazy val documentTtl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
-
-  lazy val replaceIndexes: Boolean = config.get[Boolean]("mongodb.replaceIndexes")
-
-  lazy val mongoRetryAttempts: Int = config.get[Int]("mongodb.retryAttempts")
+object DeclarationGoodsItemNumber:
+  given mongoFormat: Format[DeclarationGoodsItemNumber] = Json.valueFormat[DeclarationGoodsItemNumber]

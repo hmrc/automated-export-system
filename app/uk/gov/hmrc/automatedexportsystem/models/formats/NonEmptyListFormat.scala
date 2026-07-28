@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.config
+package uk.gov.hmrc.automatedexportsystem.models.formats
 
-import play.api.Configuration
+import cats.data.NonEmptyList
+import play.api.libs.json.*
 
-import javax.inject.{Inject, Singleton}
+object NonEmptyListFormat:
+  given nonEmptyListReads[T: Reads]: Reads[NonEmptyList[T]] =
+    Reads.list[T].flatMapResult {
+      case head :: next => JsSuccess(NonEmptyList(head, next))
+      case Nil          => JsError("error.expected.nonemptylist")
+    }
 
-@Singleton
-class AppConfig @Inject() (config: Configuration):
-  lazy val appName: String = config.get[String]("appName")
+  given nonEmptyListWrites[T: Writes]: Writes[NonEmptyList[T]] =
+    Writes.list[T].contramap(_.toList)
 
-  lazy val documentTtl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
-
-  lazy val replaceIndexes: Boolean = config.get[Boolean]("mongodb.replaceIndexes")
-
-  lazy val mongoRetryAttempts: Int = config.get[Int]("mongodb.retryAttempts")
+  given nonEmptyListFormat[T: Format]: Format[NonEmptyList[T]] =
+    Format(nonEmptyListReads, nonEmptyListWrites)

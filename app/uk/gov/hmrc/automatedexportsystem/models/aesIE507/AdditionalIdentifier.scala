@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.dbDocument
+package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
-import play.api.libs.json._
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+import play.api.libs.json.{Format, Json}
 
-import java.time.Instant
+final case class AdditionalIdentifier(value: String) extends AnyVal
 
-final case class AutomatedExportSystemDocument(createdAt: Instant)
-
-object AutomatedExportSystemDocument:
-  implicit val instantFormat: Format[Instant]                        = MongoJavatimeFormats.instantFormat
-  implicit val mongoFormat:   OFormat[AutomatedExportSystemDocument] = Json.format[AutomatedExportSystemDocument]
+object AdditionalIdentifier:
+  given mongoFormat: Format[AdditionalIdentifier] = Json.valueFormat[AdditionalIdentifier]
