@@ -51,6 +51,8 @@ case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationErro
 
 enum RequestError(val message: String, val responseCode: ResponseCode, val exception: Option[Throwable]) extends AesError:
   case ExpectedXmlBodyError extends RequestError("The body of the request is not valid XML", UnsupportedMediaType, None)
+  case MissingContentTypeHeader extends RequestError("Request Content-Type header is missing", UnsupportedMediaType, None)
+  case ContentTypeNotUtf8Error extends RequestError("Request Content-Type charset is not UTF-8", UnsupportedMediaType, None)
 
 enum XmlReaderError(val path: String, val message: String) extends AesError:
   val responseCode: ResponseCode      = BadRequest

@@ -18,6 +18,7 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 
 import play.api.mvc.{Action, ControllerComponents, EssentialAction}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
+import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
 import uk.gov.hmrc.automatedexportsystem.services.AesIE507XmlValidationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -31,11 +32,11 @@ class SubmissionController @Inject() (
   aesAuthEssentialAction:     AesAuthAction,
   aesAuthRequestRefiner:      AesAuthRequestRefiner,
   xmlPayloadActionRefiner:    XmlPayloadActionRefiner,
-  xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService]
-) extends BackendController(cc) {
-
+  xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService],
+  xmlBodyParsers:             XmlBodyParsers
+) extends BackendController(cc):
   private val xmlValidatedAction: Action[NodeSeq] =
-    Action(parse.xml)
+    Action(xmlBodyParsers.utf8)
       .andThen(aesAuthRequestRefiner)
       .andThen(xmlPayloadActionRefiner)
       .andThen(xmlValidationActionRefiner) { _ =>
@@ -44,4 +45,3 @@ class SubmissionController @Inject() (
 
   def message: EssentialAction =
     aesAuthEssentialAction(xmlValidatedAction)
-}

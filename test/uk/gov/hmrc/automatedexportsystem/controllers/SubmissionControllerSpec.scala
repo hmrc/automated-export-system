@@ -23,11 +23,12 @@ import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.when
 import org.scalatest.EitherValues
 import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
-import play.api.mvc.{Action, BodyParsers, ControllerComponents, EssentialAction, Result}
+import play.api.mvc.*
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
+import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.services.AesIE507XmlValidationService
@@ -52,16 +53,18 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
           next(rh.addAttr(AesAuthAttr.Eori, "GB123456789000"))
         }
 
-  val parser: BodyParsers.Default = mock[BodyParsers.Default]
-  val aesRefiner = new AesAuthRequestRefiner(parser)
+  val aesAuthRequestRefiner: AesAuthRequestRefiner = new AesAuthRequestRefiner
+
+  val xmlBodyParsers: XmlBodyParsers = XmlBodyParsers(controllerComponents.parsers)
 
   val submissionController: SubmissionController =
     SubmissionController(
       controllerComponents,
       aesAuthAction,
-      aesRefiner,
+      aesAuthRequestRefiner,
       xmlPayloadActionRefiner,
-      xmlValidationActionRefiner
+      xmlValidationActionRefiner,
+      xmlBodyParsers
     )
 
   "SubmissionController" - {

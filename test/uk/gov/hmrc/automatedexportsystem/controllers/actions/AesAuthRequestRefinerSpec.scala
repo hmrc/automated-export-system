@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
-import play.api.mvc.{AnyContentAsEmpty, BodyParsers, Request}
+import play.api.mvc.{AnyContentAsEmpty, Request}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseSpec
@@ -24,10 +24,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 class AesAuthRequestRefinerSpec extends BaseSpec:
-
-  private val parser: BodyParsers.Default = mock[BodyParsers.Default]
-
-  private val refiner = new AesAuthRequestRefiner(parser)
+  private val refiner = new AesAuthRequestRefiner
 
   "AesAuthRequestRefiner.refine" - {
 
