@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 
-import play.api.mvc.{ActionRefiner, AnyContentAsXml, Request, Result}
+import play.api.mvc.{ActionRefiner, AnyContentAsXml, Result}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthRequest
 import uk.gov.hmrc.automatedexportsystem.errors.RequestError
 import uk.gov.hmrc.automatedexportsystem.models.actions.XmlPayloadRequest
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse
@@ -27,14 +28,16 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.NodeSeq
 
 @Singleton
-class XmlPayloadActionRefiner @Inject() ()(using protected val executionContext: ExecutionContext) extends ActionRefiner[Request, XmlPayloadRequest]:
-  protected def refine[A](request: Request[A]): Future[Either[Result, XmlPayloadRequest[A]]] =
+class XmlPayloadActionRefiner @Inject() ()(using protected val executionContext: ExecutionContext)
+    extends ActionRefiner[AesAuthRequest, XmlPayloadRequest]:
+
+  protected def refine[A](authRequest: AesAuthRequest[A]): Future[Either[Result, XmlPayloadRequest[A]]] =
     Future.successful(
-      request.body match
+      authRequest.body match
         case xml: NodeSeq =>
-          Right(XmlPayloadRequest(xml, request))
+          Right(XmlPayloadRequest(xml, authRequest.request, authRequest.eori))
         case anyContentAsXml: AnyContentAsXml =>
-          Right(XmlPayloadRequest(anyContentAsXml.xml, request))
+          Right(XmlPayloadRequest(anyContentAsXml.xml, authRequest.request, authRequest.eori))
         case _ =>
           val error:         RequestError     = RequestError.ExpectedXmlBodyError
           val errorResponse: AesErrorResponse = error.toErrorResponse

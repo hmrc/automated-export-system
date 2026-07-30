@@ -23,10 +23,11 @@ import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.when
 import org.scalatest.EitherValues
 import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
-import play.api.mvc.{Action, ControllerComponents, EssentialAction, Result}
+import play.api.mvc.{Action, BodyParsers, ControllerComponents, EssentialAction, Result}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, XmlPayloadActionRefiner, XmlValidationActionRefiner}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.services.AesIE507XmlValidationService
@@ -43,17 +44,22 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
   val xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
+
   val aesAuthAction: AesAuthAction =
     new AesAuthAction(mockAuthConnector)(ec, materializer):
       override def apply(next: Action[scala.xml.NodeSeq]): EssentialAction =
         EssentialAction { rh =>
-          next(rh)
+          next(rh.addAttr(AesAuthAttr.Eori, "GB123456789000"))
         }
+
+  val parser: BodyParsers.Default = mock[BodyParsers.Default]
+  val aesRefiner = new AesAuthRequestRefiner(parser)
 
   val submissionController: SubmissionController =
     SubmissionController(
       controllerComponents,
       aesAuthAction,
+      aesRefiner,
       xmlPayloadActionRefiner,
       xmlValidationActionRefiner
     )
@@ -72,6 +78,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
             val request: FakeRequest[NodeSeq] =
               FakeRequest(HttpVerbs.POST, "/dummy/path")
+                .withHeaders("content-type" -> "application/xml")
                 .withBody(requestXml)
 
             when(xmlValidationService.validate(eqTo(requestXml))).thenReturn(EitherT(Future.successful(Right(()))))
@@ -92,6 +99,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
             val request: FakeRequest[NodeSeq] =
               FakeRequest(HttpVerbs.POST, "/dummy/path")
+                .withHeaders("content-type" -> "application/xml")
                 .withBody(requestXml)
 
             val schemaError: SchemaError = SchemaError.SchemaNotFoundError("/schemas/dummy.xsd")
@@ -125,6 +133,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
             val request: FakeRequest[NodeSeq] =
               FakeRequest(HttpVerbs.POST, "/dummy/path")
+                .withHeaders("content-type" -> "application/xml")
                 .withBody(requestXml)
 
             val schemaError: SchemaError =
@@ -161,6 +170,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
               val request: FakeRequest[NodeSeq] =
                 FakeRequest(HttpVerbs.POST, "/dummy/path")
+                  .withHeaders("content-type" -> "application/xml")
                   .withBody(requestXml)
 
               val xmlFailedValidationError: XmlFailedValidationError =

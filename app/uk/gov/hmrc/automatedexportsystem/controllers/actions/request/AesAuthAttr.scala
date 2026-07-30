@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.actions
+package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
-import play.api.mvc.{Request, WrappedRequest}
+import play.api.libs.typedmap.TypedKey
 
-import scala.xml.NodeSeq
-
-final case class XmlPayloadRequest[T](xml: NodeSeq, request: Request[T], eori: String) extends WrappedRequest(request)
+object AesAuthAttr {
+  val Eori: TypedKey[String] = TypedKey[String]("authenticated-eori")
+}

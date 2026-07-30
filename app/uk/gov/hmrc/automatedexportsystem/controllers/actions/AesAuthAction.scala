@@ -16,53 +16,84 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 import org.apache.pekko.stream.Materializer
+import play.api.Logging
 import play.api.libs.streams.Accumulator
 import play.api.mvc.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment, Enrolments}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import scala.xml.NodeSeq
 
 class AesAuthAction @Inject() (
   val authConnector: AuthConnector
 )(implicit ec: ExecutionContext, materializer: Materializer)
     extends AuthorisedFunctions
     with BackendHeaderCarrierProvider
-    with Results {
+    with Results
+    with Logging {
 
-  def apply(next: Action[scala.xml.NodeSeq]): EssentialAction =
+  private object AuthConstants {
+    val AuthorizationHeader = "Authorization"
+    val EnrolmentKey        = "HMRC-CUS-ORG"
+    val EoriIdentifierKey   = "EORINumber"
+  }
+
+  def apply(next: Action[NodeSeq]): EssentialAction =
     EssentialAction { requestHeader =>
-      val hasAuthHeader = requestHeader.headers.get("Authorization").exists(_.trim.nonEmpty)
-
-      if (!hasAuthHeader) {
-        Accumulator.done(Unauthorized)
+      if (!hasAuthorizationHeader(requestHeader)) {
+        Accumulator.done(unauthorisedResult)
       } else {
         implicit val headerCarrier: HeaderCarrier = hc(requestHeader)
 
         Accumulator.flatten {
-          authorised(Enrolment("HMRC-CUS-ORG"))
-            .retrieve(Retrievals.allEnrolments) { enrolments =>
-              val maybeEori =
-                enrolments
-                  .getEnrolment("HMRC-CUS-ORG")
-                  .flatMap(_.getIdentifier("EORINumber"))
-                  .map(_.value)
-
-              maybeEori match {
-                case Some(_) =>
-                  Future.successful(next(requestHeader))
-                case None =>
-                  Future.successful(Accumulator.done(Unauthorized))
-              }
-            }
-            .recover { case NonFatal(_) =>
-              Accumulator.done(Unauthorized)
-            }
+          authoriseAndExtractEori(requestHeader).map {
+            case Right(eori) =>
+              next(requestHeader.addAttr(AesAuthAttr.Eori, eori))
+            case Left(result) =>
+              Accumulator.done(result)
+          }
         }
       }
     }
+
+  private def hasAuthorizationHeader(requestHeader: RequestHeader): Boolean =
+    requestHeader.headers
+      .get(AuthConstants.AuthorizationHeader)
+      .exists(_.trim.nonEmpty)
+
+  private def authoriseAndExtractEori(
+    requestHeader: RequestHeader
+  )(implicit hc: HeaderCarrier): Future[Either[Result, String]] =
+    authorised(Enrolment(AuthConstants.EnrolmentKey))
+      .retrieve(Retrievals.allEnrolments) { enrolments =>
+        Future.successful {
+          extractEori(enrolments) match {
+            case Some(eori) => Right(eori)
+            case None       =>
+              logger.warn(s"EORI missing for authorised request [path=${requestHeader.path}]")
+              Left(unauthorisedResult)
+          }
+        }
+      }
+      .recover { case NonFatal(e) =>
+        logger.warn(
+          s"Authorisation failed [path=${requestHeader.path}, message=${e.getMessage}]",
+          e
+        )
+        Left(unauthorisedResult)
+      }
+
+  private def extractEori(enrolments: Enrolments): Option[String] =
+    enrolments
+      .getEnrolment(AuthConstants.EnrolmentKey)
+      .flatMap(_.getIdentifier(AuthConstants.EoriIdentifierKey))
+      .map(_.value)
+
+  private def unauthorisedResult: Result = Unauthorized
 }

@@ -25,6 +25,7 @@ import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
 import play.api.mvc.*
 import play.api.mvc.Results.Status
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthRequest
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
@@ -34,6 +35,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
 
   val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
 
+  val eori = "some-eori"
   "XmlPayloadActionRefiner" - {
 
     ".invokeBlock" - {
@@ -57,7 +59,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
             FakeRequest(HttpVerbs.GET, "/dummy/path")
               .withBody(xml)
 
-          val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(request, successfulBlockNodeSeq)
+          val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(AesAuthRequest(eori, request), successfulBlockNodeSeq)
 
           Helpers.status(result)         shouldBe StatusValues.OK
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
@@ -71,7 +73,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
             FakeRequest(HttpVerbs.GET, "/dummy/path")
               .withXmlBody(xml)
 
-          val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(request, successfulBlockAnyContent)
+          val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(AesAuthRequest(eori, request), successfulBlockAnyContent)
 
           Helpers.status(result)         shouldBe StatusValues.OK
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
@@ -84,7 +86,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
             FakeRequest(HttpVerbs.GET, "/dummy/path")
               .withTextBody(text)
 
-          val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(request, successfulBlockAnyContent)
+          val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(AesAuthRequest(eori, request), successfulBlockAnyContent)
 
           val expectedXmlBodyErrorResponseXml: Elem =
             <errorResponse>
