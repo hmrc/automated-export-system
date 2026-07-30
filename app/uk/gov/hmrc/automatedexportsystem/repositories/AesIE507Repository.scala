@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.repositories
 
-import cats.data.EitherT
+import cats.data.{EitherT, NonEmptyList}
 import com.google.inject.ImplementedBy
 import com.mongodb.client.model.{IndexModel, IndexOptions}
 import org.apache.pekko.pattern.RetrySupport
@@ -39,7 +39,7 @@ import scala.util.control.NonFatal
 
 @ImplementedBy(classOf[AesIE507RepositoryImpl])
 trait AesIE507Repository:
-  def getMessages(eori: EoriNumber): EitherT[Future, MongoError, Seq[MongoAesIE507Message]]
+  def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507Message]]
 
   def getMessage(eori: EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message]
 
@@ -68,7 +68,7 @@ class AesIE507RepositoryImpl @Inject() (
     ),
       AesIE507Repository,
       Logging:
-  def getMessages(eori: EoriNumber): EitherT[Future, MongoError, Seq[MongoAesIE507Message]] =
+  def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507Message]] =
     val filter: Bson = Aggregates.filter(Filters.eq("eoriNumber", eori.value))
 
     val pipeline: Seq[Bson] = Seq(filter)
@@ -79,7 +79,7 @@ class AesIE507RepositoryImpl @Inject() (
         .map {
           case seq if seq.isEmpty =>
             Left(MongoError.DocumentNotFound(s"No documents found for EORI: ${eori.value}"))
-          case seq => Right(seq)
+          case seq => Right(NonEmptyList(seq.head, seq.tail.toList))
         }
     )
 

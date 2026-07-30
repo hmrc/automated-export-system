@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.repositories
 
+import cats.data.NonEmptyList
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.{Filters, Indexes}
 import org.scalacheck.Arbitrary.arbitrary
@@ -96,11 +97,11 @@ class AesIE507RepositorySpec
 
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: Seq[MongoAesIE507Message] =
+          val messages: NonEmptyList[MongoAesIE507Message] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
           messages.length shouldBe 1
-          messages        shouldBe mongoAesIE507MessagesMatchingEori
+          messages.toList shouldBe mongoAesIE507MessagesMatchingEori
         }
 
         "when there are multiple documents in the collection with that eori" in {
@@ -115,11 +116,11 @@ class AesIE507RepositorySpec
 
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: Seq[MongoAesIE507Message] =
+          val messages: NonEmptyList[MongoAesIE507Message] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
           messages.length shouldBe 5
-          messages          should contain theSameElementsAs mongoAesIE507MessagesMatchingEori
+          messages.toList   should contain theSameElementsAs mongoAesIE507MessagesMatchingEori
         }
       }
 
