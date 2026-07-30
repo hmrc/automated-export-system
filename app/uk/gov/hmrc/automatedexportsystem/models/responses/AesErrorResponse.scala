@@ -74,8 +74,6 @@ object AesErrorResponse:
       val errorMessage: String       = error.message
 
       error match
-        case _: SchemaError =>
-          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
         case XmlFailedValidationError(errors) =>
           AesErrorResponse(
             responseCode.status,
@@ -83,10 +81,5 @@ object AesErrorResponse:
             errorMessage,
             Some(errors.map(AesErrorResponseValidationError.fromXmlSchemaValidationError))
           )
-        case _: RequestError =>
-          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
-        case _: XmlReaderError =>
-          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
-        case _: MongoError =>
-          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
+        case _ => AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
 end AesErrorResponse

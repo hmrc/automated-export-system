@@ -34,4 +34,5 @@ sealed abstract class XmlValidationService(xsdPath: XsdPath)(using ExecutionCont
 @Singleton
 class EisIE507XmlValidationService @Inject() ()(using ExecutionContext) extends XmlValidationService(XsdPath.EisIE507XsdPath)
 
+@Singleton
 class AesIE507XmlValidationService @Inject() ()(using ExecutionContext) extends XmlValidationService(XsdPath.AesIE507XsdPath)
