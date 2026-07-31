@@ -21,4 +21,4 @@ import play.api.mvc.{Request, WrappedRequest}
 import scala.annotation.unused
 import scala.xml.NodeSeq
 
-final case class ValidatedXmlRequest[T](@unused validatedXml: NodeSeq, request: Request[T]) extends WrappedRequest(request)
+final case class ValidatedXmlRequest[T](@unused validatedXml: NodeSeq, request: Request[T], eori: String) extends WrappedRequest(request)

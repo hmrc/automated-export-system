@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package helpers
+package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
-import org.mockito.Mockito.reset
-import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar
-import uk.gov.hmrc.automatedexportsystem.config.AppConfig
+import play.api.libs.typedmap.TypedKey
 
-trait AllMocks extends MockitoSugar with BeforeAndAfterEach:
-  me: org.scalatest.Suite =>
-  val mockAppConfig: AppConfig = mock[AppConfig]
-
-  abstract override protected def beforeEach(): Unit =
-    super.beforeEach()
-
-    Seq[AnyRef](
-      mockAppConfig
-    ).foreach(reset(_))
+object AesAuthAttr {
+  val Eori: TypedKey[String] = TypedKey[String]("authenticated-eori")
+}

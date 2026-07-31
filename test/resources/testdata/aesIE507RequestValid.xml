@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<n2:CC507C xmlns:n2="http://ecs.dgtaxud.ec">
-    <Submission>
+    <aes:Submission xmlns:aes="http://ecs.dgtaxud.ec">
         <submissionId>AH1237HAS</submissionId>
         <status>ST91823ZX</status>
         <ExportOperation>
@@ -113,5 +112,4 @@
                 </Packaging>
             </GoodsItem>
         </GoodsShipment>
-    </Submission>
-</n2:CC507C>
+    </aes:Submission>

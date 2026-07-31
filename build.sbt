@@ -23,6 +23,10 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     addCommandAlias("runTestOnly", "run -Dplay.http.router=testOnlyDoNotUseInAppConf.Routes")
   )
+ .settings(
+    Test / fork := false,
+    Test / parallelExecution := false,
+  )
 
 lazy val it = project
   // gives the `it` project access to the `microservice` project's Test and Compile dependencies and source code
@@ -31,3 +35,4 @@ lazy val it = project
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(scalacOptions ~= (options => options.distinct))
   .settings(DefaultBuildSettings.itSettings())
+

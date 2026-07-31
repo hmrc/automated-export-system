@@ -42,7 +42,9 @@ class XmlValidationActionRefiner[T <: XmlValidationService] @Inject() (xmlValida
 
             errorResponse.toResult
           },
-          _ => ValidatedXmlRequest(xml, request)
+          _ =>
+            val eori = request.eori
+            ValidatedXmlRequest(xml, request, eori)
         )
         .value
 

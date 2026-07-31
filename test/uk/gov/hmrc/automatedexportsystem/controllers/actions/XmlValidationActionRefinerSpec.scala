@@ -45,6 +45,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
   val xmlValidationActionRefiner: XmlValidationActionRefiner[XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
 
+  val eori = "some-eori"
+
   "XmlValidationActionRefiner" - {
 
     ".invokeBlock" - {
@@ -61,7 +63,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
           val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
 
-          val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request)
+          val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
 
           when(xmlValidationService.validate(eqTo(xml))).thenReturn(EitherT(Future.successful(Right(()))))
 
@@ -79,7 +81,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
 
-            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request)
+            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
 
             val schemaError: SchemaError = SchemaError.SchemaNotFoundError("/schemas/dummy.xsd")
 
@@ -108,7 +110,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
 
-            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request)
+            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
 
             val schemaError: SchemaError = SchemaError.SchemaParseError(SchemaError.XsdStructureError(1, 1, "Bad parse error"))
 
@@ -137,7 +139,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
 
-            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request)
+            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
 
             val xmlFailedValidationError: XmlFailedValidationError =
               XmlFailedValidationError(
@@ -180,7 +182,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
 
-            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request)
+            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
 
             val xmlFailedValidationError: XmlFailedValidationError =
               XmlFailedValidationError(

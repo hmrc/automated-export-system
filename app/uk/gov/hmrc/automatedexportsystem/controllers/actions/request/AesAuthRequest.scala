@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.actions
+package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
 import play.api.mvc.{Request, WrappedRequest}
 
-import scala.xml.NodeSeq
-
-final case class XmlPayloadRequest[T](xml: NodeSeq, request: Request[T], eori: String) extends WrappedRequest(request)
+case class AesAuthRequest[A](eori: String, request: Request[A]) extends WrappedRequest[A](request)

@@ -13,16 +13,14 @@
 	<!--================================================================================-->
 	<!--===== Root Element                                                                    -->
 	<!--================================================================================-->
-	<xs:element name="CC507C" type="CC507CType"/>
+	<xs:element name="Submission" type="SubmissionType"/>
 	<!--================================================================================-->
 	<!--===== Root Element Content                                                            -->
 	<!--================================================================================-->
-	<xs:complexType name="CC507CType">
-		<xs:sequence>
-			<xs:element name="Submission" minOccurs="1" maxOccurs="1">
-				<xs:complexType>
+	<xs:complexType name="SubmissionType">
+
 					<xs:sequence>
-						<xs:element name="submissionId"  type="UK_AlphaNumeric35Type" minOccurs="1" maxOccurs="1">
+						<xs:element name="submissionId"  type="UK_AlphaNumeric35Type" minOccurs="0" maxOccurs="1">
 							<xs:annotation>
 								<xs:appinfo source="urn:hmrc:error-key">SUBMISSION_ID</xs:appinfo>
 								<xs:documentation>
@@ -502,7 +500,4 @@
 						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
 </xs:schema>

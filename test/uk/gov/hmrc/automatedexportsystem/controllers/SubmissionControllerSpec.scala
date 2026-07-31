@@ -22,22 +22,20 @@ import org.apache.pekko.util.ByteString
 import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.when
 import org.scalatest.EitherValues
-import org.scalatest.freespec.AnyFreeSpecLike
-import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
-import play.api.mvc.{ControllerComponents, Result}
-import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.{XmlPayloadActionRefiner, XmlValidationActionRefiner}
+import play.api.mvc.{Action, BodyParsers, ControllerComponents, EssentialAction, Result}
+import play.api.test.{FakeRequest, Helpers}
+import uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
+import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.services.AesIE507XmlValidationService
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
 
-class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, DefaultAwaitTimeout, MockitoSugar:
-  given ec: ExecutionContext = ExecutionContext.global
-
+class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents(executionContext = ec)
 
   val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
@@ -47,9 +45,21 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
   val xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
 
+  val aesAuthAction: AesAuthAction =
+    new AesAuthAction(mockAuthConnector)(ec, materializer):
+      override def apply(next: Action[scala.xml.NodeSeq]): EssentialAction =
+        EssentialAction { rh =>
+          next(rh.addAttr(AesAuthAttr.Eori, "GB123456789000"))
+        }
+
+  val parser: BodyParsers.Default = mock[BodyParsers.Default]
+  val aesRefiner = new AesAuthRequestRefiner(parser)
+
   val submissionController: SubmissionController =
     SubmissionController(
       controllerComponents,
+      aesAuthAction,
+      aesRefiner,
       xmlPayloadActionRefiner,
       xmlValidationActionRefiner
     )
@@ -68,11 +78,12 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
 
             val request: FakeRequest[NodeSeq] =
               FakeRequest(HttpVerbs.POST, "/dummy/path")
+                .withHeaders("content-type" -> "application/xml")
                 .withBody(requestXml)
 
             when(xmlValidationService.validate(eqTo(requestXml))).thenReturn(EitherT(Future.successful(Right(()))))
 
-            val result: Future[Result] = submissionController.message.apply(request)
+            val result: Future[Result] = Helpers.call(submissionController.message, request)
 
             Helpers.status(result)         shouldBe StatusValues.ACCEPTED
             Helpers.contentType(result)    shouldBe None
@@ -88,6 +99,7 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
 
             val request: FakeRequest[NodeSeq] =
               FakeRequest(HttpVerbs.POST, "/dummy/path")
+                .withHeaders("content-type" -> "application/xml")
                 .withBody(requestXml)
 
             val schemaError: SchemaError = SchemaError.SchemaNotFoundError("/schemas/dummy.xsd")
@@ -95,7 +107,7 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
             when(xmlValidationService.validate(eqTo(requestXml)))
               .thenReturn(EitherT(Future.successful(Left(schemaError))))
 
-            val result: Future[Result] = submissionController.message.apply(request)
+            val result: Future[Result] = Helpers.call(submissionController.message, request)
 
             val schemaNotFoundErrorResponseXml: Elem =
               <errorResponse>
@@ -121,6 +133,7 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
 
             val request: FakeRequest[NodeSeq] =
               FakeRequest(HttpVerbs.POST, "/dummy/path")
+                .withHeaders("content-type" -> "application/xml")
                 .withBody(requestXml)
 
             val schemaError: SchemaError =
@@ -129,7 +142,7 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
             when(xmlValidationService.validate(eqTo(requestXml)))
               .thenReturn(EitherT(Future.successful(Left(schemaError))))
 
-            val result: Future[Result] = submissionController.message.apply(request)
+            val result: Future[Result] = Helpers.call(submissionController.message, request)
 
             val schemaParseErrorResponseXml: Elem =
               <errorResponse>
@@ -157,6 +170,7 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
 
               val request: FakeRequest[NodeSeq] =
                 FakeRequest(HttpVerbs.POST, "/dummy/path")
+                  .withHeaders("content-type" -> "application/xml")
                   .withBody(requestXml)
 
               val xmlFailedValidationError: XmlFailedValidationError =
@@ -169,7 +183,7 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
               when(xmlValidationService.validate(eqTo(requestXml)))
                 .thenReturn(EitherT(Future.successful(Left(xmlFailedValidationError))))
 
-              val result: Future[Result] = submissionController.message.apply(request)
+              val result: Future[Result] = Helpers.call(submissionController.message, request)
 
               val xmlFailedValidationErrorResponseXml: Elem =
                 <errorResponse>
@@ -215,7 +229,7 @@ class SubmissionControllerSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
               when(xmlValidationService.validate(eqTo(requestXml)))
                 .thenReturn(EitherT(Future.successful(Left(xmlFailedValidationError))))
 
-              val result: Future[Result] = submissionController.message.apply(request)
+              val result: Future[Result] = Helpers.call(submissionController.message, request)
 
               val xmlFailedValidationErrorResponseXml: Elem =
                 <errorResponse>
