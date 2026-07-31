@@ -26,7 +26,7 @@ import scala.xml.*
 
 final case class AesErrorResponse(status: Int, code: String, message: String, errors: Option[NonEmptyList[AesErrorResponseValidationError]]):
   def toXml: Elem =
-    val errorNodes: Option[Seq[Node]] =
+    val errorNodes: Option[List[Elem]] =
       errors.map(nel =>
         nel
           .map(err => <error>

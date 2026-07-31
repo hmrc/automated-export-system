@@ -19,9 +19,17 @@ package uk.gov.hmrc.automatedexportsystem.models.responses
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 
+import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, ZoneOffset}
+import scala.xml.{Elem, NodeSeq}
 
-final case class SubmissionSummaryList(submissions: List[SubmissionSummary])
+final case class SubmissionSummaryList(submissions: List[SubmissionSummary]):
+  def toXml: Elem =
+    val submissionSummaryListXml: List[Elem] = submissions.map(_.toXml)
+
+    <Submissions>
+      {submissionSummaryListXml}
+    </Submissions>
 
 final case class SubmissionSummary(
   submissionId:     SubmissionId,
@@ -30,7 +38,19 @@ final case class SubmissionSummary(
   officeOfExitCode: ReferenceNumber,
   updatedAt:        LocalDateTime,
   status:           ExportOperationType
-)
+):
+  def toXml: Elem =
+    val maybeDucrXml: NodeSeq =
+      ducr.map(ucr => <ducr>{ucr.value}</ducr>).getOrElse(NodeSeq.Empty)
+
+    <Submission>
+      <submissionId>{submissionId.value}</submissionId>
+      <mrn>{mrn.value}</mrn>
+      {maybeDucrXml}
+      <officeOfExitCode>{officeOfExitCode.value}</officeOfExitCode>
+      <updatedAt>{updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)}</updatedAt>
+      <status>{status.status}</status>
+    </Submission>
 
 object SubmissionSummary:
   def fromMongoAesIE507Message(message: MongoAesIE507Message): SubmissionSummary =
