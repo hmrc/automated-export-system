@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.actions
+package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
 import play.api.mvc.{Request, WrappedRequest}
 
-import scala.annotation.unused
 import scala.xml.NodeSeq
 
-final case class ValidatedXmlRequest[T](@unused validatedXml: NodeSeq, request: Request[T], eori: String) extends WrappedRequest(request)
+final case class XmlPayloadRequest[T](xml: NodeSeq, request: Request[T], eori: String) extends WrappedRequest(request)

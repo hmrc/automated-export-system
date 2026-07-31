@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 
 import play.api.mvc.{ActionRefiner, Result}
-import uk.gov.hmrc.automatedexportsystem.models.actions.{ValidatedXmlRequest, XmlPayloadRequest}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{ValidatedXmlRequest, XmlPayloadRequest}
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.services.XmlValidationService
