@@ -16,31 +16,49 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers
 
+import cats.data.{EitherT, NonEmptyList}
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlEqualTo}
 import helpers.XmlOps
 import org.apache.pekko.util.ByteString
+import org.mockito.Mockito.when
 import org.scalatest.EitherValues
 import org.scalatest.EitherValues.convertEitherToValuable
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.{HeaderNames, HttpVerbs, MimeTypes, Status as StatusValues}
-import play.api.mvc.Result
+import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.{FakeRequest, Helpers}
+import play.api.{Application, inject}
 import test.uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
+import uk.gov.hmrc.automatedexportsystem.errors.MongoError
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
+import uk.gov.hmrc.automatedexportsystem.repositories.{AesIE507Repository, AesIE507RepositoryImpl}
 
+import java.time.{Instant, LocalDateTime}
+import java.util.UUID
 import scala.concurrent.Future
 import scala.xml.{Elem, NodeSeq}
 
-class SubmissionControllerITSpec extends BaseISpec:
+class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
+  val aesIE507Repository: AesIE507RepositoryImpl = app.injector.instanceOf[AesIE507RepositoryImpl]
+
+  override def beforeEach(): Unit =
+    super.beforeEach()
+    await(aesIE507Repository.collection.drop().head())
 
   trait Setup {
+    val eori: String = "GB123456789000"
+
     val authSuccessPayload: String =
-      """{
+      s"""{
         |  "allEnrolments": [
         |    {
         |      "key": "HMRC-CUS-ORG",
         |      "identifiers": [
         |        {
         |          "key": "EORINumber",
-        |          "value": "GB123456789000"
+        |          "value": "$eori"
         |        }
         |      ],
         |      "state": "Activated"
@@ -48,16 +66,160 @@ class SubmissionControllerITSpec extends BaseISpec:
         |  ]
         |}""".stripMargin
 
+    val id1: UUID = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+
+    val id2: UUID = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
+
+    val instant: Instant = Instant.parse("2026-08-03T00:00:00.000Z")
+
+    val dateTime: LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
+
+    val mongoAesIE507Message1: MongoAesIE507Message =
+      MongoAesIE507Message(
+        _id = SubmissionId(id1),
+        eoriNumber = EoriNumber(eori),
+        createdAt = instant,
+        updatedAt = instant,
+        exportOperation = ExportOperation(
+          exportOperationType = ExportOperationType.Standard,
+          mrn = Mrn("mrn"),
+          discrepanciesExist = DiscrepanciesExist(false),
+          splitIndicator = SplitIndicator(true)
+        ),
+        customsOfficeOfExitActual = CustomsOfficeOfExitActual(
+          referenceNumber = ReferenceNumber("referenceNumber")
+        ),
+        goodsShipment = Some(
+          GoodsShipment(
+            consignment = Consignment(
+              modeOfTransportAtBorder = Some(ModeOfTransportAtBorder(1)),
+              referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
+              parentUcrId = Some(ParentUcrId("parentUcrId")),
+              transportEquipment = Some(
+                NonEmptyList.one(
+                  TransportEquipment(
+                    sequenceNumber = Some(SequenceNumber(1)),
+                    containerIdentificationNumber = Some(ContainerIdentificationNumber(1)),
+                    numberOfSeals = Some(NumberOfSeals(1))
+                  )
+                )
+              ),
+              seal = Some(
+                NonEmptyList.one(
+                  Seal(
+                    sequenceNumber = Some(SequenceNumber(1)),
+                    sealIdentifier = Some(SealIdentifier("sealIdentifier"))
+                  )
+                )
+              ),
+              goodsReference = Some(
+                NonEmptyList.one(
+                  GoodsReference(
+                    sequenceNumber = Some(SequenceNumber(1)),
+                    declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1))
+                  )
+                )
+              ),
+              locationOfGoods = LocationOfGoods(
+                typeOfLocation = TypeOfLocation("typeOfLocation"),
+                qualifierOfIdentification = QualifierOfIdentification("qualifierIdentification"),
+                authorisationNumber = Some(AuthorisationNumber("authorisationNumber")),
+                additionalIdentifier = Some(AdditionalIdentifier("additionalIdentifier")),
+                unLocode = Some(UnLocode("unLocode"))
+              ),
+              activeBorderTransportMeans = Some(
+                ActiveBorderTransportMeans(
+                  typeOfIdentification = Some(TypeOfIdentification("typeOfIdentification")),
+                  identificationNumber = Some(IdentificationNumber("identificationNumber")),
+                  nationality = Some(Nationality("nationality"))
+                )
+              ),
+              transportDocument = Some(
+                NonEmptyList.one(
+                  TransportDocument(
+                    sequenceNumber = Some(SequenceNumber(1)),
+                    transportDocumentType = Some(TransportDocumentType(1)),
+                    referenceNumber = Some(ReferenceNumber("referenceNumber"))
+                  )
+                )
+              )
+            ),
+            goodsItem = Some(
+              NonEmptyList.one(
+                GoodsItem(
+                  declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1)),
+                  commodity = Commodity(
+                    grossMass = GrossMass(100.55),
+                    netMass = NetMass(80.45)
+                  ),
+                  packaging = Some(
+                    NonEmptyList.one(
+                      Packaging(
+                        sequenceNumber = Some(SequenceNumber(1)),
+                        typeOfPackages = Some(TypeOfPackages("typeOfPackages")),
+                        numberOfPackages = Some(NumberOfPackages(1)),
+                        shippingMarks = Some(ShippingMarks("shippingMarks"))
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+
+    val mongoAesIE507Message2: MongoAesIE507Message =
+      MongoAesIE507Message(
+        _id = SubmissionId(id2),
+        eoriNumber = EoriNumber(eori),
+        createdAt = instant,
+        updatedAt = instant,
+        exportOperation = ExportOperation(
+          exportOperationType = ExportOperationType.Standard,
+          mrn = Mrn("mrn"),
+          discrepanciesExist = DiscrepanciesExist(false),
+          splitIndicator = SplitIndicator(true)
+        ),
+        customsOfficeOfExitActual = CustomsOfficeOfExitActual(
+          referenceNumber = ReferenceNumber("referenceNumber")
+        ),
+        goodsShipment = None
+      )
+
+    val submissionSummary1: SubmissionSummary =
+      SubmissionSummary(
+        submissionId = SubmissionId(id1),
+        mrn = Mrn("mrn"),
+        ducr = Some(ReferenceNumberUcr("referenceNumberUcr")),
+        officeOfExitCode = ReferenceNumber("referenceNumber"),
+        updatedAt = dateTime,
+        status = ExportOperationType.Standard
+      )
+
+    val submissionSummary2: SubmissionSummary =
+      SubmissionSummary(
+        submissionId = SubmissionId(id2),
+        mrn = Mrn("mrn"),
+        ducr = None,
+        officeOfExitCode = ReferenceNumber("referenceNumber"),
+        updatedAt = dateTime,
+        status = ExportOperationType.Standard
+      )
+
+    val submissionSummaryList: SubmissionSummaryList =
+      SubmissionSummaryList(List(submissionSummary1, submissionSummary2))
   }
 
   "SubmissionController" - {
 
-    "should process an incoming POST request to the /message endpoint" - {
+    "should handle an incoming POST request to the /message endpoint" - {
 
       "and return a 202 response" - {
 
         "when the request contains a valid AES IE507 XML body with all optional elements" in new Setup {
           val requestXml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestValid.xml").value
+
           stubFor(
             post(urlEqualTo("/auth/authorise"))
               .willReturn(
@@ -67,6 +229,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                   .withBody(authSuccessPayload)
               )
           )
+
           val request: FakeRequest[NodeSeq] = FakeRequest(HttpVerbs.POST, "/automated-export-system/message")
             .withHeaders(
               HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
@@ -83,6 +246,7 @@ class SubmissionControllerITSpec extends BaseISpec:
 
         "when the request contains an valid AES IE507 XML body without optional elements" in new Setup {
           val requestXml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestValidNoOptionals.xml").value
+
           stubFor(
             post(urlEqualTo("/auth/authorise"))
               .willReturn(
@@ -92,6 +256,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                   .withBody(authSuccessPayload)
               )
           )
+
           val request: FakeRequest[NodeSeq] = FakeRequest(HttpVerbs.POST, "/automated-export-system/message")
             .withHeaders(
               HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
@@ -122,6 +287,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                     .withBody(authSuccessPayload)
                 )
             )
+
             val request: FakeRequest[NodeSeq] = FakeRequest(HttpVerbs.POST, "/automated-export-system/message")
               .withHeaders(
                 HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
@@ -184,6 +350,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                     .withBody(authSuccessPayload)
                 )
             )
+
             val request: FakeRequest[NodeSeq] = FakeRequest(HttpVerbs.POST, "/automated-export-system/message")
               .withHeaders(
                 HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
@@ -277,6 +444,150 @@ class SubmissionControllerITSpec extends BaseISpec:
             Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
             Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
             XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
+          }
+        }
+      }
+    }
+
+    "should handle an incoming GET request to the /submissions endpoint" - {
+
+      "and return a 200 response" - {
+
+        "when the request contains a valid EORI" - {
+
+          "and there are submissions found with that EORI" in new Setup {
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
+            )
+
+            await(aesIE507Repository.collection.insertMany(Seq(mongoAesIE507Message1, mongoAesIE507Message2)).head())
+
+            val request: FakeRequest[AnyContentAsEmpty.type] =
+              FakeRequest(HttpVerbs.GET, "/automated-export-system/submissions")
+                .withHeaders(
+                  HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
+                  "X-Session-ID"            -> "some-session-id"
+                )
+
+            val submissionSummaryListXml: Elem =
+              <Submissions>
+                <Submission>
+                  <submissionId>
+                    {id1}
+                  </submissionId>
+                  <mrn>mrn</mrn>
+                  <ducr>referenceNumberUcr</ducr>
+                  <officeOfExitCode>referenceNumber</officeOfExitCode>
+                  <updatedAt>2026-08-03T00:00:00</updatedAt>
+                  <status>1</status>
+                </Submission>
+                <Submission>
+                  <submissionId>
+                    {id2}
+                  </submissionId>
+                  <mrn>mrn</mrn>
+                  <officeOfExitCode>referenceNumber</officeOfExitCode>
+                  <updatedAt>2026-08-03T00:00:00</updatedAt>
+                  <status>1</status>
+                </Submission>
+              </Submissions>
+
+            val result:        Future[Result] = Helpers.route(app, request).value
+            val resultContent: String         = Helpers.contentAsString(result)
+            val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
+
+            Helpers.status(result)               shouldBe StatusValues.OK
+            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionSummaryListXml).toString
+          }
+
+          "and there are no submissions found with that EORI" in new Setup {
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
+            )
+
+            val request: FakeRequest[AnyContentAsEmpty.type] =
+              FakeRequest(HttpVerbs.GET, "/automated-export-system/submissions")
+                .withHeaders(
+                  HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
+                  "X-Session-ID"            -> "some-session-id"
+                )
+
+            val submissionSummaryListXml: Elem =
+              <Submissions>
+              </Submissions>
+
+            val result:        Future[Result] = Helpers.route(app, request).value
+            val resultContent: String         = Helpers.contentAsString(result)
+            val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
+
+            Helpers.status(result)               shouldBe StatusValues.OK
+            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionSummaryListXml).toString
+          }
+        }
+      }
+
+      "and return a 500 response" - {
+
+        "when the request contains a valid EORI" in new Setup {
+          val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
+
+          val app: Application = guiceApplicationBuilder
+            .overrides(
+              inject.bind[AesIE507Repository].toInstance(aesIE507Repository)
+            )
+            .build()
+
+          stubFor(
+            post(urlEqualTo("/auth/authorise"))
+              .willReturn(
+                aResponse()
+                  .withStatus(200)
+                  .withHeader("Content-Type", "application/json")
+                  .withBody(authSuccessPayload)
+              )
+          )
+
+          val mongoUnexpectedError: MongoError = MongoError.UnexpectedError(RuntimeException("Unexpected error"))
+
+          when(aesIE507Repository.getMessages(EoriNumber(eori)))
+            .thenReturn(EitherT(Future.successful(Left(mongoUnexpectedError))))
+
+          val request: FakeRequest[AnyContentAsEmpty.type] =
+            FakeRequest(HttpVerbs.GET, "/automated-export-system/submissions")
+              .withHeaders(
+                HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
+                "X-Session-ID"            -> "some-session-id"
+              )
+
+          val submissionRetrievalFailureXml: Elem =
+            <errorResponse>
+              <status>500</status>
+              <code>INTERNAL_SERVER_ERROR</code>
+              <message>Submission retrieval failed for EORI: GB123456789000</message>
+            </errorResponse>
+
+          Helpers.running(app) {
+            val result:        Future[Result] = Helpers.route(app, request).value
+            val resultContent: String         = Helpers.contentAsString(result)
+            val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
+
+            Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
+            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionRetrievalFailureXml).toString
           }
         }
       }

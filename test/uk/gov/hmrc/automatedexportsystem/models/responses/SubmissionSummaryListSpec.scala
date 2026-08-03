@@ -33,7 +33,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
 
     val submissionSummary: SubmissionSummary =
       SubmissionSummary(
-        submissionId = SubmissionId(TestData.id),
+        submissionId = SubmissionId(id),
         mrn = Mrn("mrn"),
         ducr = Some(ReferenceNumberUcr("referenceNumberUcr")),
         officeOfExitCode = ReferenceNumber("referenceNumber"),
@@ -43,7 +43,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
 
     val submissionSummaryNoDucr: SubmissionSummary =
       SubmissionSummary(
-        submissionId = SubmissionId(TestData.id),
+        submissionId = SubmissionId(id),
         mrn = Mrn("mrn"),
         ducr = None,
         officeOfExitCode = ReferenceNumber("referenceNumber"),

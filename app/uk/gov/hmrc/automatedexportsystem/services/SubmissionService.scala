@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SubmissionService @Inject() (aesIE507Repository: AesIE507Repository)(using ExecutionContext):
-  def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList] = {
+  def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList] =
     val submissionSummaryListResult: EitherT[Future, MongoError, SubmissionSummaryList] =
       aesIE507Repository
         .getMessages(eoriNumber)
@@ -49,10 +49,10 @@ class SubmissionService @Inject() (aesIE507Repository: AesIE507Repository)(using
           Future.successful(
             Left(
               SubmissionServiceError.SubmissionRetrieveFailure(
-                s"Submission retrieval failed for EORI: $eoriNumber"
+                s"Submission retrieval failed for EORI: ${eoriNumber.value}"
               )
             )
           )
         )
     }
-  }
+  end getSubmissions

@@ -95,7 +95,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
           val error: SubmissionServiceError =
             SubmissionServiceError.SubmissionRetrieveFailure(
-              s"Submission retrieval failed for EORI: $eoriNumber"
+              s"Submission retrieval failed for EORI: ${eoriNumber.value}"
             )
 
           val result: SubmissionServiceError =
