@@ -30,6 +30,7 @@ import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.response.SubmissionListItem
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.util.UUID
@@ -57,6 +58,13 @@ class AesIE507RepositorySpec
     val submissionId: SubmissionId = SubmissionId(UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317"))
     val eoriNumber:   EoriNumber   = EoriNumber("eoriNumber")
 
+    extension (mongoAesIE507MessageGen: Gen[MongoAesIE507Message])
+      def withEori(eoriNumber: EoriNumber): Gen[MongoAesIE507Message] =
+        mongoAesIE507MessageGen.map(_.copy(eoriNumber = eoriNumber))
+
+      def withSubmissionId(submissionId: SubmissionId): Gen[MongoAesIE507Message] =
+        mongoAesIE507MessageGen.map(_.copy(submissionId = submissionId))
+
   "AesIE507Repository" - {
     import helpers.GenHelpers.*
 
@@ -70,7 +78,7 @@ class AesIE507RepositorySpec
       forAll { (message: MongoAesIE507Message) =>
         insert(message).futureValue
 
-        find(Filters.eq("_id", message._id.value.toString)).futureValue shouldBe Seq(message)
+        find(Filters.eq("submissionId", message.submissionId.value.toString)).futureValue shouldBe Seq(message)
       }
 
     ".getMessages" - {
@@ -89,11 +97,11 @@ class AesIE507RepositorySpec
 
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: NonEmptyList[MongoAesIE507Message] =
+          val messages: Seq[SubmissionListItem] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
           messages.length shouldBe 1
-          messages.toList shouldBe mongoAesIE507MessagesMatchingEori
+          messages        shouldBe SubmissionListItem
         }
 
         "when there are multiple documents in the collection with that eori" in {
@@ -108,7 +116,7 @@ class AesIE507RepositorySpec
 
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: NonEmptyList[MongoAesIE507Message] =
+          val messages: Seq[SubmissionListItem] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
           messages.length shouldBe 5

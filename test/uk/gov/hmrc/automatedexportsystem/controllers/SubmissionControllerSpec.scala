@@ -19,6 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 import cats.data.{EitherT, NonEmptyList}
 import helpers.XmlOps
 import org.apache.pekko.util.ByteString
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
 import org.scalatest.EitherValues
 import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
@@ -32,6 +33,7 @@ import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, SubmissionServiceError, XmlFailedValidationError, XmlSchemaValidationError}
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
+import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
@@ -52,6 +54,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks, MongoAe
   val xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
 
+  val mockSubmissionService = mock[SubmissionService]
   val idGenerator: IdGenerator = mock[IdGenerator]
 
   val aesAuthAction: AesAuthAction =

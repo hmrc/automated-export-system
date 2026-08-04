@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.automatedexportsystem.services
 
+import jakarta.inject.{Inject, Singleton}
+import uk.gov.hmrc.automatedexportsystem.models.request.{SubmissionRequest, SubmissionResult}
 import cats.data.EitherT
 import jakarta.inject.Singleton
 import uk.gov.hmrc.automatedexportsystem.errors.{MongoError, SubmissionServiceError}
@@ -26,6 +28,16 @@ import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import cats.data.EitherT
+import uk.gov.hmrc.automatedexportsystem.errors.MongoError
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType
+
+trait SubmissionService {
+  def submitMessage(
+    request:             SubmissionRequest,
+    exportOperationType: ExportOperationType
+  ): EitherT[Future, MongoError, SubmissionResult]
+}
 
 @Singleton
 class SubmissionService @Inject() (aesIE507Repository: AesIE507Repository)(using ExecutionContext):
@@ -56,3 +68,11 @@ class SubmissionService @Inject() (aesIE507Repository: AesIE507Repository)(using
         )
     }
   end getSubmissions
+  override def submitMessage(
+                              request:             SubmissionRequest,
+                              exportOperationType: ExportOperationType
+                            ): EitherT[Future, MongoError, SubmissionResult] =
+    repo
+      .submit(request.toMongoMessage(exportOperationType))
+      .map(created => if (created) SubmissionResult.Created else SubmissionResult.Updated)
+}

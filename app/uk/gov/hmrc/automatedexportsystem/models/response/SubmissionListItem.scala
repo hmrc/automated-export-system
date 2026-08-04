@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.aesIE507
+package uk.gov.hmrc.automatedexportsystem.models.response
 
-import play.api.libs.json.{Format, Json}
+import org.apache.pekko.http.scaladsl.model.DateTime
 
-final case class ContainerIdentificationNumber(value: String) extends AnyVal
-
-object ContainerIdentificationNumber:
-  given mongoFormat: Format[ContainerIdentificationNumber] = Json.valueFormat[ContainerIdentificationNumber]
+case class SubmissionListItem(mrn: String, ducr: Option[String], status: Int, lastUpdated: DateTime) {}

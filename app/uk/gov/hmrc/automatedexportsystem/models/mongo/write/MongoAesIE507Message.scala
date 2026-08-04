@@ -22,7 +22,7 @@ import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 import java.time.Instant
 
 case class MongoAesIE507Message(
-  _id:                       SubmissionId,
+  submissionId:              SubmissionId,
   eoriNumber:                EoriNumber,
   createdAt:                 Instant,
   updatedAt:                 Instant,

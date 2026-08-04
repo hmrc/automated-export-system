@@ -16,17 +16,16 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents, EssentialAction}
+import play.api.http.ContentTypes
+import play.api.mvc.{Action, ControllerComponents, EssentialAction}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
-import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
-import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
-import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType.Awaiting
+import uk.gov.hmrc.automatedexportsystem.parsers.SubmissionRequestParser
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.NodeSeq
 
 @Singleton
@@ -41,13 +40,37 @@ class SubmissionController @Inject() (
 ) extends BackendController(cc):
   given ec: ExecutionContext = cc.executionContext
 
-  private lazy val messageXmlValidatedAction: Action[NodeSeq] =
-    Action(xmlBodyParsers.utf8)
+  private lazy val messageXmlValidatedAction: Action[NodeSeq] = {
+    val composed = Action(xmlBodyParsers.utf8)
       .andThen(aesAuthRequestRefiner)
       .andThen(xmlPayloadActionRefiner)
-      .andThen(xmlValidationActionRefiner) { _ =>
-        Status(ResponseCode.Accepted.status)
+      .andThen(xmlValidationActionRefiner)
+
+    composed.async { request =>
+      SubmissionRequestParser.fromXml(request.validatedXml) match {
+        case Left(parseErr) =>
+          val errorXml =
+            <Error>
+                <Code>INVALID_XML</Code>
+                <Message>
+                  {parseErr}
+                </Message>
+              </Error>
+
+          Future.successful(BadRequest(errorXml).as(ContentTypes.XML))
+
+        case Right(submissionRequest) =>
+          submissionService.submitMessage(submissionRequest, Awaiting).value.map {
+            case Right(_) =>
+              NoContent
+
+            case Left(err) =>
+              InternalServerError(err.toString)
+          }
       }
+  }
+    }
+  }
 
   def message: EssentialAction =
     aesAuthEssentialAction(messageXmlValidatedAction)
