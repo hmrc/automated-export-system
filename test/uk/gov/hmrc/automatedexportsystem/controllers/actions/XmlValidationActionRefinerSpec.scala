@@ -30,8 +30,8 @@ import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
 import play.api.mvc.Results.Status
 import play.api.mvc.{AnyContent, Request, Result}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.XmlPayloadRequest
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
-import uk.gov.hmrc.automatedexportsystem.models.actions.XmlPayloadRequest
 import uk.gov.hmrc.automatedexportsystem.services.XmlValidationService
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -16,13 +16,17 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers
 
-import play.api.mvc.{Action, ControllerComponents, EssentialAction}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, EssentialAction}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
+import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
-import uk.gov.hmrc.automatedexportsystem.services.AesIE507XmlValidationService
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
+import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext
 import scala.xml.NodeSeq
 
 @Singleton
@@ -31,11 +35,14 @@ class SubmissionController @Inject() (
   aesAuthEssentialAction:     AesAuthAction,
   aesAuthRequestRefiner:      AesAuthRequestRefiner,
   xmlPayloadActionRefiner:    XmlPayloadActionRefiner,
-  xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService]
-) extends BackendController(cc) {
+  xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService],
+  xmlBodyParsers:             XmlBodyParsers,
+  submissionService:          SubmissionService
+) extends BackendController(cc):
+  given ec: ExecutionContext = cc.executionContext
 
-  private val xmlValidatedAction: Action[NodeSeq] =
-    Action(parse.xml)
+  private lazy val messageXmlValidatedAction: Action[NodeSeq] =
+    Action(xmlBodyParsers.utf8)
       .andThen(aesAuthRequestRefiner)
       .andThen(xmlPayloadActionRefiner)
       .andThen(xmlValidationActionRefiner) { _ =>
@@ -43,5 +50,21 @@ class SubmissionController @Inject() (
       }
 
   def message: EssentialAction =
-    aesAuthEssentialAction(xmlValidatedAction)
-}
+    aesAuthEssentialAction(messageXmlValidatedAction)
+
+  private lazy val submissionsByEoriAction: Action[AnyContent] =
+    Action
+      .andThen(aesAuthRequestRefiner)
+      .async(aesAuthRequest =>
+        val eoriNumber: EoriNumber = EoriNumber(aesAuthRequest.eori)
+
+        submissionService
+          .getSubmissions(eoriNumber)
+          .fold(
+            error => error.toErrorResponse.toResult.withHeaders(),
+            submissionSummaryList => Status(ResponseCode.Ok.status)(submissionSummaryList.toXml)
+          )
+      )
+
+  def submissions: EssentialAction =
+    aesAuthEssentialAction(submissionsByEoriAction)

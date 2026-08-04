@@ -17,10 +17,10 @@
 package test.uk.gov.hmrc.automatedexportsystem.helpers
 
 import com.github.tomakehurst.wiremock.client.WireMock
+import org.scalatest.*
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.*
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.{Status, *}
@@ -54,13 +54,17 @@ trait BaseISpec
     with WireMockSupport
     with Eventually {
 
-  override lazy val app: Application = new GuiceApplicationBuilder()
-    .configure(
-      "microservice.services.auth.host" -> "localhost",
-      "microservice.services.auth.port" -> wireMockPort,
-      "metrics.enabled"                 -> "false"
-    )
-    .build()
+  lazy val guiceApplicationBuilder: GuiceApplicationBuilder =
+    GuiceApplicationBuilder()
+      .configure(
+        "microservice.services.auth.host" -> "localhost",
+        "microservice.services.auth.port" -> wireMockPort,
+        "metrics.enabled"                 -> "false"
+      )
+
+  override lazy val app: Application =
+    guiceApplicationBuilder.build()
+
   override def beforeEach(): Unit = {
     super.beforeEach()
     WireMock.reset()

@@ -10,6 +10,7 @@ GET  /codelists/transportmode  uk.gov.hmrc.automatedexportsystem.controllers.Cod
 
 GET  /codelists/typeoflocation  uk.gov.hmrc.automatedexportsystem.controllers.CodeListController.typeOfLocations
 
+GET /submissions uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController.submissions
 
 # POST REQUESTS
 

@@ -49,8 +49,12 @@ case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationErro
   val responseCode: ResponseCode      = BadRequest
   val exception:    Option[Exception] = None
 
-enum RequestError(val message: String, val responseCode: ResponseCode, val exception: Option[Throwable]) extends AesError:
-  case ExpectedXmlBodyError extends RequestError("The body of the request is not valid XML", UnsupportedMediaType, None)
+enum RequestError(val message: String, val responseCode: ResponseCode) extends AesError:
+  val exception: Option[Throwable] = None
+
+  case ExpectedXmlBodyError extends RequestError("The body of the request is not valid XML", UnsupportedMediaType)
+  case MissingContentTypeHeader extends RequestError("Request Content-Type header is missing", UnsupportedMediaType)
+  case ContentTypeNotUtf8Error extends RequestError("Request Content-Type charset is not UTF-8", UnsupportedMediaType)
 
 enum XmlReaderError(val path: String, val message: String) extends AesError:
   val responseCode: ResponseCode      = BadRequest
@@ -60,5 +64,10 @@ enum XmlReaderError(val path: String, val message: String) extends AesError:
   case ParseError(override val path: String, override val message: String) extends XmlReaderError(path, message)
 
 enum MongoError(val message: String, val responseCode: ResponseCode, val exception: Option[Throwable]) extends AesError:
-  case DocumentNotFound(details: String) extends MongoError(s"Document not found: $details", BadRequest, None)
+  case DocumentNotFound(details: String) extends MongoError(s"Document not found: $details", NotFound, None)
   case UnexpectedError(ex: Throwable) extends MongoError("Unexpected error encountered while performing DB query", InternalServerError, Some(ex))
+
+enum SubmissionServiceError(val message: String, val responseCode: ResponseCode) extends AesError:
+  val exception: Option[Throwable] = None
+
+  case SubmissionRetrieveFailure(override val message: String) extends SubmissionServiceError(message, InternalServerError)

@@ -43,21 +43,23 @@ object XmlOps:
       case Text(text) => trimKeepOneSpace(text)
       case _          => Seq(n)
 
-  def normalize(n: Node): Node =
-    n match
-      case Elem(str, str1, data, binding, child*) =>
-        // technically to keep the same order of nodes, we need to foldRight, but it doesn't matter
-        // because 2 identical XMLs will look the same after normalization regardless
-        val childrenCombinedText: Seq[Node] = child.foldLeft(List.empty[Node]) {
-          case (Text(textAcc) :: nodes, Text(textNode)) =>
-            Text((textNode + textAcc).trim) :: nodes
-          case (acc, node) => node :: acc
-        }
+  def normalize(nodes: NodeSeq): NodeSeq = {
+    def rec(n: Node): Node =
+      n match
+        case Elem(str, str1, data, binding, child*) =>
+          val childrenCombinedText: Seq[Node] = child.foldRight(List.empty[Node]) {
+            case (Text(textAcc), Text(textNode) :: nodes) =>
+              Text((textNode + textAcc).trim) :: nodes
+            case (node, acc) => node :: acc
+          }
 
-        val children = childrenCombinedText.flatMap(trimSpaces).map(normalize)
+          val children: Seq[Node] = childrenCombinedText.flatMap(trimSpaces).flatMap(rec)
 
-        Elem(str, str1, data, binding, false, children*)
-      case _ => n
+          Elem(str, str1, data, binding, false, children*)
+        case _ => n
+
+    nodes.map(rec)
+  }
 
   private def loadXml[R: Releasable](resource: => R, toInputSource: R => InputSource): Either[Throwable, Elem] =
     Using(resource)(r => XML.load(toInputSource(r))).toEither

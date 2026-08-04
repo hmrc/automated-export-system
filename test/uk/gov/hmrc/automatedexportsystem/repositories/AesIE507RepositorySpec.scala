@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.repositories
 
+import cats.data.NonEmptyList
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.{Filters, Indexes}
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
@@ -57,15 +57,8 @@ class AesIE507RepositorySpec
     val submissionId: SubmissionId = SubmissionId(UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317"))
     val eoriNumber:   EoriNumber   = EoriNumber("eoriNumber")
 
-    extension (mongoAesIE507MessageGen: Gen[MongoAesIE507Message])
-      def withEori(eoriNumber: EoriNumber): Gen[MongoAesIE507Message] =
-        mongoAesIE507MessageGen.map(_.copy(eoriNumber = eoriNumber))
-
-      def withSubmissionId(submissionId: SubmissionId): Gen[MongoAesIE507Message] =
-        mongoAesIE507MessageGen.map(_.copy(_id = submissionId))
-
   "AesIE507Repository" - {
-    import TestData.{withEori, withSubmissionId}
+    import helpers.GenHelpers.*
 
     "should have the expected TTL associated with the updatedAt index" in {
       repository.indexes.head.getKeys shouldBe Indexes.ascending("updatedAt")
@@ -96,11 +89,11 @@ class AesIE507RepositorySpec
 
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: Seq[MongoAesIE507Message] =
+          val messages: NonEmptyList[MongoAesIE507Message] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
           messages.length shouldBe 1
-          messages        shouldBe mongoAesIE507MessagesMatchingEori
+          messages.toList shouldBe mongoAesIE507MessagesMatchingEori
         }
 
         "when there are multiple documents in the collection with that eori" in {
@@ -115,11 +108,11 @@ class AesIE507RepositorySpec
 
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: Seq[MongoAesIE507Message] =
+          val messages: NonEmptyList[MongoAesIE507Message] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
           messages.length shouldBe 5
-          messages          should contain theSameElementsAs mongoAesIE507MessagesMatchingEori
+          messages.toList   should contain theSameElementsAs mongoAesIE507MessagesMatchingEori
         }
       }
 

@@ -19,23 +19,30 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 import cats.data.{EitherT, NonEmptyList}
 import helpers.XmlOps
 import org.apache.pekko.util.ByteString
-import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.when
 import org.scalatest.EitherValues
 import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
-import play.api.mvc.{Action, BodyParsers, ControllerComponents, EssentialAction, Result}
+import play.api.mvc.*
+import play.api.test.Helpers.writeableOf_AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
-import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
+import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
+import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, SubmissionServiceError, XmlFailedValidationError, XmlSchemaValidationError}
+import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
-import uk.gov.hmrc.automatedexportsystem.services.AesIE507XmlValidationService
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
+import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 
+import java.time.LocalDateTime
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
 
-class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
+class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks, MongoAesIE507MessageGenerator:
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents(executionContext = ec)
 
   val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
@@ -45,24 +52,62 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
   val xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
 
+  val idGenerator: IdGenerator = mock[IdGenerator]
+
   val aesAuthAction: AesAuthAction =
-    new AesAuthAction(mockAuthConnector)(ec, materializer):
-      override def apply(next: Action[scala.xml.NodeSeq]): EssentialAction =
+    new AesAuthAction(mockAuthConnector, idGenerator)(ec, materializer):
+      override def apply[T](next: Action[T]): EssentialAction =
         EssentialAction { rh =>
           next(rh.addAttr(AesAuthAttr.Eori, "GB123456789000"))
         }
 
-  val parser: BodyParsers.Default = mock[BodyParsers.Default]
-  val aesRefiner = new AesAuthRequestRefiner(parser)
+  val aesAuthRequestRefiner: AesAuthRequestRefiner = new AesAuthRequestRefiner
+
+  val xmlBodyParsers: XmlBodyParsers = XmlBodyParsers(controllerComponents.parsers)
+
+  val submissionService: SubmissionService = mock[SubmissionService]
 
   val submissionController: SubmissionController =
     SubmissionController(
       controllerComponents,
       aesAuthAction,
-      aesRefiner,
+      aesAuthRequestRefiner,
       xmlPayloadActionRefiner,
-      xmlValidationActionRefiner
+      xmlValidationActionRefiner,
+      xmlBodyParsers,
+      submissionService
     )
+
+  object TestData:
+    val id: UUID = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+
+    val dateTime: LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
+
+    val submissionSummary1: SubmissionSummary =
+      SubmissionSummary(
+        submissionId = SubmissionId(TestData.id),
+        mrn = Mrn("mrn"),
+        ducr = Some(ReferenceNumberUcr("referenceNumberUcr")),
+        officeOfExitCode = ReferenceNumber("referenceNumber"),
+        updatedAt = dateTime,
+        status = ExportOperationType.Standard
+      )
+
+    val submissionSummary2: SubmissionSummary =
+      SubmissionSummary(
+        submissionId = SubmissionId(TestData.id),
+        mrn = Mrn("mrn"),
+        ducr = None,
+        officeOfExitCode = ReferenceNumber("referenceNumber"),
+        updatedAt = dateTime,
+        status = ExportOperationType.Standard
+      )
+
+    val submissionSummaryList: SubmissionSummaryList =
+      SubmissionSummaryList(List(submissionSummary1, submissionSummary2))
+
+    val submissionSummaryListEmpty: SubmissionSummaryList =
+      SubmissionSummaryList(Nil)
 
   "SubmissionController" - {
 
@@ -81,7 +126,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
                 .withHeaders("content-type" -> "application/xml")
                 .withBody(requestXml)
 
-            when(xmlValidationService.validate(eqTo(requestXml))).thenReturn(EitherT(Future.successful(Right(()))))
+            when(xmlValidationService.validate(requestXml)).thenReturn(EitherT(Future.successful(Right(()))))
 
             val result: Future[Result] = Helpers.call(submissionController.message, request)
 
@@ -104,7 +149,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
             val schemaError: SchemaError = SchemaError.SchemaNotFoundError("/schemas/dummy.xsd")
 
-            when(xmlValidationService.validate(eqTo(requestXml)))
+            when(xmlValidationService.validate(requestXml))
               .thenReturn(EitherT(Future.successful(Left(schemaError))))
 
             val result: Future[Result] = Helpers.call(submissionController.message, request)
@@ -139,7 +184,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
             val schemaError: SchemaError =
               SchemaError.SchemaParseError(SchemaError.XsdStructureError(1, 1, "Bad parse error"))
 
-            when(xmlValidationService.validate(eqTo(requestXml)))
+            when(xmlValidationService.validate(requestXml))
               .thenReturn(EitherT(Future.successful(Left(schemaError))))
 
             val result: Future[Result] = Helpers.call(submissionController.message, request)
@@ -180,7 +225,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
                   )
                 )
 
-              when(xmlValidationService.validate(eqTo(requestXml)))
+              when(xmlValidationService.validate(requestXml))
                 .thenReturn(EitherT(Future.successful(Left(xmlFailedValidationError))))
 
               val result: Future[Result] = Helpers.call(submissionController.message, request)
@@ -226,7 +271,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
                   )
                 )
 
-              when(xmlValidationService.validate(eqTo(requestXml)))
+              when(xmlValidationService.validate(requestXml))
                 .thenReturn(EitherT(Future.successful(Left(xmlFailedValidationError))))
 
               val result: Future[Result] = Helpers.call(submissionController.message, request)
@@ -271,6 +316,119 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
               Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
               XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
+            }
+          }
+        }
+      }
+    }
+
+    ".submissions" - {
+
+      ".should return an Action" - {
+
+        "that returns a 200 Result with a payload containing all the submissions" - {
+
+          "when applied with a request that contains a valid EORI" - {
+
+            "and there are submissions found with that EORI" in {
+              when(submissionService.getSubmissions(EoriNumber("GB123456789000")))
+                .thenReturn(EitherT(Future.successful(Right(TestData.submissionSummaryList))))
+
+              val request: FakeRequest[AnyContentAsEmpty.type] =
+                FakeRequest(HttpVerbs.POST, "/dummy/path")
+
+              val result: Future[Result] = Helpers.call(submissionController.submissions, request)
+
+              val submissionSummaryListXml: Elem =
+                <Submissions>
+                  <Submission>
+                    <submissionId>
+                      {TestData.id}
+                    </submissionId>
+                    <mrn>mrn</mrn>
+                    <ducr>referenceNumberUcr</ducr>
+                    <officeOfExitCode>referenceNumber</officeOfExitCode>
+                    <updatedAt>2026-08-03T00:00:00</updatedAt>
+                    <status>1</status>
+                  </Submission>
+                  <Submission>
+                    <submissionId>
+                      {TestData.id}
+                    </submissionId>
+                    <mrn>mrn</mrn>
+                    <officeOfExitCode>referenceNumber</officeOfExitCode>
+                    <updatedAt>2026-08-03T00:00:00</updatedAt>
+                    <status>1</status>
+                  </Submission>
+                </Submissions>
+
+              val resultContent: String = Helpers.contentAsString(result)
+              val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)               shouldBe StatusValues.OK
+              Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionSummaryListXml).toString
+            }
+
+            "and there are no submissions found with that EORI" in {
+              when(submissionService.getSubmissions(EoriNumber("GB123456789000")))
+                .thenReturn(EitherT(Future.successful(Right(TestData.submissionSummaryListEmpty))))
+
+              val request: FakeRequest[AnyContentAsEmpty.type] =
+                FakeRequest(HttpVerbs.POST, "/dummy/path")
+
+              val result: Future[Result] = Helpers.call(submissionController.submissions, request)
+
+              val submissionSummaryListXml: Elem =
+                <Submissions>
+                </Submissions>
+
+              val resultContent: String = Helpers.contentAsString(result)
+              val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)               shouldBe StatusValues.OK
+              Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionSummaryListXml).toString
+            }
+          }
+        }
+
+        "that returns a 500 Result" - {
+
+          "when applied with a request that contains a valid EORI" - {
+
+            "due to an unexpected error encountered while retrieving the submissions" in {
+              when(submissionService.getSubmissions(EoriNumber("GB123456789000")))
+                .thenReturn(
+                  EitherT(
+                    Future.successful(
+                      Left(
+                        SubmissionServiceError.SubmissionRetrieveFailure(
+                          s"Submission retrieval failed for EORI: GB123456789000"
+                        )
+                      )
+                    )
+                  )
+                )
+
+              val request: FakeRequest[AnyContentAsEmpty.type] =
+                FakeRequest(HttpVerbs.POST, "/dummy/path")
+
+              val result: Future[Result] = Helpers.call(submissionController.submissions, request)
+
+              val submissionRetrievalFailureXml: Elem =
+                <errorResponse>
+                  <status>500</status>
+                  <code>INTERNAL_SERVER_ERROR</code>
+                  <message>Submission retrieval failed for EORI: GB123456789000</message>
+                </errorResponse>
+
+              val resultContent: String = Helpers.contentAsString(result)
+              val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionRetrievalFailureXml).toString
             }
           }
         }

@@ -16,22 +16,24 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 import org.apache.pekko.stream.Materializer
+import org.apache.pekko.util.ByteString
 import play.api.Logging
 import play.api.libs.streams.Accumulator
 import play.api.mvc.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, Enrolment, Enrolments}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
-import scala.xml.NodeSeq
 
 class AesAuthAction @Inject() (
-  val authConnector: AuthConnector
+  val authConnector: AuthConnector,
+  idGenerator:       IdGenerator
 )(implicit ec: ExecutionContext, materializer: Materializer)
     extends AuthorisedFunctions
     with BackendHeaderCarrierProvider
@@ -42,25 +44,36 @@ class AesAuthAction @Inject() (
     val AuthorizationHeader = "Authorization"
     val EnrolmentKey        = "HMRC-CUS-ORG"
     val EoriIdentifierKey   = "EORINumber"
+    val CorrelationIdHeader = "x-correlation-id"
   }
 
-  def apply(next: Action[NodeSeq]): EssentialAction =
+  def apply[T](next: Action[T]): EssentialAction =
     EssentialAction { requestHeader =>
-      if (!hasAuthorizationHeader(requestHeader)) {
-        Accumulator.done(unauthorisedResult)
-      } else {
-        implicit val headerCarrier: HeaderCarrier = hc(requestHeader)
+      val accumulator: Accumulator[ByteString, Result] =
+        if (!hasAuthorizationHeader(requestHeader)) {
+          Accumulator.done(unauthorisedResult)
+        } else {
+          implicit val headerCarrier: HeaderCarrier = hc(requestHeader)
 
-        Accumulator.flatten {
-          authoriseAndExtractEori(requestHeader).map {
-            case Right(eori) =>
-              next(requestHeader.addAttr(AesAuthAttr.Eori, eori))
-            case Left(result) =>
-              Accumulator.done(result)
+          Accumulator.flatten {
+            authoriseAndExtractEori(requestHeader).map {
+              case Right(eori) =>
+                next(requestHeader.addAttr(AesAuthAttr.Eori, eori))
+              case Left(result) =>
+                Accumulator.done(result)
+            }
           }
         }
-      }
+
+      ensureCorrelationId(requestHeader, accumulator)
     }
+
+  private def ensureCorrelationId(request: RequestHeader, acc: Accumulator[ByteString, Result]): Accumulator[ByteString, Result] =
+    val maybeCorrelationId: Option[String] = request.headers.get(AuthConstants.CorrelationIdHeader)
+
+    maybeCorrelationId.fold(
+      acc.map(_.withHeaders(AuthConstants.CorrelationIdHeader -> idGenerator.generate.toString))
+    )(_ => acc)
 
   private def hasAuthorizationHeader(requestHeader: RequestHeader): Boolean =
     requestHeader.headers

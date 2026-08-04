@@ -26,7 +26,7 @@ import scala.xml.*
 
 final case class AesErrorResponse(status: Int, code: String, message: String, errors: Option[NonEmptyList[AesErrorResponseValidationError]]):
   def toXml: Elem =
-    val errorNodes: Option[Seq[Node]] =
+    val errorNodes: Option[List[Elem]] =
       errors.map(nel =>
         nel
           .map(err => <error>
@@ -74,8 +74,6 @@ object AesErrorResponse:
       val errorMessage: String       = error.message
 
       error match
-        case _: SchemaError =>
-          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
         case XmlFailedValidationError(errors) =>
           AesErrorResponse(
             responseCode.status,
@@ -83,10 +81,5 @@ object AesErrorResponse:
             errorMessage,
             Some(errors.map(AesErrorResponseValidationError.fromXmlSchemaValidationError))
           )
-        case _: RequestError =>
-          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
-        case _: XmlReaderError =>
-          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
-        case _: MongoError =>
-          AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
+        case _ => AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
 end AesErrorResponse
