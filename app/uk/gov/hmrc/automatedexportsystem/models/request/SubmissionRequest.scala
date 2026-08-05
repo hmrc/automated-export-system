@@ -29,12 +29,13 @@ case class SubmissionRequest(
   goodsShipment:             Option[GoodsShipment]
 ) {
   def toMongoMessage(
-    operationType: ExportOperationType
+    operationType: ExportOperationType,
+    eoriNumber:    EoriNumber
   ): MongoAesIE507Message = {
     val now = Instant.now()
     MongoAesIE507Message(
       submissionId = submissionId.getOrElse(SubmissionId(UUID.randomUUID())),
-      eoriNumber = EoriNumber("some-eori"),
+      eoriNumber = eoriNumber,
       createdAt = now,
       updatedAt = now,
       exportOperation = exportOperation.copy(exportOperationType = operationType),

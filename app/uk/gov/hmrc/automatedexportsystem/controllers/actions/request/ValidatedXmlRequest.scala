@@ -17,8 +17,9 @@
 package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
 import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
 
 import scala.annotation.unused
 import scala.xml.NodeSeq
 
-final case class ValidatedXmlRequest[T](@unused validatedXml: NodeSeq, request: Request[T], eori: String) extends WrappedRequest(request)
+final case class ValidatedXmlRequest[T](@unused validatedXml: NodeSeq, request: Request[T], eori: EoriNumber) extends WrappedRequest(request)

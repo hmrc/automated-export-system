@@ -55,7 +55,7 @@ final case class SubmissionSummary(
 object SubmissionSummary:
   def fromMongoAesIE507Message(message: MongoAesIE507Message): SubmissionSummary =
     SubmissionSummary(
-      submissionId = message._id,
+      submissionId = message.submissionId,
       mrn = message.exportOperation.mrn,
       ducr = message.goodsShipment.map(_.consignment.referenceNumberUCR),
       officeOfExitCode = message.customsOfficeOfExitActual.referenceNumber,

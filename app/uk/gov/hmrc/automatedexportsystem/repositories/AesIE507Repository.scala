@@ -18,19 +18,18 @@ package uk.gov.hmrc.automatedexportsystem.repositories
 
 import cats.data.{EitherT, NonEmptyList}
 import com.google.inject.ImplementedBy
-import com.mongodb.client.model.{IndexModel, IndexOptions, Projections, Sorts}
+import com.mongodb.client.model.{IndexModel, IndexOptions}
 import com.mongodb.{MongoNotPrimaryException, MongoSocketException, MongoTimeoutException}
 import org.apache.pekko.pattern.RetrySupport
 import org.mongodb.scala.MongoException
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model.{Aggregates, Filters, Indexes, ReplaceOptions}
+import org.mongodb.scala.model.{Filters, Indexes, ReplaceOptions}
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.response.SubmissionListItem
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
@@ -42,11 +41,9 @@ import scala.util.control.NonFatal
 
 @ImplementedBy(classOf[AesIE507RepositoryImpl])
 trait AesIE507Repository:
-  def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[SubmissionListItem]]
-
-  def getMessage(eori: EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message]
-
-  def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, Boolean]
+  def getMessages(eori:  EoriNumber):                             EitherT[Future, MongoError, NonEmptyList[MongoAesIE507Message]]
+  def getMessage(eori:   EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message]
+  def submit(submission: MongoAesIE507Message):                   EitherT[Future, MongoError, Boolean]
 
 @Singleton
 class AesIE507RepositoryImpl @Inject() (
@@ -73,50 +70,32 @@ class AesIE507RepositoryImpl @Inject() (
     ),
       AesIE507Repository,
       Logging:
-  def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507Message]] =
-    val filter: Bson = Aggregates.filter(Filters.eq("eoriNumber", eori.value))
 
-  override def getMessages(eori: EoriNumber): EitherT[Future, MongoError, Seq[SubmissionListItem]] = {
-
-    val pipeline: Seq[Bson] = Seq(
-      Aggregates.filter(Filters.eq("eoriNumber", eori.value)),
-      Aggregates.project(
-        Projections.fields(
-          Projections.include("ducr", "mrn", "status"),
-          Projections.computed("lastUpdated", "$updatedAt"),
-          Projections.excludeId()
-        )
-      ),
-      Aggregates.sort(Sorts.descending("lastUpdated"))
-    )
-
-    retryPipeline("getMessages", Map("eori" -> eori.value)) {
+  override def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507Message]] = {
+    val op: Future[Either[MongoError, NonEmptyList[MongoAesIE507Message]]] =
       collection
-        .aggregate[SubmissionListItem](pipeline)
+        .find(Filters.eq("eoriNumber", eori.value))
         .toFuture()
-        .map { submissionList =>
-          if (submissionList.isEmpty)
+        .map {
+          case seq if seq.isEmpty =>
             Left(MongoError.DocumentNotFound(s"No documents found for EORI: ${eori.value}"))
-          case seq => Right(NonEmptyList(seq.head, seq.tail.toList))
-          else
-            Right(submissionList)
+          case seq =>
+            Right(NonEmptyList(seq.head, seq.tail.toList))
         }
-    }
+
+    retryPipeline(
+      operationName = "getMessages",
+      context = Map("eoriNumber" -> eori.value)
+    )(op)
   }
 
-  override def getMessage(
-    eori:         EoriNumber,
-    submissionId: SubmissionId
-  ): EitherT[Future, MongoError, MongoAesIE507Message] =
-    retryPipeline(
-      operationName = "getMessage",
-      context = Map("eori" -> eori.value, "submissionId" -> submissionId.value.toString)
-    ) {
+  override def getMessage(eori: EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message] = {
+    val op: Future[Either[MongoError, MongoAesIE507Message]] =
       collection
         .find(
           Filters.and(
             Filters.eq("eoriNumber", eori.value),
-            Filters.eq("_id", submissionId.value.toString)
+            Filters.eq("submissionId", submissionId.value)
           )
         )
         .headOption()
@@ -127,7 +106,12 @@ class AesIE507RepositoryImpl @Inject() (
             )
           )
         )
-    }
+
+    retryPipeline(
+      operationName = "getMessage",
+      context = Map("eoriNumber" -> eori.value, "submissionId" -> submissionId.value.toString)
+    )(op)
+  }
 
   override def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, Boolean] = {
     val op: Future[Either[MongoError, Boolean]] =
@@ -140,9 +124,9 @@ class AesIE507RepositoryImpl @Inject() (
         .toFuture()
         .map(result => Right[MongoError, Boolean](result.getUpsertedId != null))
 
-    retryPipeline[Boolean](
+    retryPipeline(
       operationName = "submitUpsert",
-      context = Map("submissionId" -> submission.submissionId.toString)
+      context = Map("submissionId" -> submission.submissionId.value.toString)
     )(op)
   }
 

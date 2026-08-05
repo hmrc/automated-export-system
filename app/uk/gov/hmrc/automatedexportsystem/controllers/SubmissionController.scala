@@ -17,9 +17,12 @@
 package uk.gov.hmrc.automatedexportsystem.controllers
 
 import play.api.http.ContentTypes
-import play.api.mvc.{Action, ControllerComponents, EssentialAction}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, EssentialAction}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
+import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
+import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType.Awaiting
+import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.parsers.SubmissionRequestParser
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -60,7 +63,7 @@ class SubmissionController @Inject() (
           Future.successful(BadRequest(errorXml).as(ContentTypes.XML))
 
         case Right(submissionRequest) =>
-          submissionService.submitMessage(submissionRequest, Awaiting).value.map {
+          submissionService.submitMessage(submissionRequest, Awaiting, request.eori).value.map {
             case Right(_) =>
               NoContent
 
@@ -68,7 +71,6 @@ class SubmissionController @Inject() (
               InternalServerError(err.toString)
           }
       }
-  }
     }
   }
 
@@ -79,10 +81,8 @@ class SubmissionController @Inject() (
     Action
       .andThen(aesAuthRequestRefiner)
       .async(aesAuthRequest =>
-        val eoriNumber: EoriNumber = EoriNumber(aesAuthRequest.eori)
-
         submissionService
-          .getSubmissions(eoriNumber)
+          .getSubmissions(aesAuthRequest.eori)
           .fold(
             error => error.toErrorResponse.toResult.withHeaders(),
             submissionSummaryList => Status(ResponseCode.Ok.status)(submissionSummaryList.toXml)
