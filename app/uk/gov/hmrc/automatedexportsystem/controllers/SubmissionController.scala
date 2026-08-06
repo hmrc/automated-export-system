@@ -65,7 +65,7 @@ class SubmissionController @Inject() (
         case Right(submissionRequest) =>
           submissionService.submitMessage(submissionRequest, Awaiting, request.eori).value.map {
             case Right(_) =>
-              NoContent
+              Accepted
 
             case Left(err) =>
               InternalServerError(err.toString)

@@ -20,6 +20,7 @@ import cats.data.NonEmptyList
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.{Filters, Indexes}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
@@ -30,14 +31,14 @@ import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.response.SubmissionListItem
+import uk.gov.hmrc.automatedexportsystem.models.responses.SubmissionSummary
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
 
-class AesIE507RepositorySpec
+class AesIE507RepositoryISpec
     extends AnyFreeSpecLike,
       Matchers,
       EitherValues,
@@ -78,7 +79,12 @@ class AesIE507RepositorySpec
       forAll { (message: MongoAesIE507Message) =>
         insert(message).futureValue
 
-        find(Filters.eq("submissionId", message.submissionId.value.toString)).futureValue shouldBe Seq(message)
+        find(
+          Filters.and(
+            Filters.eq("eoriNumber", message.eoriNumber.value),
+            Filters.eq("submissionId", message.submissionId.value.toString)
+          )
+        ).futureValue shouldBe Seq(message)
       }
 
     ".getMessages" - {
@@ -97,11 +103,11 @@ class AesIE507RepositorySpec
 
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: Seq[SubmissionListItem] =
+          val summariesNel: NonEmptyList[SubmissionSummary] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
-          messages.length shouldBe 1
-          messages        shouldBe SubmissionListItem
+          val summaries = summariesNel.toList
+          summaries.length shouldBe 1
         }
 
         "when there are multiple documents in the collection with that eori" in {
@@ -116,11 +122,14 @@ class AesIE507RepositorySpec
 
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: Seq[SubmissionListItem] =
+          val messages: NonEmptyList[SubmissionSummary] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
+          val expected: List[SubmissionSummary] =
+            mongoAesIE507MessagesMatchingEori.toList.map(SubmissionSummary.fromMongoAesIE507Message)
+
           messages.length shouldBe 5
-          messages.toList   should contain theSameElementsAs mongoAesIE507MessagesMatchingEori
+          messages.toList   should contain theSameElementsAs expected
         }
       }
 

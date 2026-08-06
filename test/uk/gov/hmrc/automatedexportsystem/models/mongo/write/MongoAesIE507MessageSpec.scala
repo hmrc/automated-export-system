@@ -59,7 +59,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
                 NonEmptyList.one(
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(1)),
-                    containerIdentificationNumber = Some(ContainerIdentificationNumber(1)),
+                    containerIdentificationNumber = Some(ContainerIdentificationNumber("some-number")),
                     numberOfSeals = Some(NumberOfSeals(1))
                   )
                 )
@@ -107,6 +107,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
             goodsItem = Some(
               NonEmptyList.one(
                 GoodsItem(
+                  referenceNumberUcr = None,
                   declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1)),
                   commodity = Commodity(
                     grossMass = GrossMass(100.55),
@@ -160,7 +161,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |      "parentUcrId" : "parentUcrId",
           |      "transportEquipment" : [ {
           |        "sequenceNumber" : 1,
-          |        "containerIdentificationNumber" : 1,
+          |        "containerIdentificationNumber" : "some-number",
           |        "numberOfSeals" : 1
           |      } ],
           |      "seal" : [ {
@@ -324,6 +325,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
             goodsItem = Some(
               NonEmptyList.one(
                 GoodsItem(
+                  referenceNumberUcr = None,
                   declarationGoodsItemNumber = None,
                   commodity = Commodity(
                     grossMass = GrossMass(100.55),

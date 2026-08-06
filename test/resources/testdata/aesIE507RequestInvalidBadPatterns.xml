@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
     <aes:Submission xmlns:aes="http://ecs.dgtaxud.ec">
         <submissionId></submissionId>
-        <status></status>
         <ExportOperation>
             <type></type>
             <MRN></MRN>

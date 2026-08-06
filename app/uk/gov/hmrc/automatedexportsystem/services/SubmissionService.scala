@@ -15,19 +15,16 @@
  */
 
 package uk.gov.hmrc.automatedexportsystem.services
-import uk.gov.hmrc.automatedexportsystem.models.request.{SubmissionRequest, SubmissionResult}
+import cats.data.EitherT
 import jakarta.inject.Singleton
-import uk.gov.hmrc.automatedexportsystem.errors.SubmissionServiceError
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
+import uk.gov.hmrc.automatedexportsystem.errors.{MongoError, SubmissionServiceError}
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, ExportOperationType}
+import uk.gov.hmrc.automatedexportsystem.models.request.{SubmissionRequest, SubmissionResult}
+import uk.gov.hmrc.automatedexportsystem.models.responses.SubmissionSummaryList
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.EitherT
-import uk.gov.hmrc.automatedexportsystem.errors.MongoError
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType
 
 trait SubmissionService {
   def submitMessage(
@@ -45,13 +42,7 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
     val submissionSummaryListResult: EitherT[Future, MongoError, SubmissionSummaryList] =
       aesIE507Repository
         .getMessages(eoriNumber)
-        .map(messageNel =>
-          SubmissionSummaryList(
-            messageNel.toList.map(
-              SubmissionSummary.fromMongoAesIE507Message
-            )
-          )
-        )
+        .map(messageNel => SubmissionSummaryList(messageNel.toList))
 
     submissionSummaryListResult.leftFlatMap {
       case MongoError.DocumentNotFound(_) =>
