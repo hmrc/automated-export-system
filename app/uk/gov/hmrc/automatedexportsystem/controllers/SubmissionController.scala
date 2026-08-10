@@ -84,7 +84,7 @@ class SubmissionController @Inject() (
         submissionService
           .getSubmissions(aesAuthRequest.eori)
           .fold(
-            error => error.toErrorResponse.toResult.withHeaders(),
+            error => error.toErrorResponse.toResult,
             submissionSummaryList => Status(ResponseCode.Ok.status)(submissionSummaryList.toXml)
           )
       )
