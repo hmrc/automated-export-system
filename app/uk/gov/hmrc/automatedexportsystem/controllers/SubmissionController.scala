@@ -25,6 +25,7 @@ import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType.Awa
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.parsers.SubmissionRequestParser
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
+import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -85,7 +86,7 @@ class SubmissionController @Inject() (
           .getSubmissions(aesAuthRequest.eori)
           .fold(
             error => error.toErrorResponse.toResult,
-            submissionSummaryList => Status(ResponseCode.Ok.status)(submissionSummaryList.toXml)
+            submissionSummaryList => Status(ResponseCode.Ok.status)(submissionSummaryList.toXmlRoot)
           )
       )
 

@@ -19,18 +19,21 @@ package uk.gov.hmrc.automatedexportsystem.models.responses
 import play.api.libs.json.*
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
 
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, LocalDateTime, ZoneOffset}
-import scala.xml.{Elem, NodeSeq}
+import scala.xml.NodeSeq
 
-final case class SubmissionSummaryList(submissions: List[SubmissionSummary]):
-  def toXml: Elem =
-    val submissionSummaryListXml: List[Elem] = submissions.map(_.toXml)
+final case class SubmissionSummaryList(submissions: List[SubmissionSummary])
 
-    <Submissions>
-      {submissionSummaryListXml}
-    </Submissions>
+object SubmissionSummaryList:
+  given submissionSummaryListTag: XmlRootTag[SubmissionSummaryList] = XmlRootTag("Submissions")
+
+  given submissionSummaryListXmlWriter: XmlWriter[SubmissionSummaryList] =
+    (o, label) => XmlWriter.elem(label, o.submissions.toXmlRoot)
 
 final case class SubmissionSummary(
   submissionId:     SubmissionId,
@@ -39,24 +42,27 @@ final case class SubmissionSummary(
   officeOfExitCode: ReferenceNumber,
   updatedAt:        LocalDateTime,
   status:           ExportOperationType
-):
-  def toXml: Elem =
-    val maybeDucrXml: NodeSeq =
-      ducr.map(ucr => <ducr>{ucr.value}</ducr>).getOrElse(NodeSeq.Empty)
-
-    <Submission>
-      <submissionId>{submissionId.value}</submissionId>
-      <mrn>{mrn.value}</mrn>
-      {maybeDucrXml}
-      <officeOfExitCode>{officeOfExitCode.value}</officeOfExitCode>
-      <updatedAt>{updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)}</updatedAt>
-      <status>{status.status}</status>
-    </Submission>
+)
 
 object SubmissionSummary:
-  import LocalDateTimeFormat.given
-  given OFormat[SubmissionSummary] = Json.format[SubmissionSummary]
-  // implicit val format: OFormat[SubmissionSummary] = Json.format[SubmissionSummary]
+  import LocalDateTimeFormat.localDateTimeFormat
+
+  given format: OFormat[SubmissionSummary] = Json.format[SubmissionSummary]
+
+  given submissionSummaryTag: XmlRootTag[SubmissionSummary] = XmlRootTag("Submission")
+
+  given submissionSummaryXmlWriter: XmlWriter[SubmissionSummary] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.submissionId.toXml("submissionId")
+          ++ o.mrn.toXml("mrn")
+          ++ o.ducr.toXml("ducr")
+          ++ o.officeOfExitCode.toXml("officeOfExitCode")
+          ++ o.updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).toXml("updatedAt")
+          ++ o.status.toXml("status")
+
+      XmlWriter.elem(label, children)
+
   def fromMongoAesIE507Message(message: MongoAesIE507Message): SubmissionSummary =
     SubmissionSummary(
       submissionId = message.submissionId,
@@ -70,7 +76,7 @@ object SubmissionSummary:
 object LocalDateTimeFormat:
   private val iso = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
-  given Format[LocalDateTime] = new Format[LocalDateTime]:
+  given localDateTimeFormat: Format[LocalDateTime] = new Format[LocalDateTime]:
     override def reads(json: JsValue): JsResult[LocalDateTime] =
       json match
         case JsString(value) =>

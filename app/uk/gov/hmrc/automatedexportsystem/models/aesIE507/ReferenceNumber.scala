@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class ReferenceNumber(value: String) extends AnyVal
 
 object ReferenceNumber:
   given mongoFormat: Format[ReferenceNumber] = Json.valueFormat[ReferenceNumber]
+
+  given referenceNumberXmlWriter: XmlWriter[ReferenceNumber] =
+    (o, label) => o.value.toXml(label)

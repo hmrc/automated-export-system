@@ -45,7 +45,7 @@ class XmlWriterSpec extends AnyFreeSpecLike, Matchers, TableDrivenPropertyChecks
 
     object ComplexModel:
       given complexModelTag: XmlRootTag[ComplexModel] = XmlRootTag("ComplexModel")
-      
+
       given complexModelXmlWriter: XmlWriter[ComplexModel] =
         (o: TestData.ComplexModel, label: String) =>
           val children: NodeSeq =
@@ -373,7 +373,7 @@ class XmlWriterSpec extends AnyFreeSpecLike, Matchers, TableDrivenPropertyChecks
       }
     }
   }
-  
+
   "RootedXmlWriter" - {
 
     ".toXmlRoot" - {

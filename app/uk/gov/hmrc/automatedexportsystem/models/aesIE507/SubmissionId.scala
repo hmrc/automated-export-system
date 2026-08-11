@@ -17,6 +17,8 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 import java.util.UUID
 
@@ -24,3 +26,6 @@ case class SubmissionId(value: UUID) extends AnyVal
 
 object SubmissionId:
   given mongoFormat: Format[SubmissionId] = Json.valueFormat[SubmissionId]
+
+  given submissionIdXmlWriter: XmlWriter[SubmissionId] =
+    (o, label) => o.value.toString.toXml(label)
