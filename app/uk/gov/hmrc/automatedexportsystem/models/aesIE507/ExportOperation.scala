@@ -17,6 +17,10 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.*
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+
+import scala.xml.NodeSeq
 
 case class ExportOperation(
   exportOperationType: ExportOperationType,
@@ -27,3 +31,15 @@ case class ExportOperation(
 
 object ExportOperation:
   given mongoFormat: Format[ExportOperation] = Json.format[ExportOperation]
+
+  given exportOperationTag: XmlRootTag[ExportOperation] = XmlRootTag("ExportOperation")
+
+  given exportOperationXmlWriter: XmlWriter[ExportOperation] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.exportOperationType.toXml("exportOperationType")
+          ++ o.mrn.toXml("mrn")
+          ++ o.discrepanciesExist.toXml("discrepanciesExist")
+          ++ o.splitIndicator.toXml("splitIndicator")
+
+      XmlWriter.elem(label, children)

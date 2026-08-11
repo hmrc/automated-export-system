@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class UnLocode(value: String) extends AnyVal
 
 object UnLocode:
   given mongoFormat: Format[UnLocode] = Json.valueFormat[UnLocode]
+
+  given unLocodeXmlWriter: XmlWriter[UnLocode] =
+    (o, label) => o.value.toXml(label)

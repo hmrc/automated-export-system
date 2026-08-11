@@ -69,6 +69,9 @@ object XmlWriter:
   given intWriter: XmlWriter[Int] =
     (o, label) => elem(label, Text(o.toString))
 
+  given bigDecimalWriter: XmlWriter[BigDecimal] =
+    (o, label) => elem(label, Text(o.toString))
+
   given booleanWriter: XmlWriter[Boolean] =
     (o, label) => elem(label, Text(o.toString))
 

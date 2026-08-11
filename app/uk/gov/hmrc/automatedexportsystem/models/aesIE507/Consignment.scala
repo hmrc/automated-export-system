@@ -18,6 +18,11 @@ package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import cats.data.NonEmptyList
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+
+import scala.xml.NodeSeq
 
 final case class Consignment(
   modeOfTransportAtBorder:    Option[ModeOfTransportAtBorder],
@@ -33,4 +38,22 @@ final case class Consignment(
 
 object Consignment:
   import uk.gov.hmrc.automatedexportsystem.models.formats.NonEmptyListFormat.nonEmptyListFormat
+
   given mongoFormat: Format[Consignment] = Json.format[Consignment]
+
+  given consignmentTag: XmlRootTag[Consignment] = XmlRootTag("Consignment")
+
+  given consignmentXmlWriter: XmlWriter[Consignment] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.modeOfTransportAtBorder.toXml("modeOfTransportAtBorder")
+          ++ o.referenceNumberUCR.toXml("referenceNumberUCR")
+          ++ o.parentUcrId.toXml("parentUCRID")
+          ++ o.transportEquipment.toXmlRoot
+          ++ o.seal.toXmlRoot
+          ++ o.goodsReference.toXmlRoot
+          ++ o.locationOfGoods.toXmlRoot
+          ++ o.activeBorderTransportMeans.toXmlRoot
+          ++ o.transportDocument.toXmlRoot
+
+      XmlWriter.elem(label, children)

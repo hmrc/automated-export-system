@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class SplitIndicator(value: Boolean) extends AnyVal
 
 object SplitIndicator:
   given mongoFormat: Format[SplitIndicator] = Json.valueFormat[SplitIndicator]
+
+  given splitIndicatorXmlWriter: XmlWriter[SplitIndicator] =
+    (o, label) => o.value.toXml(label)

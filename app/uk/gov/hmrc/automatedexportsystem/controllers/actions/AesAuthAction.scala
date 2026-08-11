@@ -27,10 +27,11 @@ import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
+@Singleton
 class AesAuthAction @Inject() (
   val authConnector: AuthConnector,
   idGenerator:       IdGenerator

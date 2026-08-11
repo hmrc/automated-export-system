@@ -17,8 +17,22 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+
+import scala.xml.NodeSeq
 
 final case class Seal(sequenceNumber: Option[SequenceNumber], sealIdentifier: Option[SealIdentifier])
 
 object Seal:
   given mongoFormat: Format[Seal] = Json.format[Seal]
+
+  given sealTag: XmlRootTag[Seal] = XmlRootTag("Seal")
+
+  given sealXmlWriter: XmlWriter[Seal] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.sequenceNumber.toXml("sequenceNumber")
+          ++ o.sealIdentifier.toXml("identifier")
+
+      XmlWriter.elem(label, children)

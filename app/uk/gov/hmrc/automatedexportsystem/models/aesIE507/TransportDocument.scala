@@ -17,6 +17,10 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+
+import scala.xml.NodeSeq
 
 final case class TransportDocument(
   sequenceNumber:        Option[SequenceNumber],
@@ -26,3 +30,14 @@ final case class TransportDocument(
 
 object TransportDocument:
   given mongoFormat: Format[TransportDocument] = Json.format[TransportDocument]
+
+  given transportDocumentTag: XmlRootTag[TransportDocument] = XmlRootTag("TransportDocument")
+
+  given transportDocumentXmlWriter: XmlWriter[TransportDocument] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.sequenceNumber.toXml("sequenceNumber")
+          ++ o.transportDocumentType.toXml("type")
+          ++ o.referenceNumber.toXml("referenceNumber")
+
+      XmlWriter.elem(label, children)

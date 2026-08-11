@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class ModeOfTransportAtBorder(value: Int) extends AnyVal
 
 object ModeOfTransportAtBorder:
   given mongoFormat: Format[ModeOfTransportAtBorder] = Json.valueFormat[ModeOfTransportAtBorder]
+
+  given modeOfTransportAtBorderXmlWriter: XmlWriter[ModeOfTransportAtBorder] =
+    (o, label) => o.value.toXml(label)

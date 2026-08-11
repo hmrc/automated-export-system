@@ -17,8 +17,15 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
 
 case class CustomsOfficeOfExitActual(referenceNumber: ReferenceNumber)
 
 object CustomsOfficeOfExitActual:
   given mongoFormat: Format[CustomsOfficeOfExitActual] = Json.format[CustomsOfficeOfExitActual]
+
+  given customsOfficeOfExitActualTag: XmlRootTag[CustomsOfficeOfExitActual] = XmlRootTag("CustomsOfficeOfExitActual")
+
+  given customsOfficeOfExitActualXmlWriter: XmlWriter[CustomsOfficeOfExitActual] =
+    (o, label) => XmlWriter.elem(label, o.referenceNumber.toXml("referenceNumber"))

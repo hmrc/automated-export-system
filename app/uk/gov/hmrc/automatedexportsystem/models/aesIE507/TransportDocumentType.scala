@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 case class TransportDocumentType(value: Int) extends AnyVal
 
 object TransportDocumentType:
   given mongoFormat: Format[TransportDocumentType] = Json.valueFormat[TransportDocumentType]
+
+  given transportDocumentTypeXmlWriter: XmlWriter[TransportDocumentType] =
+    (o, label) => o.value.toXml(label)

@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class TypeOfLocation(value: String) extends AnyVal
 
 object TypeOfLocation:
   given mongoFormat: Format[TypeOfLocation] = Json.valueFormat[TypeOfLocation]
+
+  given typeOfLocationXmlWriter: XmlWriter[TypeOfLocation] =
+    (o, label) => o.value.toXml(label)
