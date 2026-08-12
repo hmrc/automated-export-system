@@ -24,7 +24,7 @@ import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 
 import java.time.LocalDateTime
 import java.util.UUID
-import scala.xml.Elem
+import scala.xml.{Elem, Node}
 
 class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
   object TestData:
@@ -64,7 +64,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
       "when the ducr is present" in {
         val xml: Elem =
           <Submission>
-              <submissionId>6fb33641-6dc7-4a4f-adef-06238c13a317</submissionId>
+              <submissionId>{TestData.id}</submissionId>
               <mrn>mrn</mrn>
               <ducr>referenceNumberUcr</ducr>
               <officeOfExitCode>referenceNumber</officeOfExitCode>
@@ -78,7 +78,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
       "when the ducr is not present" in {
         val xml: Elem =
           <Submission>
-              <submissionId>6fb33641-6dc7-4a4f-adef-06238c13a317</submissionId>
+              <submissionId>{TestData.id}</submissionId>
               <mrn>mrn</mrn>
               <officeOfExitCode>referenceNumber</officeOfExitCode>
               <updatedAt>2026-07-31T00:00:00</updatedAt>
@@ -100,7 +100,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
           val xml: Elem =
             <Submissions>
               <Submission>
-                <submissionId>6fb33641-6dc7-4a4f-adef-06238c13a317</submissionId>
+                <submissionId>{TestData.id}</submissionId>
                 <mrn>mrn</mrn>
                 <ducr>referenceNumberUcr</ducr>
                 <officeOfExitCode>referenceNumber</officeOfExitCode>
@@ -108,7 +108,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
                 <status>1</status>
               </Submission>
               <Submission>
-                <submissionId>6fb33641-6dc7-4a4f-adef-06238c13a317</submissionId>
+                <submissionId>{TestData.id}</submissionId>
                 <mrn>mrn</mrn>
                 <officeOfExitCode>referenceNumber</officeOfExitCode>
                 <updatedAt>2026-07-31T00:00:00</updatedAt>

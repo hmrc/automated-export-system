@@ -22,44 +22,52 @@ import scala.util.Using.Releasable
 import scala.xml.*
 
 /** Needed for XML normalization prior to assertion. ScalaTest will fail to acknowledge that 2 identical XMLs are equal, most likely due to the
-  * complex nature of the [[scala.xml.Node]] class. The solution is to normalize the XMLs and compare their string equivalents.
+  * complex nature of the [[scala.xml.NodeSeq]] class. The solution is to normalize the XMLs.
   */
 object XmlOps:
-  private def trimKeepOneSpace(str: String): Seq[Node] =
+  private def trimKeepOneSpace(str: String): NodeSeq =
     val stringBuilder: StringBuilder = StringBuilder()
 
     str.trim.foreach(c =>
-      if !c.isSpaceChar
-        || stringBuilder.nonEmpty && !stringBuilder.last.isSpaceChar
-      then stringBuilder.append(c)
+      if !c.isWhitespace then stringBuilder.append(c)
+      else if stringBuilder.nonEmpty && stringBuilder.last != ' ' then stringBuilder.append(' ')
     )
 
     stringBuilder.result() match
       case ""  => Seq.empty
-      case res => Seq(Text(res))
+      case res => Text(res)
 
-  private def trimSpaces(n: Node): Seq[Node] =
+  private def trimSpaces(n: Node): NodeSeq =
     n match
       case Text(text) => trimKeepOneSpace(text)
-      case _          => Seq(n)
+      case _          => n
 
-  def normalize(nodes: NodeSeq): NodeSeq = {
-    def rec(n: Node): Node =
+  def normalize(nodes: NodeSeq): NodeSeq =
+    def combineConsecutiveText(nodes: NodeSeq): NodeSeq =
+      val normalizedNodes: Seq[Node] = nodes.foldRight(List.empty) {
+        case (Text(textNode), Text(textAcc) :: nodes) =>
+          Text(textNode + textAcc) :: nodes
+        case (node, acc) =>
+          node :: acc
+      }
+
+      normalizedNodes
+
+    def rec(n: Node): NodeSeq =
       n match
+        case Group(nodes) =>
+          combineConsecutiveText(nodes.flatMap(rec)).flatMap(trimSpaces)
         case Elem(str, str1, data, binding, child*) =>
-          val childrenCombinedText: Seq[Node] = child.foldRight(List.empty[Node]) {
-            case (Text(textAcc), Text(textNode) :: nodes) =>
-              Text((textNode + textAcc).trim) :: nodes
-            case (node, acc) => node :: acc
-          }
+          val children: NodeSeq = child.flatMap(rec)
 
-          val children: Seq[Node] = childrenCombinedText.flatMap(trimSpaces).flatMap(rec)
+          val combinedChildren: NodeSeq = combineConsecutiveText(children).flatMap(trimSpaces)
 
-          Elem(str, str1, data, binding, false, children*)
+          Elem(str, str1, data, binding, false, combinedChildren*)
+        case a: Atom[_] => Text(a.text)
         case _ => n
 
-    nodes.map(rec)
-  }
+    combineConsecutiveText(nodes.flatMap(rec))
+  end normalize
 
   private def loadXml[R: Releasable](resource: => R, toInputSource: R => InputSource): Either[Throwable, Elem] =
     Using(resource)(r => XML.load(toInputSource(r))).toEither

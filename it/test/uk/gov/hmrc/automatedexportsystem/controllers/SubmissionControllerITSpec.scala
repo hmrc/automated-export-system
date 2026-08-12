@@ -329,9 +329,9 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
           }
 
           "due to elements not matching the required patterns" in new Setup {
@@ -427,9 +427,9 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
           }
         }
       }
@@ -488,9 +488,9 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.OK
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionSummaryListXml).toString
+            Helpers.status(result)      shouldBe StatusValues.OK
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
           }
 
           "and there are no submissions found with that EORI" in new Setup {
@@ -519,9 +519,9 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.OK
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionSummaryListXml).toString
+            Helpers.status(result)      shouldBe StatusValues.OK
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
           }
         }
       }
@@ -571,9 +571,9 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionRetrievalFailureXml).toString
+            Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionRetrievalFailureXml)
           }
         }
       }

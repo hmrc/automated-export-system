@@ -99,9 +99,9 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
           val resultContent: String = Helpers.contentAsString(result)
           val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-          Helpers.status(result)               shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
-          Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-          XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(expectedXmlBodyErrorResponseXml).toString
+          Helpers.status(result)      shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
+          Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+          XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(expectedXmlBodyErrorResponseXml)
         }
       }
     }

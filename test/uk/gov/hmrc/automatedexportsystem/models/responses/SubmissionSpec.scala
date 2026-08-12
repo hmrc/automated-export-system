@@ -381,7 +381,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
       "when all fields are present, and lists are populated with more than one element" in {
         val xml: Elem =
           <Submission>
-            <submissionId>6fb33641-6dc7-4a4f-adef-06238c13a317</submissionId>
+            <submissionId>{TestData.id}</submissionId>
             <status>1</status>
             <ExportOperation>
               <exportOperationType>1</exportOperationType>
@@ -495,7 +495,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
       "when non root optional fields are missing" in {
         val xml: Elem =
           <Submission>
-            <submissionId>6fb33641-6dc7-4a4f-adef-06238c13a317</submissionId>
+            <submissionId>{TestData.id}</submissionId>
             <status>1</status>
             <ExportOperation>
               <exportOperationType>1</exportOperationType>
@@ -550,7 +550,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
       "when GoodsShipment children optional fields are missing" in {
         val xml: Elem =
           <Submission>
-            <submissionId>6fb33641-6dc7-4a4f-adef-06238c13a317</submissionId>
+            <submissionId>{TestData.id}</submissionId>
             <status>1</status>
             <ExportOperation>
               <exportOperationType>1</exportOperationType>
@@ -580,7 +580,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
       "when GoodsShipment is missing" in {
         val xml: Elem =
           <Submission>
-            <submissionId>6fb33641-6dc7-4a4f-adef-06238c13a317</submissionId>
+            <submissionId>{TestData.id}</submissionId>
             <status>1</status>
             <ExportOperation>
               <exportOperationType>1</exportOperationType>

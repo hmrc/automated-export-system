@@ -177,9 +177,9 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(schemaNotFoundErrorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(schemaNotFoundErrorResponseXml)
           }
         }
 
@@ -212,9 +212,9 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.UNPROCESSABLE_ENTITY
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(schemaParseErrorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.UNPROCESSABLE_ENTITY
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(schemaParseErrorResponseXml)
           }
         }
 
@@ -260,9 +260,9 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               val resultContent: String = Helpers.contentAsString(result)
               val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-              Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
-              Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-              XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
+              Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
+              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
             }
 
             "due to many XmlSchemaValidationError" in {
@@ -326,9 +326,9 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               val resultContent: String = Helpers.contentAsString(result)
               val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-              Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
-              Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-              XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
+              Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
+              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
             }
 
             "due to parser error" in {
@@ -401,9 +401,9 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               val resultContent: String = Helpers.contentAsString(result)
               val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-              Helpers.status(result)               shouldBe StatusValues.OK
-              Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-              XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionSummaryListXml).toString
+              Helpers.status(result)      shouldBe StatusValues.OK
+              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
             }
 
             "and there are no submissions found with that EORI" in {
@@ -422,9 +422,9 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               val resultContent: String = Helpers.contentAsString(result)
               val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-              Helpers.status(result)               shouldBe StatusValues.OK
-              Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-              XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionSummaryListXml).toString
+              Helpers.status(result)      shouldBe StatusValues.OK
+              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
             }
           }
         }
@@ -462,9 +462,9 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               val resultContent: String = Helpers.contentAsString(result)
               val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-              Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
-              Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-              XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionRetrievalFailureXml).toString
+              Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionRetrievalFailureXml)
             }
           }
         }

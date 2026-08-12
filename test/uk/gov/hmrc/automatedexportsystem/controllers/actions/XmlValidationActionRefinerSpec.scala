@@ -100,9 +100,9 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(schemaNotFoundErrorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(schemaNotFoundErrorResponseXml)
           }
 
           "due to a SchemaParseError" in {
@@ -129,9 +129,9 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.UNPROCESSABLE_ENTITY
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(schemaParseErrorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.UNPROCESSABLE_ENTITY
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(schemaParseErrorResponseXml)
           }
 
           "due to an XmlSchemaValidationError" in {
@@ -172,9 +172,9 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
           }
 
           "due to many XmlSchemaValidationError" in {
@@ -239,9 +239,9 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
           }
         }
       }
