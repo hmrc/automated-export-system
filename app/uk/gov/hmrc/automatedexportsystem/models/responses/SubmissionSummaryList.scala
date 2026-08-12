@@ -45,6 +45,7 @@ final case class SubmissionSummary(
 )
 
 object SubmissionSummary:
+
   import LocalDateTimeFormat.localDateTimeFormat
 
   given format: OFormat[SubmissionSummary] = Json.format[SubmissionSummary]

@@ -71,3 +71,4 @@ enum SubmissionServiceError(val message: String, val responseCode: ResponseCode)
   val exception: Option[Throwable] = None
 
   case SubmissionRetrieveFailure(override val message: String) extends SubmissionServiceError(message, InternalServerError)
+  case SubmissionNotFound(override val message: String) extends SubmissionServiceError(message, NotFound)

@@ -30,8 +30,7 @@ import uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
-import uk.gov.hmrc.automatedexportsystem.errors.{AesError, SchemaError, SubmissionServiceError, XmlFailedValidationError, XmlSchemaValidationError}
-import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
+import uk.gov.hmrc.automatedexportsystem.errors.*
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 import uk.gov.hmrc.automatedexportsystem.models.request.SubmissionResult.Created
@@ -44,7 +43,7 @@ import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq, XML}
 
-class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks, MongoAesIE507MessageGenerator:
+class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents(executionContext = ec)
 
   val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
@@ -54,7 +53,6 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks, MongoAe
   val xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
 
-  val mockSubmissionService = mock[SubmissionService]
   val idGenerator: IdGenerator = mock[IdGenerator]
 
   val aesAuthAction: AesAuthAction =
@@ -133,13 +131,14 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks, MongoAe
                   <referenceNumber>GB000001</referenceNumber>
                 </CustomsOfficeOfExitActual>
               </aes:Submission>
-            when(submissionService.submitMessage(any(), any(), any()))
-              .thenReturn(EitherT(Future.successful(Right(()))))
+
             val request: FakeRequest[NodeSeq] =
               FakeRequest(HttpVerbs.POST, "/dummy/path")
                 .withHeaders("content-type" -> "application/xml")
                 .withBody(requestXml)
+
             when(xmlValidationService.validate(requestXml)).thenReturn(EitherT(Future.successful(Right(()))))
+
             when(submissionService.submitMessage(any(), any(), any())).thenReturn(EitherT(Future.successful(Right(Created))))
 
             val result: Future[Result] = Helpers.call(submissionController.message, request)

@@ -17,12 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.responses
 
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
 
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.{LocalDateTime, ZoneOffset}
 import scala.xml.NodeSeq
 
 final case class Submission(
@@ -48,3 +49,13 @@ object Submission:
           ++ o.updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).toXml("updated")
 
       XmlWriter.elem(label, children)
+
+  def fromMongoAesIE507Message(message: MongoAesIE507Message): Submission =
+    Submission(
+      submissionId = message._id,
+      status = message.exportOperation.exportOperationType,
+      exportOperation = message.exportOperation,
+      customsOfficeOfExitActual = message.customsOfficeOfExitActual,
+      goodsShipment = message.goodsShipment,
+      updatedAt = LocalDateTime.ofInstant(message.updatedAt, ZoneOffset.UTC)
+    )
