@@ -22,12 +22,14 @@ import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, Aes
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType.Awaiting
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.parsers.SubmissionRequestParser
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.NodeSeq
@@ -42,6 +44,8 @@ class SubmissionController @Inject() (
   xmlBodyParsers:             XmlBodyParsers,
   submissionService:          SubmissionService
 ) extends BackendController(cc):
+  import writeables.NodeSeqFormattedWriteables.writeableOfFormattedNodeSeq
+
   given ec: ExecutionContext = cc.executionContext
 
   private lazy val messageXmlValidatedAction: Action[NodeSeq] = {
@@ -92,3 +96,21 @@ class SubmissionController @Inject() (
 
   def submissions: EssentialAction =
     aesAuthEssentialAction(submissionsByEoriAction)
+
+  private def submissionByEoriAndSubmissionIdAction(id: UUID): Action[AnyContent] =
+    Action
+      .andThen(aesAuthRequestRefiner)
+      .async(aesAuthRequest =>
+        val eoriNumber:   EoriNumber   = EoriNumber(aesAuthRequest.eori)
+        val submissionId: SubmissionId = SubmissionId(id)
+
+        submissionService
+          .getSubmission(eoriNumber, submissionId)
+          .fold(
+            error => error.toErrorResponse.toResult,
+            submission => Status(ResponseCode.Ok.status)(submission.toXmlRoot)
+          )
+      )
+
+  def submission(id: UUID): EssentialAction =
+    aesAuthEssentialAction(submissionByEoriAndSubmissionIdAction(id))

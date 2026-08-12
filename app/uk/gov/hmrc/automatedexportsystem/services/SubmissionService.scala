@@ -72,12 +72,12 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
       case MongoError.DocumentNotFound(_) =>
         SubmissionServiceError.SubmissionNotFound(
           s"Submission not found for EORI: ${eoriNumber.value} " +
-            s"and submissionId: ${submissionId.value.toString}"
+            s"and submissionId: ${submissionId.value}"
         )
       case MongoError.UnexpectedError(ex) =>
         SubmissionServiceError.SubmissionRetrieveFailure(
           s"Submission retrieval failed for EORI: ${eoriNumber.value} " +
-            s"and submissionId: ${submissionId.value.toString}"
+            s"and submissionId: ${submissionId.value}"
         )
     }
   end getSubmission
