@@ -23,7 +23,6 @@ import com.mongodb.{MongoNotPrimaryException, MongoSocketException, MongoTimeout
 import org.apache.pekko.pattern.RetrySupport
 import org.mongodb.scala.MongoException
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.{Aggregates, Filters, Indexes, ReplaceOptions}
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
@@ -39,6 +38,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import org.bson.codecs.Codec
 import play.api.libs.json.OFormat
+import uk.gov.hmrc.automatedexportsystem.errors.MongoError.UnexpectedError
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 @ImplementedBy(classOf[AesIE507RepositoryImpl])
@@ -58,6 +58,12 @@ class AesIE507RepositoryImpl @Inject() (
       domainFormat = MongoAesIE507Message.mongoFormat,
       replaceIndexes = appConfig.replaceIndexes,
       indexes = Seq(
+        IndexModel(
+          Indexes.ascending("submissionId"),
+          IndexOptions()
+            .name("submissionId_unique")
+            .unique(true)
+        ),
         IndexModel(
           Indexes.ascending("updatedAt"),
           IndexOptions().expireAfter(appConfig.documentTtl, TimeUnit.SECONDS)
@@ -134,19 +140,27 @@ class AesIE507RepositoryImpl @Inject() (
     )(op)
 
   override def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, Boolean] =
+    val sid = submission.submissionId.value.toString
+
     val op: Future[Either[MongoError, Boolean]] =
       collection
         .replaceOne(
-          filter = equal("submissionId", submission.submissionId.value),
-          replacement = submission,
-          options = ReplaceOptions().upsert(true)
+          Filters.eq("submissionId", sid),
+          submission,
+          ReplaceOptions().upsert(true)
         )
         .toFuture()
-        .map(result => Right[MongoError, Boolean](result.getUpsertedId != null))
+        .map: wr =>
+          Right[MongoError, Boolean](wr.wasAcknowledged())
+        .recover:
+          case e: com.mongodb.MongoWriteException if e.getError.getCode == 11000 =>
+            Left(UnexpectedError(e))
+          case e =>
+            Left(UnexpectedError(e))
 
     retryPipeline(
       operationName = "submitUpsert",
-      context = Map("submissionId" -> submission.submissionId.value.toString)
+      context = Map("submissionId" -> sid)
     )(op)
 
   private def retryPipeline[R](

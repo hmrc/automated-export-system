@@ -18,6 +18,7 @@ package uk.gov.hmrc.automatedexportsystem.repositories
 
 import cats.data.NonEmptyList
 import org.mockito.Mockito.when
+import org.mongodb.scala.ObservableFuture
 import org.mongodb.scala.model.{Filters, Indexes}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
@@ -70,9 +71,8 @@ class AesIE507RepositoryISpec
     import helpers.GenHelpers.*
 
     "should have the expected TTL associated with the updatedAt index" in {
-      repository.indexes.head.getKeys shouldBe Indexes.ascending("updatedAt")
-
-      repository.indexes.head.getOptions.getExpireAfter(TimeUnit.SECONDS) shouldBe 1L
+      val ttlIndex = repository.indexes.find(_.getKeys == Indexes.ascending("updatedAt")).head
+      ttlIndex.getOptions.getExpireAfter(TimeUnit.SECONDS) shouldBe appConfig.documentTtl
     }
 
     "should be able to insert and retrieve documents" in
@@ -85,6 +85,22 @@ class AesIE507RepositoryISpec
             Filters.eq("submissionId", message.submissionId.value.toString)
           )
         ).futureValue shouldBe Seq(message)
+      }
+
+    "submit should upsert on same submissionId and keep one document" in
+      forAll { (message1: MongoAesIE507Message) =>
+        val message2 = message1.copy(updatedAt = message1.updatedAt.plusSeconds(30))
+
+        repository.submit(message1).value.futureValue shouldBe Right(true)
+        repository.submit(message2).value.futureValue shouldBe Right(true)
+
+        val docs = repository.collection
+          .find(Filters.eq("submissionId", message1.submissionId.value.toString))
+          .toFuture()
+          .futureValue
+
+        docs.size shouldBe 1
+        docs.head shouldBe message2
       }
 
     ".getMessages" - {

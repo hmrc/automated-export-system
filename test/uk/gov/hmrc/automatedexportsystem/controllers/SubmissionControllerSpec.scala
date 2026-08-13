@@ -30,7 +30,7 @@ import uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
-import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, SubmissionServiceError, XmlFailedValidationError, XmlSchemaValidationError}
+import uk.gov.hmrc.automatedexportsystem.errors.{AesError, SchemaError, SubmissionServiceError, XmlFailedValidationError, XmlSchemaValidationError}
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
@@ -42,7 +42,7 @@ import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import java.time.LocalDateTime
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.{Elem, NodeSeq}
+import scala.xml.{Elem, NodeSeq, XML}
 
 class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks, MongoAesIE507MessageGenerator:
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents(executionContext = ec)
@@ -331,8 +331,31 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks, MongoAe
               Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
               XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
             }
+
+            "due to parser error" in {
+              val badXml: scala.xml.Elem =
+                <Submission>
+                 <not>bar</not>
+               </Submission>
+              when(xmlValidationService.validate(any[NodeSeq]))
+                .thenReturn(EitherT.rightT[Future, AesError](()))
+
+              val request: FakeRequest[NodeSeq] =
+                FakeRequest(HttpVerbs.POST, "/dummy/path")
+                  .withHeaders("Content-Type" -> "application/xml")
+                  .withBody(badXml)
+
+              val result: Future[Result] = Helpers.call(submissionController.message, request)
+
+              Helpers.status(result) shouldBe BAD_REQUEST
+
+              val bodyXml = XML.loadString(Helpers.contentAsString(result))
+              (bodyXml \\ "Code").text.trim    shouldBe "INVALID_XML"
+              (bodyXml \\ "Message").text.trim shouldBe "Missing required field: ExportOperation"
+            }
           }
         }
+
       }
     }
 

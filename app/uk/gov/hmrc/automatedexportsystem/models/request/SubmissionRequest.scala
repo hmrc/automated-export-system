@@ -21,17 +21,21 @@ import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType
 import java.time.Instant
 import java.util.UUID
+import play.api.Logging
 
 case class SubmissionRequest(
   submissionId:              Option[SubmissionId],
   exportOperation:           ExportOperation,
   customsOfficeOfExitActual: CustomsOfficeOfExitActual,
   goodsShipment:             Option[GoodsShipment]
-) {
+) extends Logging {
   def toMongoMessage(
     operationType: ExportOperationType,
     eoriNumber:    EoriNumber
   ): MongoAesIE507Message = {
+    logger.info(
+      s"Converting SubmissionRequest to MongoAesIE507Message with submissionId: ${submissionId.getOrElse("None")}, eoriNumber: $eoriNumber, operationType: $operationType"
+    )
     val now = Instant.now()
     MongoAesIE507Message(
       submissionId = submissionId.getOrElse(SubmissionId(UUID.randomUUID())),
