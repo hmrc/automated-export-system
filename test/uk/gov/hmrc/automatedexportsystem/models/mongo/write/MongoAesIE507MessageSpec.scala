@@ -36,7 +36,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
 
     val mongoAesIE507MessageAllFields: MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = SubmissionId(id),
+        submissionId = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
         createdAt = Instant.ofEpochMilli(instant),
         updatedAt = Instant.ofEpochMilli(instant),
@@ -59,7 +59,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
                 NonEmptyList.one(
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(1)),
-                    containerIdentificationNumber = Some(ContainerIdentificationNumber(1)),
+                    containerIdentificationNumber = Some(ContainerIdentificationNumber("some-number")),
                     numberOfSeals = Some(NumberOfSeals(1))
                   )
                 )
@@ -107,6 +107,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
             goodsItem = Some(
               NonEmptyList.one(
                 GoodsItem(
+                  referenceNumberUcr = None,
                   declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1)),
                   commodity = Commodity(
                     grossMass = GrossMass(100.55),
@@ -132,7 +133,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
     val mongoAesIE507MessageAllFieldsJson: JsValue =
       Json.parse(s"""
           |{
-          |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
+          |  "submissionId" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "eoriNumber" : "eoriNumber",
           |  "createdAt" : {
           |    "$$date" : {
@@ -160,7 +161,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |      "parentUcrId" : "parentUcrId",
           |      "transportEquipment" : [ {
           |        "sequenceNumber" : 1,
-          |        "containerIdentificationNumber" : 1,
+          |        "containerIdentificationNumber" : "some-number",
           |        "numberOfSeals" : 1
           |      } ],
           |      "seal" : [ {
@@ -208,7 +209,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
 
     val mongoAesIE507MessageNoOptionalGoodsShipment: MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = SubmissionId(id),
+        submissionId = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
         createdAt = Instant.ofEpochMilli(instant),
         updatedAt = Instant.ofEpochMilli(instant),
@@ -227,7 +228,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
     val mongoAesIE507MessageNoOptionalGoodsShipmentJson: JsValue =
       Json.parse(s"""
           |{
-          |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
+          |  "submissionId" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "eoriNumber" : "eoriNumber",
           |  "createdAt" : {
           |    "$$date" : {
@@ -253,7 +254,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
 
     val mongoAesIE507MessageNoObjOptionals: MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = SubmissionId(id),
+        submissionId = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
         createdAt = Instant.ofEpochMilli(instant),
         updatedAt = Instant.ofEpochMilli(instant),
@@ -324,6 +325,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
             goodsItem = Some(
               NonEmptyList.one(
                 GoodsItem(
+                  referenceNumberUcr = None,
                   declarationGoodsItemNumber = None,
                   commodity = Commodity(
                     grossMass = GrossMass(100.55),
@@ -349,7 +351,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
     val mongoAesIE507MessageNoObjOptionalsJson: JsValue =
       Json.parse(s"""
           |{
-          |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
+          |  "submissionId" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "eoriNumber" : "eoriNumber",
           |  "createdAt" : {
           |    "$$date" : {
@@ -396,7 +398,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
 
     val mongoAesIE507MessageEmptyLists: MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = SubmissionId(id),
+        submissionId = SubmissionId(id),
         eoriNumber = EoriNumber("eoriNumber"),
         createdAt = Instant.ofEpochMilli(instant),
         updatedAt = Instant.ofEpochMilli(instant),
@@ -442,7 +444,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
     val mongoAesIE507MessageEmptyListsJson: JsValue =
       Json.parse(s"""
           |{
-          |  "_id" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
+          |  "submissionId" : "6fb33641-6dc7-4a4f-adef-06238c13a317",
           |  "eoriNumber" : "eoriNumber",
           |  "createdAt" : {
           |    "$$date" : {

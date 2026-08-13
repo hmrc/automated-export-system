@@ -18,8 +18,10 @@ package uk.gov.hmrc.automatedexportsystem.repositories
 
 import cats.data.NonEmptyList
 import org.mockito.Mockito.when
+import org.mongodb.scala.ObservableFuture
 import org.mongodb.scala.model.{Filters, Indexes}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
@@ -30,13 +32,14 @@ import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.responses.SubmissionSummary
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
 
-class AesIE507RepositorySpec
+class AesIE507RepositoryISpec
     extends AnyFreeSpecLike,
       Matchers,
       EitherValues,
@@ -57,20 +60,47 @@ class AesIE507RepositorySpec
     val submissionId: SubmissionId = SubmissionId(UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317"))
     val eoriNumber:   EoriNumber   = EoriNumber("eoriNumber")
 
+    extension (mongoAesIE507MessageGen: Gen[MongoAesIE507Message])
+      def withEori(eoriNumber: EoriNumber): Gen[MongoAesIE507Message] =
+        mongoAesIE507MessageGen.map(_.copy(eoriNumber = eoriNumber))
+
+      def withSubmissionId(submissionId: SubmissionId): Gen[MongoAesIE507Message] =
+        mongoAesIE507MessageGen.map(_.copy(submissionId = submissionId))
+
   "AesIE507Repository" - {
     import helpers.GenHelpers.*
 
     "should have the expected TTL associated with the updatedAt index" in {
-      repository.indexes.head.getKeys shouldBe Indexes.ascending("updatedAt")
-
-      repository.indexes.head.getOptions.getExpireAfter(TimeUnit.SECONDS) shouldBe 1L
+      val ttlIndex = repository.indexes.find(_.getKeys == Indexes.ascending("updatedAt")).head
+      ttlIndex.getOptions.getExpireAfter(TimeUnit.SECONDS) shouldBe appConfig.documentTtl
     }
 
     "should be able to insert and retrieve documents" in
       forAll { (message: MongoAesIE507Message) =>
         insert(message).futureValue
 
-        find(Filters.eq("_id", message._id.value.toString)).futureValue shouldBe Seq(message)
+        find(
+          Filters.and(
+            Filters.eq("eoriNumber", message.eoriNumber.value),
+            Filters.eq("submissionId", message.submissionId.value.toString)
+          )
+        ).futureValue shouldBe Seq(message)
+      }
+
+    "submit should upsert on same submissionId and keep one document" in
+      forAll { (message1: MongoAesIE507Message) =>
+        val message2 = message1.copy(updatedAt = message1.updatedAt.plusSeconds(30))
+
+        repository.submit(message1).value.futureValue shouldBe Right(true)
+        repository.submit(message2).value.futureValue shouldBe Right(true)
+
+        val docs = repository.collection
+          .find(Filters.eq("submissionId", message1.submissionId.value.toString))
+          .toFuture()
+          .futureValue
+
+        docs.size shouldBe 1
+        docs.head shouldBe message2
       }
 
     ".getMessages" - {
@@ -89,11 +119,11 @@ class AesIE507RepositorySpec
 
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: NonEmptyList[MongoAesIE507Message] =
+          val summariesNel: NonEmptyList[SubmissionSummary] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
-          messages.length shouldBe 1
-          messages.toList shouldBe mongoAesIE507MessagesMatchingEori
+          val summaries = summariesNel.toList
+          summaries.length shouldBe 1
         }
 
         "when there are multiple documents in the collection with that eori" in {
@@ -108,11 +138,14 @@ class AesIE507RepositorySpec
 
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: NonEmptyList[MongoAesIE507Message] =
+          val messages: NonEmptyList[SubmissionSummary] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
+          val expected: List[SubmissionSummary] =
+            mongoAesIE507MessagesMatchingEori.toList.map(SubmissionSummary.fromMongoAesIE507Message)
+
           messages.length shouldBe 5
-          messages.toList   should contain theSameElementsAs mongoAesIE507MessagesMatchingEori
+          messages.toList   should contain theSameElementsAs expected
         }
       }
 

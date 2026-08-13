@@ -18,7 +18,7 @@ package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
 
-final case class ContainerIdentificationNumber(value: Int) extends AnyVal
+final case class ContainerIdentificationNumber(value: String) extends AnyVal
 
 object ContainerIdentificationNumber:
   given mongoFormat: Format[ContainerIdentificationNumber] = Json.valueFormat[ContainerIdentificationNumber]

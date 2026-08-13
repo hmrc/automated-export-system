@@ -159,11 +159,6 @@ class XmlValidationServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           result.value.futureValue.left.value shouldBe XmlFailedValidationError(
             NonEmptyList.of(
               XmlSchemaValidationError(
-                3,
-                26,
-                "cvc-complex-type.2.4.a: Invalid content was found starting with element 'ExportOperation'. One of '{status}' is expected."
-              ),
-              XmlSchemaValidationError(
                 5,
                 33,
                 "cvc-complex-type.2.4.a: Invalid content was found starting with element 'discrepanciesExist'. One of '{MRN}' is expected."
@@ -197,45 +192,39 @@ class XmlValidationServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
               XmlSchemaValidationError(
                 2,
                 24,
-                "cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '.{1,35}' for type 'UK_AlphaNumeric35Type'."
+                "cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '.{1,36}' for type 'UK_AlphaNumeric36Type'."
               ),
               XmlSchemaValidationError(2, 24, "cvc-type.3.1.3: The value '' of element 'submissionId' is not valid."),
               XmlSchemaValidationError(
-                3,
-                18,
-                "cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '.{1,35}' for type 'UK_AlphaNumeric35Type'."
-              ),
-              XmlSchemaValidationError(3, 18, "cvc-type.3.1.3: The value '' of element 'status' is not valid."),
-              XmlSchemaValidationError(
-                5,
+                4,
                 20,
                 "cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '[1-3]{1}' for type 'UK_OneToThreeType'."
               ),
-              XmlSchemaValidationError(5, 20, "cvc-type.3.1.3: The value '' of element 'type' is not valid."),
+              XmlSchemaValidationError(4, 20, "cvc-type.3.1.3: The value '' of element 'type' is not valid."),
               XmlSchemaValidationError(
-                6,
+                5,
                 19,
                 "cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '([2][4-9]|[3-9][0-9])[A-Z]{2}[A-Z0-9]{12}[A-E][0-9]' for type 'UK_MRNType'."
               ),
-              XmlSchemaValidationError(6, 19, "cvc-type.3.1.3: The value '' of element 'MRN' is not valid."),
+              XmlSchemaValidationError(5, 19, "cvc-type.3.1.3: The value '' of element 'MRN' is not valid."),
               XmlSchemaValidationError(
-                7,
+                6,
                 34,
                 "cvc-enumeration-valid: Value '' is not facet-valid with respect to enumeration '[0, 1]'. It must be a value from the enumeration."
               ),
-              XmlSchemaValidationError(7, 34, "cvc-type.3.1.3: The value '' of element 'discrepanciesExist' is not valid."),
+              XmlSchemaValidationError(6, 34, "cvc-type.3.1.3: The value '' of element 'discrepanciesExist' is not valid."),
               XmlSchemaValidationError(
-                8,
+                7,
                 30,
                 "cvc-enumeration-valid: Value '' is not facet-valid with respect to enumeration '[0, 1]'. It must be a value from the enumeration."
               ),
-              XmlSchemaValidationError(8, 30, "cvc-type.3.1.3: The value '' of element 'splitIndicator' is not valid."),
+              XmlSchemaValidationError(7, 30, "cvc-type.3.1.3: The value '' of element 'splitIndicator' is not valid."),
               XmlSchemaValidationError(
-                11,
+                10,
                 31,
                 "cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '[A-Z]{2}[A-Z0-9]{6}' for type 'UK_ReferenceNumberType'."
               ),
-              XmlSchemaValidationError(11, 31, "cvc-type.3.1.3: The value '' of element 'referenceNumber' is not valid.")
+              XmlSchemaValidationError(10, 31, "cvc-type.3.1.3: The value '' of element 'referenceNumber' is not valid.")
             )
           )
         }

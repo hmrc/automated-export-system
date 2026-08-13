@@ -18,30 +18,34 @@ package uk.gov.hmrc.automatedexportsystem.repositories
 
 import cats.data.{EitherT, NonEmptyList}
 import com.google.inject.ImplementedBy
-import com.mongodb.client.model.{IndexModel, IndexOptions}
+import com.mongodb.client.model.{IndexModel, IndexOptions, Projections, Sorts}
+import com.mongodb.{MongoNotPrimaryException, MongoSocketException, MongoTimeoutException}
 import org.apache.pekko.pattern.RetrySupport
-import org.mongodb.scala.AggregateObservable
+import org.mongodb.scala.MongoException
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.{Aggregates, Filters, Indexes}
+import org.mongodb.scala.model.{Aggregates, Filters, Indexes, ReplaceOptions}
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.responses.SubmissionSummary
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.ClassTag
 import scala.util.control.NonFatal
+import org.bson.codecs.Codec
+import play.api.libs.json.OFormat
+import uk.gov.hmrc.automatedexportsystem.errors.MongoError.UnexpectedError
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 @ImplementedBy(classOf[AesIE507RepositoryImpl])
 trait AesIE507Repository:
-  def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507Message]]
-
-  def getMessage(eori: EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message]
+  def getMessages(eori:  EoriNumber):                             EitherT[Future, MongoError, NonEmptyList[SubmissionSummary]]
+  def getMessage(eori:   EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message]
+  def submit(submission: MongoAesIE507Message):                   EitherT[Future, MongoError, Boolean]
 
 @Singleton
 class AesIE507RepositoryImpl @Inject() (
@@ -55,76 +59,146 @@ class AesIE507RepositoryImpl @Inject() (
       replaceIndexes = appConfig.replaceIndexes,
       indexes = Seq(
         IndexModel(
+          Indexes.ascending("submissionId"),
+          IndexOptions()
+            .name("submissionId_unique")
+            .unique(true)
+        ),
+        IndexModel(
           Indexes.ascending("updatedAt"),
           IndexOptions().expireAfter(appConfig.documentTtl, TimeUnit.SECONDS)
         ),
         IndexModel(
           Indexes.compoundIndex(
             Indexes.ascending("eoriNumber"),
-            Indexes.ascending("_id")
+            Indexes.ascending("submissionId")
           )
         )
+      ),
+      extraCodecs = Seq[Codec[?]](
+        Codecs.playFormatCodec[SubmissionSummary](summon[OFormat[SubmissionSummary]])
       )
     ),
       AesIE507Repository,
       Logging:
-  def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507Message]] =
-    val filter: Bson = Aggregates.filter(Filters.eq("eoriNumber", eori.value))
 
-    val pipeline: Seq[Bson] = Seq(filter)
+  override def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[SubmissionSummary]] =
+    val pipeline: Seq[Bson] = Seq(
+      Aggregates.filter(Filters.eq("eoriNumber", eori.value)),
+      Aggregates.project(
+        Projections.fields(
+          Projections.computed("submissionId", "$submissionId"),
+          Projections.computed("ducr", "$goodsShipment.consignment.referenceNumberUCR"),
+          Projections.computed("mrn", "$exportOperation.mrn"),
+          Projections.computed("officeOfExitCode", "$customsOfficeOfExitActual.referenceNumber"),
+          Projections.computed("status", "$exportOperation.exportOperationType"),
+          Projections.computed("updatedAt", "$updatedAt"),
+          Projections.excludeId()
+        )
+      ),
+      Aggregates.sort(Sorts.descending("lastUpdated"))
+    )
 
-    retryPipeline(pipeline)((obs: AggregateObservable[MongoAesIE507Message]) =>
-      obs
+    val op: Future[Either[MongoError, NonEmptyList[SubmissionSummary]]] =
+      collection
+        .aggregate[SubmissionSummary](pipeline)
         .toFuture()
-        .map {
-          case seq if seq.isEmpty =>
-            Left(MongoError.DocumentNotFound(s"No documents found for EORI: ${eori.value}"))
-          case seq => Right(NonEmptyList(seq.head, seq.tail.toList))
+        .map { summaries =>
+          NonEmptyList
+            .fromList(summaries.toList)
+            .toRight(
+              MongoError.DocumentNotFound(s"No documents found for EORI: ${eori.value}")
+            )
         }
-    )
 
-  def getMessage(eori: EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message] =
-    val filter: Bson = Aggregates.filter(
-      Filters.and(
-        Filters.eq("eoriNumber", eori.value),
-        Filters.eq("_id", submissionId.value.toString)
-      )
-    )
+    retryPipeline("getMessages", Map("eori" -> eori.value))(op)
 
-    val pipeline: Seq[Bson] = Seq(filter)
-
-    retryPipeline(pipeline)((obs: AggregateObservable[MongoAesIE507Message]) =>
-      obs
+  override def getMessage(
+    eori:         EoriNumber,
+    submissionId: SubmissionId
+  ): EitherT[Future, MongoError, MongoAesIE507Message] =
+    val op: Future[Either[MongoError, MongoAesIE507Message]] =
+      collection
+        .find(
+          Filters.and(
+            Filters.eq("eoriNumber", eori.value),
+            Filters.eq("submissionId", submissionId.value.toString)
+          )
+        )
         .headOption()
-        .map(opt =>
-          opt.toRight(
+        .map(
+          _.toRight(
             MongoError.DocumentNotFound(
-              s"No document found for EORI: ${eori.value} " +
-                s"and submissionId: ${submissionId.value}"
+              s"No document found for EORI: ${eori.value} and submissionId: ${submissionId.value}"
             )
           )
         )
-    )
 
-  private def retryPipeline[T: ClassTag, R](
-    pipeline: Seq[Bson]
-  )(transform: AggregateObservable[T] => Future[Either[MongoError, R]]): EitherT[Future, MongoError, R] = {
-    def func(): Future[Either[MongoError, R]] =
-      transform(collection.aggregate[T](pipeline))
+    retryPipeline(
+      operationName = "getMessage",
+      context = Map("eoriNumber" -> eori.value, "submissionId" -> submissionId.value.toString)
+    )(op)
+
+  override def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, Boolean] =
+    val sid = submission.submissionId.value.toString
+
+    val op: Future[Either[MongoError, Boolean]] =
+      collection
+        .replaceOne(
+          Filters.eq("submissionId", sid),
+          submission,
+          ReplaceOptions().upsert(true)
+        )
+        .toFuture()
+        .map: wr =>
+          Right[MongoError, Boolean](wr.wasAcknowledged())
+        .recover:
+          case e: com.mongodb.MongoWriteException if e.getError.getCode == 11000 =>
+            Left(UnexpectedError(e))
+          case e =>
+            Left(UnexpectedError(e))
+
+    retryPipeline(
+      operationName = "submitUpsert",
+      context = Map("submissionId" -> sid)
+    )(op)
+
+  private def retryPipeline[R](
+    operationName: String,
+    context:       Map[String, String]
+  )(
+    op: => Future[Either[MongoError, R]]
+  ): EitherT[Future, MongoError, R] =
+    def attempt(): Future[Either[MongoError, R]] =
+      op.recover {
+        case me: MongoException if !MongoRetryable.isRetryable(me) =>
+          Left(MongoError.UnexpectedError(me))
+      }
 
     EitherT(
       RetrySupport
         .retry(
-          attempt = func,
+          attempt = attempt,
           attempts = appConfig.mongoRetryAttempts
         )
         .recover { case NonFatal(ex) =>
-          logger.error(
-            s"Aggregation pipeline ${pipeline.mkString} failed after" +
-              s" ${appConfig.mongoRetryAttempts + 1} attempts with error: $ex"
-          )
+          val ctx =
+            if context.isEmpty then ""
+            else context.map { case (k, v) => s"$k=$v" }.mkString(" ", " ", "")
 
+          logger.error(
+            s"$operationName failed after ${appConfig.mongoRetryAttempts + 1} attempts$ctx: " +
+              s"${ex.getClass.getSimpleName}: ${ex.getMessage}"
+          )
           Left(MongoError.UnexpectedError(ex))
         }
     )
-  }
+
+  private object MongoRetryable:
+    def isRetryable(t: Throwable): Boolean = t match
+      case _:  MongoTimeoutException                                           => true
+      case _:  MongoSocketException                                            => true
+      case _:  MongoNotPrimaryException                                        => true
+      case me: MongoException if me.hasErrorLabel("RetryableWriteError")       => true
+      case me: MongoException if me.hasErrorLabel("TransientTransactionError") => true
+      case _ => false

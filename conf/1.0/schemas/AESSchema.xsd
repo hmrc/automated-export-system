@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://ecs.dgtaxud.ec" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" targetNamespace="http://ecs.dgtaxud.ec" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="60.4.15" vc:minVersion="1.1">
+<xs:schema
+		xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		xmlns="http://ecs.dgtaxud.ec"
+		xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+		targetNamespace="http://ecs.dgtaxud.ec"
+		elementFormDefault="unqualified" attributeFormDefault="unqualified" version="60.4.15" vc:minVersion="1.1">
 	<!--================================================================================-->
 	<!--===== IE507: E_ARR_EXT                                                                -->
 	<!--===== ARRIVAL AT EXIT                                                                 -->
@@ -20,21 +25,12 @@
 	<xs:complexType name="SubmissionType">
 
 					<xs:sequence>
-						<xs:element name="submissionId"  type="UK_AlphaNumeric35Type" minOccurs="0" maxOccurs="1">
+						<xs:element name="submissionId"  type="UK_AlphaNumeric36Type" minOccurs="0" maxOccurs="1">
 							<xs:annotation>
 								<xs:appinfo source="urn:hmrc:error-key">SUBMISSION_ID</xs:appinfo>
 								<xs:documentation>
 									<description value="Unique identifed used by digital"/>
-									<format value="an..35"/>
-									<xs:optionality value="R"/>
-								</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="status"  type="UK_AlphaNumeric35Type" minOccurs="1" maxOccurs="1">
-							<xs:annotation>
-								<xs:documentation>
-									<description value="Status of the submission"/>
-									<format value="an..35"/>
+									<format value="an..36"/>
 									<xs:optionality value="R"/>
 								</xs:documentation>
 							</xs:annotation>

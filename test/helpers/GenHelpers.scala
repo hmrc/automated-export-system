@@ -26,6 +26,6 @@ trait GenHelpers:
       mongoAesIE507MessageGen.map(_.copy(eoriNumber = eoriNumber))
 
     def withSubmissionId(submissionId: SubmissionId): Gen[MongoAesIE507Message] =
-      mongoAesIE507MessageGen.map(_.copy(_id = submissionId))
+      mongoAesIE507MessageGen.map(_.copy(submissionId = submissionId))
 
 object GenHelpers extends GenHelpers

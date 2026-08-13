@@ -38,7 +38,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
   val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
 
-  val submissionService: SubmissionService = SubmissionService(aesIE507Repository)
+  val submissionService: SubmissionService = SubmissionServiceImpl(aesIE507Repository)
 
   "SubmissionService" - {
     import helpers.GenHelpers.*
@@ -66,23 +66,20 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
           val submissionSummaryList: List[SubmissionSummary] =
             mongoAesIE507Messages.map(SubmissionSummary.fromMongoAesIE507Message).toList
 
+          val submissionSummariesNel: NonEmptyList[SubmissionSummary] =
+            NonEmptyList.fromListUnsafe(submissionSummaryList)
+
           when(aesIE507Repository.getMessages(eoriNumber))
             .thenReturn(
               EitherT(
                 Future.successful(
-                  Right(
-                    NonEmptyList.of(
-                      mongoAesIE507Messages.head,
-                      mongoAesIE507Messages.tail*
-                    )
-                  )
+                  Right(submissionSummariesNel)
                 )
               )
             )
 
           val result: SubmissionSummaryList =
             submissionService.getSubmissions(eoriNumber).value.futureValue.value
-
           result.submissions shouldBe submissionSummaryList
         }
       }

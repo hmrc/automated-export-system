@@ -21,6 +21,7 @@ import play.api.libs.json.{Format, Json}
 
 final case class GoodsItem(
   declarationGoodsItemNumber: Option[DeclarationGoodsItemNumber],
+  referenceNumberUcr:         Option[ReferenceNumberUcr],
   commodity:                  Commodity,
   packaging:                  Option[NonEmptyList[Packaging]]
 )

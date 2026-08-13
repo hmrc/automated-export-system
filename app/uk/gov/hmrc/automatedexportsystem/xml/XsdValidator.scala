@@ -18,49 +18,43 @@ package uk.gov.hmrc.automatedexportsystem.xml
 
 import cats.data.NonEmptyList
 import cats.syntax.either.*
-import org.xml.sax.{ErrorHandler, SAXParseException}
+import org.xml.sax.{ErrorHandler, InputSource, SAXParseException}
 import uk.gov.hmrc.automatedexportsystem.errors.SchemaError.{SchemaNotFoundError, SchemaParseError}
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
 
 import java.io.StringReader
 import javax.xml.XMLConstants
+import javax.xml.parsers.SAXParserFactory
 import javax.xml.transform.Source
-import javax.xml.transform.stream.StreamSource
+import javax.xml.transform.sax.SAXSource
 import javax.xml.validation.{Schema, SchemaFactory, Validator}
 import scala.collection.mutable.ArrayBuffer
-import scala.xml.NodeSeq
+import scala.xml.{InputSource, NodeSeq}
 
 final class XsdValidator private (schema: Schema):
   def validate(xml: NodeSeq): Either[XmlFailedValidationError, Unit] =
-    val xmlSource: Source = XsdValidator.xmlToSource(xml)
-
+    val xmlSource: Source = XsdValidator.xmlToSaxSource(xml)
     validate(xmlSource)
 
   private def validate(xml: Source): Either[XmlFailedValidationError, Unit] =
     val errorHandler: XsdValidator.XsdErrorHandler = XsdValidator.XsdErrorHandler()
     val validator:    Validator                    = getValidator(errorHandler)
 
-    val validateResult: Either[XmlFailedValidationError, Unit] =
-      Either
-        .catchOnly[SAXParseException](validator.validate(xml))
-        .leftMap(saxe => XmlFailedValidationError(NonEmptyList.of(XmlSchemaValidationError.fromSaxe(saxe))))
+    val thrown: Option[SAXParseException] =
+      Either.catchOnly[SAXParseException](validator.validate(xml)).left.toOption
 
-    validateResult.flatMap { _ =>
-      val errors: List[SAXParseException] = errorHandler.getErrors
+    val allErrors: List[SAXParseException] =
+      (errorHandler.getErrors ++ thrown.toList)
+        .distinctBy(e => (e.getLineNumber, e.getColumnNumber, e.getMessage))
 
-      val xmlFailedValidationResult: Either[XmlFailedValidationError, Unit] =
-        NonEmptyList
-          .fromList(errors)
-          .map(saxeNel => XmlFailedValidationError(saxeNel.map(XmlSchemaValidationError.fromSaxe)))
-          .toLeft(())
-
-      xmlFailedValidationResult
-    }
+    NonEmptyList
+      .fromList(allErrors)
+      .map(saxeNel => XmlFailedValidationError(saxeNel.map(XmlSchemaValidationError.fromSaxe)))
+      .toLeft(())
 
   private def getValidator(errorHandler: ErrorHandler): Validator =
     val validator: Validator = schema.newValidator()
     validator.setErrorHandler(errorHandler)
-
     validator
 end XsdValidator
 
@@ -68,32 +62,37 @@ object XsdValidator:
   private class XsdErrorHandler extends ErrorHandler:
     private lazy val errorBuffer: ArrayBuffer[SAXParseException] = ArrayBuffer.empty
 
-    def warning(exception: SAXParseException): Unit = errorBuffer.addOne(exception)
+    def warning(exception: SAXParseException): Unit =
+      errorBuffer.addOne(exception)
 
-    def error(exception: SAXParseException): Unit = errorBuffer.addOne(exception)
+    def error(exception: SAXParseException): Unit =
+      errorBuffer.addOne(exception)
 
-    def fatalError(exception: SAXParseException): Unit = errorBuffer.addOne(exception)
+    def fatalError(exception: SAXParseException): Unit =
+      errorBuffer.addOne(exception)
+      throw exception
 
     def getErrors: List[SAXParseException] = errorBuffer.toList
   end XsdErrorHandler
 
-  private def xmlToSource(xml: NodeSeq): Source =
-    StreamSource(StringReader(xml.toString))
+  private def xmlToSaxSource(xml: NodeSeq): Source =
+    val spf = SAXParserFactory.newInstance()
+    spf.setNamespaceAware(true)
+    spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
+
+    val xmlReader   = spf.newSAXParser().getXMLReader
+    val inputSource = InputSource(new StringReader(xml.toString))
+    SAXSource(xmlReader, inputSource)
 
   def fromXsdPath(path: String): Either[SchemaError, XsdValidator] =
     Either
       .catchNonFatal {
         val schemaFactory: SchemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-        // needed because by default the XML parser restricts the maxOccurs attribute to 5000
-        // we either turn the secure processing off here, or change the maxOccurs that are > 5000 in
-        // the schemas to 5000
         schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false)
         val schema: Schema = schemaFactory.newSchema(getClass.getResource(path))
-
         XsdValidator(schema)
       }
       .leftMap {
         case _:    NullPointerException => SchemaNotFoundError(xsdPath = path)
         case saxe: SAXParseException    => SchemaParseError(SchemaError.XsdStructureError.fromSaxe(saxe))
       }
-end XsdValidator

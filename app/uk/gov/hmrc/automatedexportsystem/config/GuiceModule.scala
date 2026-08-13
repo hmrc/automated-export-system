@@ -21,6 +21,7 @@ import com.google.inject.{AbstractModule, Provides}
 import play.api.libs.concurrent.PekkoGuiceSupport
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.automatedexportsystem.services.{SubmissionService, SubmissionServiceImpl}
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -33,8 +34,10 @@ class GuiceModule(
   @unused configuration: Configuration
 ) extends AbstractModule
     with PekkoGuiceSupport {
-  override def configure(): Unit =
+  override def configure(): Unit = {
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector]).asEagerSingleton()
+    bind(classOf[SubmissionService]).to(classOf[SubmissionServiceImpl]).asEagerSingleton()
+  }
 
   @Provides
   @Named("eisBearerToken")

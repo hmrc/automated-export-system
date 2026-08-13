@@ -76,7 +76,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
 
     val mongoAesIE507Message1: MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = SubmissionId(id1),
+        submissionId = SubmissionId(id1),
         eoriNumber = EoriNumber(eori),
         createdAt = instant,
         updatedAt = instant,
@@ -99,7 +99,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                 NonEmptyList.one(
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(1)),
-                    containerIdentificationNumber = Some(ContainerIdentificationNumber(1)),
+                    containerIdentificationNumber = Some(ContainerIdentificationNumber("some-id")),
                     numberOfSeals = Some(NumberOfSeals(1))
                   )
                 )
@@ -147,6 +147,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             goodsItem = Some(
               NonEmptyList.one(
                 GoodsItem(
+                  referenceNumberUcr = Some(ReferenceNumberUcr("ducr")),
                   declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1)),
                   commodity = Commodity(
                     grossMass = GrossMass(100.55),
@@ -171,7 +172,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
 
     val mongoAesIE507Message2: MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = SubmissionId(id2),
+        submissionId = SubmissionId(id2),
         eoriNumber = EoriNumber(eori),
         createdAt = instant,
         updatedAt = instant,
@@ -302,11 +303,6 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                 <message>XML failed schema validation</message>
                 <errors>
                   <error>
-                    <line>3</line>
-                    <column>26</column>
-                    <message>cvc-complex-type.2.4.a: Invalid content was found starting with element 'ExportOperation'. One of '{{status}}' is expected.</message>
-                  </error>
-                  <error>
                     <line>5</line>
                     <column>33</column>
                     <message>cvc-complex-type.2.4.a: Invalid content was found starting with element 'discrepanciesExist'. One of '{{MRN}}' is expected.</message>
@@ -367,7 +363,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                   <error>
                     <line>2</line>
                     <column>24</column>
-                    <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '.{{1,35}}' for type 'UK_AlphaNumeric35Type'.</message>
+                    <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '.{{1,36}}' for type 'UK_AlphaNumeric36Type'.</message>
                   </error>
                   <error>
                     <line>2</line>
@@ -375,62 +371,52 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                     <message>cvc-type.3.1.3: The value '' of element 'submissionId' is not valid.</message>
                   </error>
                   <error>
-                    <line>3</line>
-                    <column>18</column>
-                    <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '.{{1,35}}' for type 'UK_AlphaNumeric35Type'.</message>
-                  </error>
-                  <error>
-                    <line>3</line>
-                    <column>18</column>
-                    <message>cvc-type.3.1.3: The value '' of element 'status' is not valid.</message>
-                  </error>
-                  <error>
-                    <line>5</line>
+                    <line>4</line>
                     <column>20</column>
                     <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '[1-3]{{1}}' for type 'UK_OneToThreeType'.</message>
                   </error>
                   <error>
-                    <line>5</line>
+                    <line>4</line>
                     <column>20</column>
                     <message>cvc-type.3.1.3: The value '' of element 'type' is not valid.</message>
                   </error>
                   <error>
-                    <line>6</line>
+                    <line>5</line>
                     <column>19</column>
                     <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '([2][4-9]|[3-9][0-9])[A-Z]{{2}}[A-Z0-9]{{12}}[A-E][0-9]' for type 'UK_MRNType'.</message>
                   </error>
                   <error>
-                    <line>6</line>
+                    <line>5</line>
                     <column>19</column>
                     <message>cvc-type.3.1.3: The value '' of element 'MRN' is not valid.</message>
                   </error>
                   <error>
-                    <line>7</line>
+                    <line>6</line>
                     <column>34</column>
                     <message>cvc-enumeration-valid: Value '' is not facet-valid with respect to enumeration '[0, 1]'. It must be a value from the enumeration.</message>
                   </error>
                   <error>
-                    <line>7</line>
+                    <line>6</line>
                     <column>34</column>
                     <message>cvc-type.3.1.3: The value '' of element 'discrepanciesExist' is not valid.</message>
                   </error>
                   <error>
-                    <line>8</line>
+                    <line>7</line>
                     <column>30</column>
                     <message>cvc-enumeration-valid: Value '' is not facet-valid with respect to enumeration '[0, 1]'. It must be a value from the enumeration.</message>
                   </error>
                   <error>
-                    <line>8</line>
+                    <line>7</line>
                     <column>30</column>
                     <message>cvc-type.3.1.3: The value '' of element 'splitIndicator' is not valid.</message>
                   </error>
                   <error>
-                    <line>11</line>
+                    <line>10</line>
                     <column>31</column>
                     <message>cvc-pattern-valid: Value '' is not facet-valid with respect to pattern '[A-Z]{{2}}[A-Z0-9]{{6}}' for type 'UK_ReferenceNumberType'.</message>
                   </error>
                   <error>
-                    <line>11</line>
+                    <line>10</line>
                     <column>31</column>
                     <message>cvc-type.3.1.3: The value '' of element 'referenceNumber' is not valid.</message>
                   </error>

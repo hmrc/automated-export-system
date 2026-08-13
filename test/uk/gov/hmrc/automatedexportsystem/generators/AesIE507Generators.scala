@@ -97,7 +97,7 @@ trait AesIE507Generators extends BaseGenerators:
 
   given containerIdentificationNumberArb: Arbitrary[ContainerIdentificationNumber] =
     Arbitrary {
-      arbitrary[Int].map(ContainerIdentificationNumber.apply)
+      arbitrary[String].map(ContainerIdentificationNumber.apply)
     }
 
   given numberOfSealsArb: Arbitrary[NumberOfSeals] =
@@ -286,9 +286,10 @@ trait AesIE507Generators extends BaseGenerators:
     Arbitrary {
       for
         declarationGoodsItemNumber <- arbitrary[Option[DeclarationGoodsItemNumber]]
+        referenceNumberUCR         <- arbitrary[Option[ReferenceNumberUcr]]
         commodity                  <- arbitrary[Commodity]
         packaging                  <- arbitrary[Option[NonEmptyList[Packaging]]]
-      yield GoodsItem(declarationGoodsItemNumber, commodity, packaging)
+      yield GoodsItem(declarationGoodsItemNumber, referenceNumberUCR, commodity, packaging)
     }
 
   given goodsShipmentArb: Arbitrary[GoodsShipment] =

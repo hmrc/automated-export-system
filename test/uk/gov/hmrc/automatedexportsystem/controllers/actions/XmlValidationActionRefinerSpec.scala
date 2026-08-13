@@ -32,6 +32,7 @@ import play.api.mvc.{AnyContent, Request, Result}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.XmlPayloadRequest
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
 import uk.gov.hmrc.automatedexportsystem.services.XmlValidationService
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -45,7 +46,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
   val xmlValidationActionRefiner: XmlValidationActionRefiner[XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
 
-  val eori = "some-eori"
+  val eori = EoriNumber("some-eori")
 
   "XmlValidationActionRefiner" - {
 

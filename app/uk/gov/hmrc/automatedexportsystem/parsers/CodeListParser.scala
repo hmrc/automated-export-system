@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.parsers
 
+import org.xml.sax.SAXParseException
 import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeList
 
 import java.time.LocalDateTime
-import org.xml.sax.SAXParseException
 import scala.xml.XML
 import scala.xml.parsing.FatalError
 

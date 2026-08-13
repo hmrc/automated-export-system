@@ -26,6 +26,7 @@ import play.api.mvc.*
 import play.api.mvc.Results.Status
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthRequest
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
@@ -35,7 +36,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
 
   val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
 
-  val eori = "some-eori"
+  val eori = EoriNumber("some-eori")
   "XmlPayloadActionRefiner" - {
 
     ".invokeBlock" - {

@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.responses
 
+import play.api.libs.json.*
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDateTime, ZoneOffset}
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 import scala.xml.{Elem, NodeSeq}
 
 final case class SubmissionSummaryList(submissions: List[SubmissionSummary]):
@@ -53,12 +54,47 @@ final case class SubmissionSummary(
     </Submission>
 
 object SubmissionSummary:
+  import LocalDateTimeFormat.given
+  given OFormat[SubmissionSummary] = Json.format[SubmissionSummary]
+  // implicit val format: OFormat[SubmissionSummary] = Json.format[SubmissionSummary]
   def fromMongoAesIE507Message(message: MongoAesIE507Message): SubmissionSummary =
     SubmissionSummary(
-      submissionId = message._id,
+      submissionId = message.submissionId,
       mrn = message.exportOperation.mrn,
       ducr = message.goodsShipment.map(_.consignment.referenceNumberUCR),
       officeOfExitCode = message.customsOfficeOfExitActual.referenceNumber,
       updatedAt = LocalDateTime.ofInstant(message.updatedAt, ZoneOffset.UTC),
       status = message.exportOperation.exportOperationType
     )
+
+object LocalDateTimeFormat:
+  private val iso = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+
+  given Format[LocalDateTime] = new Format[LocalDateTime]:
+    override def reads(json: JsValue): JsResult[LocalDateTime] =
+      json match
+        case JsString(value) =>
+          JsSuccess(LocalDateTime.parse(value, iso))
+
+        case JsObject(fields) if fields.contains("$date") =>
+          fields("$date") match
+            case JsString(isoInstant) =>
+              JsSuccess(LocalDateTime.ofInstant(Instant.parse(isoInstant), ZoneOffset.UTC))
+
+            case JsObject(longObj) if longObj.contains("$numberLong") =>
+              longObj("$numberLong") match
+                case JsString(epochMs) =>
+                  JsSuccess(LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMs.toLong), ZoneOffset.UTC))
+                case other =>
+                  JsError(s"Unsupported $$numberLong payload for LocalDateTime: $other")
+            case other =>
+              JsError(s"Unsupported $$date payload for LocalDateTime: $other")
+
+        case JsNumber(epochMs) =>
+          JsSuccess(LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMs.toLong), ZoneOffset.UTC))
+
+        case other =>
+          JsError(s"Cannot parse LocalDateTime from: $other")
+
+    override def writes(value: LocalDateTime): JsValue =
+      JsString(value.format(iso))

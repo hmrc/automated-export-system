@@ -19,25 +19,27 @@ import play.api.mvc.{AnyContentAsEmpty, Request}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseSpec
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 class AesAuthRequestRefinerSpec extends BaseSpec:
   private val refiner = new AesAuthRequestRefiner
+  private val eori    = EoriNumber("GB123456789000")
 
   "AesAuthRequestRefiner.refine" - {
 
     "return Right(AesAuthRequest) when EORI attr is present" in {
       val request: Request[AnyContentAsEmpty.type] =
         FakeRequest("POST", "/")
-          .addAttr(AesAuthAttr.Eori, "GB123456789000")
+          .addAttr(AesAuthAttr.Eori, eori.value)
 
       val result = Await.result(refiner.refine(request), 2.seconds)
 
       result match
         case Right(aesAuthRequest) =>
-          aesAuthRequest.eori    shouldBe "GB123456789000"
+          aesAuthRequest.eori    shouldBe eori
           aesAuthRequest.request shouldBe request
         case Left(_) =>
           fail("Expected Right(AesAuthRequest) but got Left")
