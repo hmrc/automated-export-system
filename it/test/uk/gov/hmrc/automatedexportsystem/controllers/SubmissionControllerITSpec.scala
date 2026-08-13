@@ -437,11 +437,11 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
 
     "should handle an incoming GET request to the /submissions endpoint" - {
 
-      "and return a 200 response" - {
+      "when the request contains a valid EORI" - {
 
-        "when the request contains a valid EORI" - {
+        "and return a 200 response" - {
 
-          "and there are submissions found with that EORI" in new Setup {
+          "when there are submissions found with that EORI" in new Setup {
             stubFor(
               post(urlEqualTo("/auth/authorise"))
                 .willReturn(
@@ -493,7 +493,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
           }
 
-          "and there are no submissions found with that EORI" in new Setup {
+          "when there are no submissions found with that EORI" in new Setup {
             stubFor(
               post(urlEqualTo("/auth/authorise"))
                 .willReturn(
@@ -524,13 +524,10 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
           }
         }
-      }
 
-      "and return a 500 response" - {
+        "and return a 500 response" - {
 
-        "when the request contains a valid EORI" - {
-
-          "and there is an unexpected error encountered while retrieving the submissions" in new Setup {
+          "when there is an unexpected error encountered while retrieving the submissions" in new Setup {
             val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
 
             val app: Application = guiceApplicationBuilder
@@ -563,10 +560,10 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
 
             val submissionRetrieveFailureXml: Elem =
               <errorResponse>
-              <status>500</status>
-              <code>INTERNAL_SERVER_ERROR</code>
-              <message>Submission retrieval failed for EORI: GB123456789000</message>
-            </errorResponse>
+                  <status>500</status>
+                  <code>INTERNAL_SERVER_ERROR</code>
+                  <message>Submission retrieval failed for EORI: GB123456789000</message>
+                </errorResponse>
 
             Helpers.running(app) {
               val result:        Future[Result] = Helpers.route(app, request).value
@@ -584,11 +581,11 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
 
     "should handle an incoming GET request to the /submission/:submissionId endpoint" - {
 
-      "and return a 200 response" - {
+      "when the request contains a valid EORI" - {
 
-        "when the request contains a valid EORI" - {
+        "and return a 200 response" - {
 
-          "and there is a submission found with that EORI and given submissionId" in new Setup {
+          "when there is a submission found with that EORI and given submissionId" in new Setup {
             stubFor(
               post(urlEqualTo("/auth/authorise"))
                 .willReturn(
@@ -681,13 +678,10 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionXml)
           }
         }
-      }
 
-      "and return a 404 response" - {
+        "and return a 404 response" - {
 
-        "when the request contains a valid EORI" - {
-
-          "and there is no submission found with that EORI and given submissionId" in new Setup {
+          "when there is no submission found with that EORI and given submissionId" in new Setup {
             stubFor(
               post(urlEqualTo("/auth/authorise"))
                 .willReturn(
@@ -706,10 +700,14 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
 
             val submissionNotFoundXml: Elem =
               <errorResponse>
-                <status>404</status>
-                <code>NOT_FOUND</code>
-                <message>Submission not found for EORI: {eori} and submissionId: {id1}</message>
-              </errorResponse>
+                  <status>404</status>
+                  <code>NOT_FOUND</code>
+                  <message>Submission not found for EORI:
+                    {eori}
+                    and submissionId:
+                    {id1}
+                  </message>
+                </errorResponse>
 
             val result:        Future[Result] = Helpers.route(app, request).value
             val resultContent: String         = Helpers.contentAsString(result)
@@ -719,14 +717,12 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionNotFoundXml)
           }
+
         }
-      }
 
-      "and return a 500 response" - {
+        "and return a 500 response" - {
 
-        "when the request contains a valid EORI" - {
-
-          "and there is an unexpected error encountered while retrieving the submission" in new Setup {
+          "when there is an unexpected error encountered while retrieving the submission" in new Setup {
             val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
 
             stubFor(
@@ -762,10 +758,14 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
 
             val submissionRetrieveFailureXml: Elem =
               <errorResponse>
-                <status>500</status>
-                <code>INTERNAL_SERVER_ERROR</code>
-                <message>Submission retrieval failed for EORI: {eori} and submissionId: {id1}</message>
-              </errorResponse>
+                  <status>500</status>
+                  <code>INTERNAL_SERVER_ERROR</code>
+                  <message>Submission retrieval failed for EORI:
+                    {eori}
+                    and submissionId:
+                    {id1}
+                  </message>
+                </errorResponse>
 
             Helpers.running(app) {
               val result:        Future[Result] = Helpers.route(app, request).value
