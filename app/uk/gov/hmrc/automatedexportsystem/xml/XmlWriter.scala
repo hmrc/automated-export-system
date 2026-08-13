@@ -30,7 +30,7 @@ final class RootedXmlWriter[T](writer: XmlWriter[T], rootTag: XmlRootTag[T]):
   def write(o: T): NodeSeq =
     writer.write(o, rootTag.label)
 
-final case class XmlRootTag[T](label: String)
+final case class XmlRootTag[T](label: String) extends AnyVal
 
 object XmlRootTag:
   given deriveContainerTag[T, U[_]](using tag: XmlRootTag[T]): XmlRootTag[U[T]] =
