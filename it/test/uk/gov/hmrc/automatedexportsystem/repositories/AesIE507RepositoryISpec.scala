@@ -31,8 +31,8 @@ import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.responses.SubmissionSummary
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.util.UUID
@@ -58,7 +58,17 @@ class AesIE507RepositoryISpec
 
   object TestData:
     val submissionId: SubmissionId = SubmissionId(UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317"))
-    val eoriNumber:   EoriNumber   = EoriNumber("eoriNumber")
+
+    val eoriNumber: EoriNumber = EoriNumber("eoriNumber")
+
+    def mongoAesIE507MessageSummary(mongoAesIE507Message: MongoAesIE507Message) =
+      MongoAesIE507MessageSummary(
+        submissionId = mongoAesIE507Message.submissionId,
+        exportOperation = mongoAesIE507Message.exportOperation,
+        customsOfficeOfExitActual = mongoAesIE507Message.customsOfficeOfExitActual,
+        consignment = mongoAesIE507Message.goodsShipment.map(_.consignment),
+        updatedAt = mongoAesIE507Message.updatedAt
+      )
 
     extension (mongoAesIE507MessageGen: Gen[MongoAesIE507Message])
       def withEori(eoriNumber: EoriNumber): Gen[MongoAesIE507Message] =
@@ -109,7 +119,7 @@ class AesIE507RepositoryISpec
 
         "when there is only one document in the collection with that eori" in {
           val mongoAesIE507MessagesDifferentEori: Seq[MongoAesIE507Message] =
-            Seq.fill(5)(arbitrary[MongoAesIE507Message].sample).flatten
+            Seq.fill(2)(arbitrary[MongoAesIE507Message].sample).flatten
 
           val mongoAesIE507MessagesMatchingEori: Seq[MongoAesIE507Message] =
             Seq.fill(1)(arbitrary[MongoAesIE507Message].withEori(TestData.eoriNumber).sample).flatten
@@ -117,35 +127,38 @@ class AesIE507RepositoryISpec
           val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
             mongoAesIE507MessagesDifferentEori ++ mongoAesIE507MessagesMatchingEori
 
+          val mongoAesIE507MessageSummaries: Seq[MongoAesIE507MessageSummary] =
+            mongoAesIE507MessagesMatchingEori.map(TestData.mongoAesIE507MessageSummary)
+
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val summariesNel: NonEmptyList[SubmissionSummary] =
+          val result: NonEmptyList[MongoAesIE507MessageSummary] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
-          val summaries = summariesNel.toList
-          summaries.length shouldBe 1
+          result.length shouldBe 1
+          result.toList shouldBe mongoAesIE507MessageSummaries
         }
 
         "when there are multiple documents in the collection with that eori" in {
           val mongoAesIE507MessagesDifferentEori: Seq[MongoAesIE507Message] =
-            Seq.fill(5)(arbitrary[MongoAesIE507Message].sample).flatten
+            Seq.fill(2)(arbitrary[MongoAesIE507Message].sample).flatten
 
           val mongoAesIE507MessagesMatchingEori: Seq[MongoAesIE507Message] =
-            Seq.fill(5)(arbitrary[MongoAesIE507Message].withEori(TestData.eoriNumber).sample).flatten
+            Seq.fill(2)(arbitrary[MongoAesIE507Message].withEori(TestData.eoriNumber).sample).flatten
 
           val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
             mongoAesIE507MessagesDifferentEori ++ mongoAesIE507MessagesMatchingEori
 
+          val mongoAesIE507MessageSummaries: Seq[MongoAesIE507MessageSummary] =
+            mongoAesIE507MessagesMatchingEori.map(TestData.mongoAesIE507MessageSummary)
+
           repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-          val messages: NonEmptyList[SubmissionSummary] =
+          val result: NonEmptyList[MongoAesIE507MessageSummary] =
             repository.getMessages(TestData.eoriNumber).value.futureValue.value
 
-          val expected: List[SubmissionSummary] =
-            mongoAesIE507MessagesMatchingEori.toList.map(SubmissionSummary.fromMongoAesIE507Message)
-
-          messages.length shouldBe 5
-          messages.toList   should contain theSameElementsAs expected
+          result.length shouldBe 2
+          result.toList   should contain theSameElementsAs mongoAesIE507MessageSummaries
         }
       }
 
@@ -153,7 +166,7 @@ class AesIE507RepositoryISpec
 
         "when there are no documents in the collection with that eori" in {
           val mongoAesIE507MessagesDifferentEori: Seq[MongoAesIE507Message] =
-            Seq.fill(5)(arbitrary[MongoAesIE507Message].sample).flatten
+            Seq.fill(3)(arbitrary[MongoAesIE507Message].sample).flatten
 
           repository.collection.insertMany(mongoAesIE507MessagesDifferentEori).head().futureValue
 
@@ -173,7 +186,7 @@ class AesIE507RepositoryISpec
 
         "when there is a document in the collection with that eori and id" in {
           val mongoAesIE507MessagesDifferentEoriAndId: Seq[MongoAesIE507Message] =
-            Seq.fill(10)(arbitrary[MongoAesIE507Message].sample).flatten
+            Seq.fill(2)(arbitrary[MongoAesIE507Message].sample).flatten
 
           val mongoAesIE507MessagesMatchingEoriAndId: Seq[MongoAesIE507Message] =
             Seq
@@ -201,7 +214,7 @@ class AesIE507RepositoryISpec
 
         "when there are no documents in the collection with that eori and id" in {
           val mongoAesIE507MessagesDifferentEoriAndId: Seq[MongoAesIE507Message] =
-            Seq.fill(10)(arbitrary[MongoAesIE507Message].sample).flatten
+            Seq.fill(3)(arbitrary[MongoAesIE507Message].sample).flatten
 
           repository.collection.insertMany(mongoAesIE507MessagesDifferentEoriAndId).head().futureValue
 
@@ -216,7 +229,7 @@ class AesIE507RepositoryISpec
 
         "when there are documents in the collection with that eori but different id" in {
           val mongoAesIE507MessagesDifferentId: Seq[MongoAesIE507Message] =
-            Seq.fill(10)(arbitrary[MongoAesIE507Message].withEori(TestData.eoriNumber).sample).flatten
+            Seq.fill(3)(arbitrary[MongoAesIE507Message].withEori(TestData.eoriNumber).sample).flatten
 
           repository.collection.insertMany(mongoAesIE507MessagesDifferentId).head().futureValue
 

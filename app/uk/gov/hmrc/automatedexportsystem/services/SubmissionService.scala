@@ -19,7 +19,6 @@ package uk.gov.hmrc.automatedexportsystem.services
 import cats.data.EitherT
 import uk.gov.hmrc.automatedexportsystem.errors.{MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, ExportOperationType, SubmissionId}
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.request.{SubmissionRequest, SubmissionResult}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
@@ -44,7 +43,11 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
     val submissionSummaryListResult: EitherT[Future, MongoError, SubmissionSummaryList] =
       aesIE507Repository
         .getMessages(eoriNumber)
-        .map(messageNel => SubmissionSummaryList(messageNel.toList))
+        .map(messageSummariesNel =>
+          SubmissionSummaryList(
+            messageSummariesNel.toList.map(SubmissionSummary.fromMongoAesIE507MessageSummary)
+          )
+        )
 
     submissionSummaryListResult.leftFlatMap {
       case MongoError.DocumentNotFound(_) =>

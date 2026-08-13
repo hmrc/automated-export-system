@@ -46,13 +46,13 @@ object Submission:
           ++ o.exportOperation.toXmlRoot
           ++ o.customsOfficeOfExitActual.toXmlRoot
           ++ o.goodsShipment.toXmlRoot
-          ++ o.updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).toXml("updated")
+          ++ o.updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).toXml("updatedAt")
 
       XmlWriter.elem(label, children)
 
   def fromMongoAesIE507Message(message: MongoAesIE507Message): Submission =
     Submission(
-      submissionId = message._id,
+      submissionId = message.submissionId,
       status = message.exportOperation.exportOperationType,
       exportOperation = message.exportOperation,
       customsOfficeOfExitActual = message.customsOfficeOfExitActual,

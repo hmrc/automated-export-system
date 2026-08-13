@@ -522,7 +522,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
                   <CustomsOfficeOfExitActual>
                     <referenceNumber>referenceNumber</referenceNumber>
                   </CustomsOfficeOfExitActual>
-                  <updated>2026-08-03T00:00:00</updated>
+                  <updatedAt>2026-08-03T00:00:00</updatedAt>
                 </Submission>
 
               val resultContent: String = Helpers.contentAsString(result)

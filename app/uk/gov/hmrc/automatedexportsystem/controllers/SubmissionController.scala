@@ -22,7 +22,7 @@ import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, Aes
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType.Awaiting
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.parsers.SubmissionRequestParser
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
@@ -101,11 +101,10 @@ class SubmissionController @Inject() (
     Action
       .andThen(aesAuthRequestRefiner)
       .async(aesAuthRequest =>
-        val eoriNumber:   EoriNumber   = EoriNumber(aesAuthRequest.eori)
         val submissionId: SubmissionId = SubmissionId(id)
 
         submissionService
-          .getSubmission(eoriNumber, submissionId)
+          .getSubmission(aesAuthRequest.eori, submissionId)
           .fold(
             error => error.toErrorResponse.toResult,
             submission => Status(ResponseCode.Ok.status)(submission.toXmlRoot)

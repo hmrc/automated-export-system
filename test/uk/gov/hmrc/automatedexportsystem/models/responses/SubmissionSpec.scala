@@ -56,12 +56,12 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 NonEmptyList.of(
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(1)),
-                    containerIdentificationNumber = Some(ContainerIdentificationNumber(1)),
+                    containerIdentificationNumber = Some(ContainerIdentificationNumber("1")),
                     numberOfSeals = Some(NumberOfSeals(1))
                   ),
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(2)),
-                    containerIdentificationNumber = Some(ContainerIdentificationNumber(2)),
+                    containerIdentificationNumber = Some(ContainerIdentificationNumber("2")),
                     numberOfSeals = Some(NumberOfSeals(1))
                   )
                 )
@@ -127,6 +127,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                     grossMass = GrossMass(100.55),
                     netMass = NetMass(80.45)
                   ),
+                  referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
                   packaging = Some(
                     NonEmptyList.of(
                       Packaging(
@@ -150,6 +151,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                     grossMass = GrossMass(100.55),
                     netMass = NetMass(80.45)
                   ),
+                  referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
                   packaging = Some(
                     NonEmptyList.of(
                       Packaging(
@@ -269,6 +271,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                     grossMass = GrossMass(100.55),
                     netMass = NetMass(80.45)
                   ),
+                  referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
                   packaging = Some(
                     NonEmptyList.of(
                       Packaging(
@@ -292,6 +295,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                     grossMass = GrossMass(100.55),
                     netMass = NetMass(80.45)
                   ),
+                  referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
                   packaging = Some(
                     NonEmptyList.of(
                       Packaging(
@@ -485,7 +489,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 </Packaging>
               </GoodsItem>
             </GoodsShipment>
-            <updated>2026-08-11T00:00:00</updated>
+            <updatedAt>2026-08-11T00:00:00</updatedAt>
           </Submission>
         end xml
 
@@ -540,7 +544,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 <Packaging></Packaging>
               </GoodsItem>
             </GoodsShipment>
-            <updated>2026-08-11T00:00:00</updated>
+            <updatedAt>2026-08-11T00:00:00</updatedAt>
           </Submission>
         end xml
 
@@ -570,7 +574,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 </LocationOfGoods>
               </Consignment>
             </GoodsShipment>
-            <updated>2026-08-11T00:00:00</updated>
+            <updatedAt>2026-08-11T00:00:00</updatedAt>
           </Submission>
         end xml
 
@@ -591,7 +595,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             <CustomsOfficeOfExitActual>
               <referenceNumber>referenceNumber</referenceNumber>
             </CustomsOfficeOfExitActual>
-            <updated>2026-08-11T00:00:00</updated>
+            <updatedAt>2026-08-11T00:00:00</updatedAt>
           </Submission>
 
         XmlOps.normalize(TestData.submissionNoGoodsShipment.toXmlRoot) shouldBe XmlOps.normalize(xml)

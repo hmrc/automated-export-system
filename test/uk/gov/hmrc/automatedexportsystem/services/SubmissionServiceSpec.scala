@@ -25,6 +25,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.automatedexportsystem.errors.{MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
@@ -52,7 +53,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
     def mongoAesIE507Message(submissionId: SubmissionId, eoriNumber: EoriNumber): MongoAesIE507Message =
       MongoAesIE507Message(
-        _id = submissionId,
+        submissionId = submissionId,
         eoriNumber = eoriNumber,
         createdAt = instant,
         updatedAt = instant,
@@ -66,6 +67,22 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
           referenceNumber = ReferenceNumber("referenceNumber")
         ),
         goodsShipment = None
+      )
+
+    def mongoAesIE507MessageSummary(submissionId: SubmissionId): MongoAesIE507MessageSummary =
+      MongoAesIE507MessageSummary(
+        submissionId = submissionId,
+        exportOperation = ExportOperation(
+          exportOperationType = ExportOperationType.Standard,
+          mrn = Mrn("mrn"),
+          discrepanciesExist = DiscrepanciesExist(true),
+          splitIndicator = SplitIndicator(true)
+        ),
+        customsOfficeOfExitActual = CustomsOfficeOfExitActual(
+          referenceNumber = ReferenceNumber("referenceNumber")
+        ),
+        consignment = None,
+        updatedAt = instant
       )
 
     def submissionSummary(submissionId: SubmissionId): SubmissionSummary =
@@ -96,8 +113,8 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         }
 
         "when there are multiple submissions with the given EORI in the mongodb collection" in {
-          val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
-            Seq.fill(3)(TestData.mongoAesIE507Message(TestData.submissionId, TestData.eoriNumber))
+          val mongoAesIE507MessageSummaries: Seq[MongoAesIE507MessageSummary] =
+            Seq.fill(3)(TestData.mongoAesIE507MessageSummary(TestData.submissionId))
 
           val submissionSummaryList: List[SubmissionSummary] =
             List.fill(3)(TestData.submissionSummary(TestData.submissionId))
@@ -108,8 +125,8 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
                 Future.successful(
                   Right(
                     NonEmptyList.of(
-                      submissionSummaryList.head,
-                      submissionSummaryList.tail *
+                      mongoAesIE507MessageSummaries.head,
+                      mongoAesIE507MessageSummaries.tail*
                     )
                   )
                 )
