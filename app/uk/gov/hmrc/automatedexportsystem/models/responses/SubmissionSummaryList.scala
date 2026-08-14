@@ -66,7 +66,7 @@ object SubmissionSummary:
     SubmissionSummary(
       submissionId = message.submissionId,
       mrn = message.exportOperation.mrn,
-      ducr = message.consignment.map(_.referenceNumberUCR),
+      ducr = message.ducr,
       officeOfExitCode = message.customsOfficeOfExitActual.referenceNumber,
       updatedAt = LocalDateTime.ofInstant(message.updatedAt, ZoneOffset.UTC),
       status = message.exportOperation.exportOperationType

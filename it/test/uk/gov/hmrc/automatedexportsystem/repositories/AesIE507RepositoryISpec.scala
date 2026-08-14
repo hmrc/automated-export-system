@@ -66,7 +66,7 @@ class AesIE507RepositoryISpec
         submissionId = mongoAesIE507Message.submissionId,
         exportOperation = mongoAesIE507Message.exportOperation,
         customsOfficeOfExitActual = mongoAesIE507Message.customsOfficeOfExitActual,
-        consignment = mongoAesIE507Message.goodsShipment.map(_.consignment),
+        ducr = mongoAesIE507Message.goodsShipment.map(_.consignment.referenceNumberUCR),
         updatedAt = mongoAesIE507Message.updatedAt
       )
 

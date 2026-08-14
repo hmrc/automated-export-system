@@ -81,7 +81,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         customsOfficeOfExitActual = CustomsOfficeOfExitActual(
           referenceNumber = ReferenceNumber("referenceNumber")
         ),
-        consignment = None,
+        ducr = None,
         updatedAt = instant
       )
 

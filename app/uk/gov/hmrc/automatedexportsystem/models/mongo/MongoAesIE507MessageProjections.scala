@@ -24,7 +24,7 @@ object MongoAesIE507MessageProjections:
     Projections.include("submissionId"),
     Projections.include("exportOperation"),
     Projections.include("customsOfficeOfExitActual"),
-    Projections.computed("consignment", "$goodsShipment.consignment"),
+    Projections.computed("ducr", "$goodsShipment.consignment.referenceNumberUCR"),
     Projections.include("updatedAt"),
     Projections.excludeId()
   )

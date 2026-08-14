@@ -25,7 +25,7 @@ final case class MongoAesIE507MessageSummary(
   submissionId:              SubmissionId,
   exportOperation:           ExportOperation,
   customsOfficeOfExitActual: CustomsOfficeOfExitActual,
-  consignment:               Option[Consignment],
+  ducr:                      Option[ReferenceNumberUcr],
   updatedAt:                 Instant
 )
 

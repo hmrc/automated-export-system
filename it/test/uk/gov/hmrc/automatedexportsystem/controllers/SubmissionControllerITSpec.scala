@@ -99,7 +99,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                 NonEmptyList.one(
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(1)),
-                    containerIdentificationNumber = Some(ContainerIdentificationNumber("some-id")),
+                    containerIdentificationNumber = Some(ContainerIdentificationNumber("1")),
                     numberOfSeals = Some(NumberOfSeals(1))
                   )
                 )
@@ -665,7 +665,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                     </Packaging>
                   </GoodsItem>
                 </GoodsShipment>
-                <updated>2026-08-03T00:00:00</updated>
+                <updatedAt>2026-08-03T00:00:00</updatedAt>
               </Submission>
             end submissionXml
 
