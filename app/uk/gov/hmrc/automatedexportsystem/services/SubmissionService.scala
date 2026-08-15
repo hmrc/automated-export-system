@@ -52,13 +52,11 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
     submissionSummaryListResult.leftFlatMap {
       case MongoError.DocumentNotFound(_) =>
         EitherT(Future.successful(Right(SubmissionSummaryList(Nil))))
-      case MongoError.UnexpectedError(_) =>
+      case me =>
         EitherT(
           Future.successful(
             Left(
-              SubmissionServiceError.SubmissionRetrieveFailure(
-                s"Submission retrieval failed for EORI: ${eoriNumber.value}"
-              )
+              SubmissionService.mongoErrorMapper(s"EORI: ${eoriNumber.value}")(me)
             )
           )
         )
@@ -71,18 +69,11 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
         .getMessage(eoriNumber, submissionId)
         .map(Submission.fromMongoAesIE507Message)
 
-    submissionResult.leftMap {
-      case MongoError.DocumentNotFound(_) =>
-        SubmissionServiceError.SubmissionNotFound(
-          s"Submission not found for EORI: ${eoriNumber.value} " +
-            s"and submissionId: ${submissionId.value}"
-        )
-      case MongoError.UnexpectedError(ex) =>
-        SubmissionServiceError.SubmissionRetrieveFailure(
-          s"Submission retrieval failed for EORI: ${eoriNumber.value} " +
-            s"and submissionId: ${submissionId.value}"
-        )
-    }
+    submissionResult.leftMap(
+      SubmissionService.mongoErrorMapper(
+        s"EORI: ${eoriNumber.value}, submissionId: ${submissionId.value}"
+      )
+    )
   end getSubmission
 
   def submitMessage(
@@ -93,3 +84,8 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
     aesIE507Repository
       .submit(request.toMongoMessage(exportOperationType, eoriNumber))
       .map(created => if (created) SubmissionResult.Created else SubmissionResult.Updated)
+
+object SubmissionService:
+  def mongoErrorMapper(context: String): MongoError => SubmissionServiceError =
+    case _: MongoError.DocumentNotFound => SubmissionServiceError.SubmissionNotFound(s"Submission not found. $context")
+    case _ => SubmissionServiceError.SubmissionRetrieveFailure(s"Submission retrieval failed. $context")

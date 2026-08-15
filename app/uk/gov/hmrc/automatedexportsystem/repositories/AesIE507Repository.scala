@@ -24,14 +24,14 @@ import org.apache.pekko.pattern.RetrySupport
 import org.bson.codecs.Codec
 import org.mongodb.scala.MongoException
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.{Aggregates, Filters, Indexes, ReplaceOptions}
+import org.mongodb.scala.model.*
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
-import uk.gov.hmrc.automatedexportsystem.models.mongo.MongoAesIE507MessageProjections
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, ExportOperationType, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProjections, UpdateStatus}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
@@ -47,6 +47,8 @@ trait AesIE507Repository:
   def getMessage(eori: EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message]
 
   def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, Boolean]
+
+  def cancel(submissionId: SubmissionId): EitherT[Future, MongoError, UpdateStatus]
 
 @Singleton
 class AesIE507RepositoryImpl @Inject() (
@@ -83,7 +85,7 @@ class AesIE507RepositoryImpl @Inject() (
       AesIE507Repository,
       Logging:
 
-  override def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageSummary]] =
+  def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageSummary]] =
     val pipeline: Seq[Bson] = Seq(
       Aggregates.filter(Filters.eq("eoriNumber", eori.value)),
       Aggregates.project(MongoAesIE507MessageProjections.summaryProjection),
@@ -103,7 +105,7 @@ class AesIE507RepositoryImpl @Inject() (
         }
     }
 
-  override def getMessage(
+  def getMessage(
     eori:         EoriNumber,
     submissionId: SubmissionId
   ): EitherT[Future, MongoError, MongoAesIE507Message] =
@@ -129,7 +131,7 @@ class AesIE507RepositoryImpl @Inject() (
     }
 
   override def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, Boolean] =
-    val sid = submission.submissionId.value.toString
+    val sid: String = submission.submissionId.value.toString
 
     retryOperation(
       operationName = "submitUpsert",
@@ -144,6 +146,42 @@ class AesIE507RepositoryImpl @Inject() (
         .toFuture()
         .map(updateResult => Right(updateResult.wasAcknowledged()))
     }
+
+  def cancel(submissionId: SubmissionId): EitherT[Future, MongoError, UpdateStatus] = {
+    val operationName: String = "cancel"
+
+    val filter: Bson = Filters.eq("submissionId", submissionId.value.toString)
+
+    val update: Bson =
+      Updates.set("exportOperation.exportOperationType", ExportOperationType.Cancel.status)
+
+    retryOperation(
+      operationName = operationName,
+      context = Map("submissionId" -> submissionId.value.toString)
+    ) {
+      collection
+        .updateOne(filter, update)
+        .toFuture()
+        .map(updateResult =>
+          if !updateResult.wasAcknowledged() then Left(writeUnacknowledgedError(operationName, submissionId))
+          else
+            val matchedCount:  Long = updateResult.getMatchedCount
+            val modifiedCount: Long = updateResult.getModifiedCount
+
+            if matchedCount == 0 then Left(MongoError.DocumentNotFound(s"No document found for submissionId: ${submissionId.value}"))
+            else if updateResult.getModifiedCount == 0 then Right(UpdateStatus.AlreadyUpToDate(operationName, matchedCount))
+            else Right(UpdateStatus.Updated(operationName, matchedCount, modifiedCount))
+        )
+    }
+  }
+
+  private def writeUnacknowledgedError(operation: String, submissionId: SubmissionId): MongoError =
+    logger.error(
+      s"Write was unacknowledged when attempting '$operation' operation. " +
+        s"submissionId: $submissionId, write concern: ${collection.writeConcern}"
+    )
+
+    MongoError.WriteUnacknowledgedError
 
   private def retryOperation[R](
     operationName: String,

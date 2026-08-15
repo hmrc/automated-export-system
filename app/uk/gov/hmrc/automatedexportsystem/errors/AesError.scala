@@ -66,6 +66,7 @@ enum XmlReaderError(val path: String, val message: String) extends AesError:
 enum MongoError(val message: String, val responseCode: ResponseCode, val exception: Option[Throwable]) extends AesError:
   case DocumentNotFound(details: String) extends MongoError(s"Document not found: $details", NotFound, None)
   case UnexpectedError(ex: Throwable) extends MongoError("Unexpected error encountered while performing DB query", InternalServerError, Some(ex))
+  case WriteUnacknowledgedError extends MongoError("Unacknowledged write detected. Data persistence state unknown", InternalServerError, None)
 
 enum SubmissionServiceError(val message: String, val responseCode: ResponseCode) extends AesError:
   val exception: Option[Throwable] = None

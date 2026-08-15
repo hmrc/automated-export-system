@@ -148,7 +148,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
           val error: SubmissionServiceError =
             SubmissionServiceError.SubmissionRetrieveFailure(
-              s"Submission retrieval failed for EORI: ${TestData.eoriNumber.value}"
+              s"Submission retrieval failed. EORI: ${TestData.eoriNumber.value}"
             )
 
           val result: SubmissionServiceError =
@@ -185,8 +185,8 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
           val error: SubmissionServiceError =
             SubmissionServiceError.SubmissionNotFound(
-              s"Submission not found for EORI: ${TestData.eoriNumber.value} " +
-                s"and submissionId: ${TestData.submissionId.value.toString}"
+              s"Submission not found. EORI: ${TestData.eoriNumber.value}, " +
+                s"submissionId: ${TestData.submissionId.value.toString}"
             )
 
           val result: SubmissionServiceError =
@@ -201,8 +201,8 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
           val error: SubmissionServiceError =
             SubmissionServiceError.SubmissionRetrieveFailure(
-              s"Submission retrieval failed for EORI: ${TestData.eoriNumber.value} " +
-                s"and submissionId: ${TestData.submissionId.value.toString}"
+              s"Submission retrieval failed. EORI: ${TestData.eoriNumber.value}, " +
+                s"submissionId: ${TestData.submissionId.value.toString}"
             )
 
           val result: SubmissionServiceError =

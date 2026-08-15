@@ -562,7 +562,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               <errorResponse>
                   <status>500</status>
                   <code>INTERNAL_SERVER_ERROR</code>
-                  <message>Submission retrieval failed for EORI: GB123456789000</message>
+                  <message>Submission retrieval failed. EORI: GB123456789000</message>
                 </errorResponse>
 
             Helpers.running(app) {
@@ -702,11 +702,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               <errorResponse>
                   <status>404</status>
                   <code>NOT_FOUND</code>
-                  <message>Submission not found for EORI:
-                    {eori}
-                    and submissionId:
-                    {id1}
-                  </message>
+                  <message>Submission not found. EORI: {eori}, submissionId: {id1}</message>
                 </errorResponse>
 
             val result:        Future[Result] = Helpers.route(app, request).value
@@ -760,11 +756,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               <errorResponse>
                   <status>500</status>
                   <code>INTERNAL_SERVER_ERROR</code>
-                  <message>Submission retrieval failed for EORI:
-                    {eori}
-                    and submissionId:
-                    {id1}
-                  </message>
+                  <message>Submission retrieval failed. EORI: {eori}, submissionId: {id1}</message>
                 </errorResponse>
 
             Helpers.running(app) {

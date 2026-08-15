@@ -30,7 +30,8 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, ExportOperationType, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
@@ -254,6 +255,94 @@ class AesIE507RepositoryISpec
           result shouldBe MongoError.DocumentNotFound(
             s"No document found for EORI: ${TestData.eoriNumber.value} " +
               s"and submissionId: ${TestData.submissionId.value}"
+          )
+        }
+      }
+    }
+
+    ".cancel" - {
+
+      "should set the document's ExportOperationType to Cancel" - {
+
+        "when there is a document in the collection with that submissionId" - {
+
+          "and ExportOperationType is not Cancel" in {
+            val mongoAesIE507MessagesDifferentId: Seq[MongoAesIE507Message] =
+              Seq.fill(2)(arbitrary[MongoAesIE507Message].sample).flatten
+
+            val mongoAesIE507MessagesMatchingId: Seq[MongoAesIE507Message] =
+              Seq
+                .fill(1)(
+                  arbitrary[MongoAesIE507Message]
+                    .withSubmissionId(TestData.submissionId)
+                    .withExportOperationType(ExportOperationType.Standard)
+                    .sample
+                )
+                .flatten
+
+            val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
+              mongoAesIE507MessagesDifferentId ++ mongoAesIE507MessagesMatchingId
+
+            val mongoAesIE507MessagesMatchingIdCancelled: Seq[MongoAesIE507Message] =
+              mongoAesIE507MessagesMatchingId.map(m =>
+                m.copy(exportOperation = m.exportOperation.copy(exportOperationType = ExportOperationType.Cancel))
+              )
+
+            repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
+
+            val updateStatus: UpdateStatus = repository.cancel(TestData.submissionId).value.futureValue.value
+
+            updateStatus shouldBe UpdateStatus.Updated("cancel", 1, 1)
+
+            val result: Seq[MongoAesIE507Message] =
+              find(Filters.eq("submissionId", TestData.submissionId.value.toString)).futureValue
+
+            result shouldBe mongoAesIE507MessagesMatchingIdCancelled
+          }
+
+          "and ExportOperationType is Cancel" in {
+            val mongoAesIE507MessagesDifferentId: Seq[MongoAesIE507Message] =
+              Seq.fill(2)(arbitrary[MongoAesIE507Message].sample).flatten
+
+            val mongoAesIE507MessagesMatchingId: Seq[MongoAesIE507Message] =
+              Seq
+                .fill(1)(
+                  arbitrary[MongoAesIE507Message]
+                    .withSubmissionId(TestData.submissionId)
+                    .withExportOperationType(ExportOperationType.Cancel)
+                    .sample
+                )
+                .flatten
+
+            val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
+              mongoAesIE507MessagesDifferentId ++ mongoAesIE507MessagesMatchingId
+
+            repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
+
+            val updateStatus: UpdateStatus = repository.cancel(TestData.submissionId).value.futureValue.value
+
+            updateStatus shouldBe UpdateStatus.AlreadyUpToDate("cancel", 1)
+
+            val result: Seq[MongoAesIE507Message] =
+              find(Filters.eq("submissionId", TestData.submissionId.value.toString)).futureValue
+
+            result shouldBe mongoAesIE507MessagesMatchingId
+          }
+        }
+      }
+
+      "should return a MongoError" - {
+
+        "when there is no document in the collection with that submissionId" in {
+          val mongoAesIE507MessagesDifferentId: Seq[MongoAesIE507Message] =
+            Seq.fill(3)(arbitrary[MongoAesIE507Message].sample).flatten
+
+          repository.collection.insertMany(mongoAesIE507MessagesDifferentId).head().futureValue
+
+          val result: MongoError = repository.cancel(TestData.submissionId).value.futureValue.left.value
+
+          result shouldBe MongoError.DocumentNotFound(
+            s"No document found for submissionId: ${TestData.submissionId.value}"
           )
         }
       }
