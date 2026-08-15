@@ -71,5 +71,5 @@ enum MongoError(val message: String, val responseCode: ResponseCode, val excepti
 enum SubmissionServiceError(val message: String, val responseCode: ResponseCode) extends AesError:
   val exception: Option[Throwable] = None
 
-  case SubmissionRetrieveFailure(override val message: String) extends SubmissionServiceError(message, InternalServerError)
+  case SubmissionOperationFailure(override val message: String) extends SubmissionServiceError(message, InternalServerError)
   case SubmissionNotFound(override val message: String) extends SubmissionServiceError(message, NotFound)

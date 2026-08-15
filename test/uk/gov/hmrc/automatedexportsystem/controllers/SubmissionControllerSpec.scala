@@ -455,7 +455,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
                   EitherT(
                     Future.successful(
                       Left(
-                        SubmissionServiceError.SubmissionRetrieveFailure(
+                        SubmissionServiceError.SubmissionOperationFailure(
                           s"Submission retrieval failed for EORI: ${TestData.eoriNumber.value}"
                         )
                       )
@@ -588,7 +588,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
                   EitherT(
                     Future.successful(
                       Left(
-                        SubmissionServiceError.SubmissionRetrieveFailure(submissionServiceErrorMessage)
+                        SubmissionServiceError.SubmissionOperationFailure(submissionServiceErrorMessage)
                       )
                     )
                   )
