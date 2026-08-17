@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class ParentUcrId(value: String) extends AnyVal
 
 object ParentUcrId:
   given mongoFormat: Format[ParentUcrId] = Json.valueFormat[ParentUcrId]
+
+  given parentUcrIdXmlWriter: XmlWriter[ParentUcrId] =
+    (o, label) => o.value.toXml(label)

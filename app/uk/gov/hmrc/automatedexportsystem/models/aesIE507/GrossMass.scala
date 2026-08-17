@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class GrossMass(value: BigDecimal) extends AnyVal
 
 object GrossMass:
   given mongoFormat: Format[GrossMass] = Json.valueFormat[GrossMass]
+
+  given grossMassXmlWriter: XmlWriter[GrossMass] =
+    (o, label) => o.value.toXml(label)

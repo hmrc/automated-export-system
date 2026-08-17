@@ -17,8 +17,22 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+
+import scala.xml.NodeSeq
 
 final case class Commodity(grossMass: GrossMass, netMass: NetMass)
 
 object Commodity:
   given mongoFormat: Format[Commodity] = Json.format[Commodity]
+
+  given commodityTag: XmlRootTag[Commodity] = XmlRootTag("Commodity")
+
+  given commodityXmlWriter: XmlWriter[Commodity] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.grossMass.toXml("grossMass")
+          ++ o.netMass.toXml("netMass")
+
+      XmlWriter.elem(label, children)

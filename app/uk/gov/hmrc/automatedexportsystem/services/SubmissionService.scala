@@ -15,18 +15,18 @@
  */
 
 package uk.gov.hmrc.automatedexportsystem.services
+
 import cats.data.EitherT
-import jakarta.inject.Singleton
 import uk.gov.hmrc.automatedexportsystem.errors.{MongoError, SubmissionServiceError}
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, ExportOperationType}
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, ExportOperationType, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.request.{SubmissionRequest, SubmissionResult}
-import uk.gov.hmrc.automatedexportsystem.models.responses.SubmissionSummaryList
+import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-trait SubmissionService {
+trait SubmissionService:
   def submitMessage(
     request:             SubmissionRequest,
     exportOperationType: ExportOperationType,
@@ -34,15 +34,20 @@ trait SubmissionService {
   ): EitherT[Future, MongoError, SubmissionResult]
 
   def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList]
-}
+
+  def getSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, Submission]
 
 @Singleton
 class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(using ExecutionContext) extends SubmissionService:
-  override def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList] =
+  def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList] =
     val submissionSummaryListResult: EitherT[Future, MongoError, SubmissionSummaryList] =
       aesIE507Repository
         .getMessages(eoriNumber)
-        .map(messageNel => SubmissionSummaryList(messageNel.toList))
+        .map(messageSummariesNel =>
+          SubmissionSummaryList(
+            messageSummariesNel.toList.map(SubmissionSummary.fromMongoAesIE507MessageSummary)
+          )
+        )
 
     submissionSummaryListResult.leftFlatMap {
       case MongoError.DocumentNotFound(_) =>
@@ -60,7 +65,27 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
     }
   end getSubmissions
 
-  override def submitMessage(
+  def getSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, Submission] =
+    val submissionResult: EitherT[Future, MongoError, Submission] =
+      aesIE507Repository
+        .getMessage(eoriNumber, submissionId)
+        .map(Submission.fromMongoAesIE507Message)
+
+    submissionResult.leftMap {
+      case MongoError.DocumentNotFound(_) =>
+        SubmissionServiceError.SubmissionNotFound(
+          s"Submission not found for EORI: ${eoriNumber.value} " +
+            s"and submissionId: ${submissionId.value}"
+        )
+      case MongoError.UnexpectedError(ex) =>
+        SubmissionServiceError.SubmissionRetrieveFailure(
+          s"Submission retrieval failed for EORI: ${eoriNumber.value} " +
+            s"and submissionId: ${submissionId.value}"
+        )
+    }
+  end getSubmission
+
+  def submitMessage(
     request:             SubmissionRequest,
     exportOperationType: ExportOperationType,
     eoriNumber:          EoriNumber

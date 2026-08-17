@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class TypeOfPackages(value: String) extends AnyVal
 
 object TypeOfPackages:
   given mongoFormat: Format[TypeOfPackages] = Json.valueFormat[TypeOfPackages]
+
+  given typeOfPackagesXmlWriter: XmlWriter[TypeOfPackages] =
+    (o, label) => o.value.toXml(label)

@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.aesIE507
+package uk.gov.hmrc.automatedexportsystem.models.mongo
 
-import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import com.mongodb.client.model.Projections
+import org.mongodb.scala.bson.conversions.Bson
 
-final case class TypeOfLocation(value: String) extends AnyVal
-
-object TypeOfLocation:
-  given mongoFormat: Format[TypeOfLocation] = Json.valueFormat[TypeOfLocation]
-
-  given typeOfLocationXmlWriter: XmlWriter[TypeOfLocation] =
-    (o, label) => o.value.toXml(label)
+object MongoAesIE507MessageProjections:
+  val summaryProjection: Bson = Projections.fields(
+    Projections.include("submissionId"),
+    Projections.include("exportOperation"),
+    Projections.include("customsOfficeOfExitActual"),
+    Projections.computed("ducr", "$goodsShipment.consignment.referenceNumberUCR"),
+    Projections.include("updatedAt"),
+    Projections.excludeId()
+  )

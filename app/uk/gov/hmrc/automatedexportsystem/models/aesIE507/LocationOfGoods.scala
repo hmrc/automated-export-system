@@ -17,6 +17,10 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+
+import scala.xml.NodeSeq
 
 final case class LocationOfGoods(
   typeOfLocation:            TypeOfLocation,
@@ -28,3 +32,16 @@ final case class LocationOfGoods(
 
 object LocationOfGoods:
   given mongoFormat: Format[LocationOfGoods] = Json.format[LocationOfGoods]
+
+  given locationOfGoodsTag: XmlRootTag[LocationOfGoods] = XmlRootTag("LocationOfGoods")
+
+  given locationOfGoodsXmlWriter: XmlWriter[LocationOfGoods] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.typeOfLocation.toXml("typeOfLocation")
+          ++ o.qualifierOfIdentification.toXml("qualifierOfIdentification")
+          ++ o.authorisationNumber.toXml("authorisationNumber")
+          ++ o.additionalIdentifier.toXml("additionalIdentifier")
+          ++ o.unLocode.toXml("UNLocode")
+
+      XmlWriter.elem(label, children)

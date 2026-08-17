@@ -99,7 +99,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                 NonEmptyList.one(
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(1)),
-                    containerIdentificationNumber = Some(ContainerIdentificationNumber("some-id")),
+                    containerIdentificationNumber = Some(ContainerIdentificationNumber("1")),
                     numberOfSeals = Some(NumberOfSeals(1))
                   )
                 )
@@ -122,7 +122,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               ),
               locationOfGoods = LocationOfGoods(
                 typeOfLocation = TypeOfLocation("typeOfLocation"),
-                qualifierOfIdentification = QualifierOfIdentification("qualifierIdentification"),
+                qualifierOfIdentification = QualifierOfIdentification("qualifierOfIdentification"),
                 authorisationNumber = Some(AuthorisationNumber("authorisationNumber")),
                 additionalIdentifier = Some(AdditionalIdentifier("additionalIdentifier")),
                 unLocode = Some(UnLocode("unLocode"))
@@ -329,9 +329,9 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
           }
 
           "due to elements not matching the required patterns" in new Setup {
@@ -427,9 +427,9 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
           }
         }
       }
@@ -437,11 +437,11 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
 
     "should handle an incoming GET request to the /submissions endpoint" - {
 
-      "and return a 200 response" - {
+      "when the request contains a valid EORI" - {
 
-        "when the request contains a valid EORI" - {
+        "and return a 200 response" - {
 
-          "and there are submissions found with that EORI" in new Setup {
+          "when there are submissions found with that EORI" in new Setup {
             stubFor(
               post(urlEqualTo("/auth/authorise"))
                 .willReturn(
@@ -488,12 +488,12 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.OK
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionSummaryListXml).toString
+            Helpers.status(result)      shouldBe StatusValues.OK
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
           }
 
-          "and there are no submissions found with that EORI" in new Setup {
+          "when there are no submissions found with that EORI" in new Setup {
             stubFor(
               post(urlEqualTo("/auth/authorise"))
                 .willReturn(
@@ -519,61 +519,263 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.OK
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionSummaryListXml).toString
+            Helpers.status(result)      shouldBe StatusValues.OK
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
+          }
+        }
+
+        "and return a 500 response" - {
+
+          "when there is an unexpected error encountered while retrieving the submissions" in new Setup {
+            val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
+
+            val app: Application = guiceApplicationBuilder
+              .overrides(
+                inject.bind[AesIE507Repository].toInstance(aesIE507Repository)
+              )
+              .build()
+
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
+            )
+
+            val mongoUnexpectedError: MongoError = MongoError.UnexpectedError(Exception("Unexpected error"))
+
+            when(aesIE507Repository.getMessages(EoriNumber(eori)))
+              .thenReturn(EitherT(Future.successful(Left(mongoUnexpectedError))))
+
+            val request: FakeRequest[AnyContentAsEmpty.type] =
+              FakeRequest(HttpVerbs.GET, "/automated-export-system/submissions")
+                .withHeaders(
+                  HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
+                  "X-Session-ID"            -> "some-session-id"
+                )
+
+            val submissionRetrieveFailureXml: Elem =
+              <errorResponse>
+                  <status>500</status>
+                  <code>INTERNAL_SERVER_ERROR</code>
+                  <message>Submission retrieval failed for EORI: GB123456789000</message>
+                </errorResponse>
+
+            Helpers.running(app) {
+              val result:        Future[Result] = Helpers.route(app, request).value
+              val resultContent: String         = Helpers.contentAsString(result)
+              val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionRetrieveFailureXml)
+            }
           }
         }
       }
+    }
 
-      "and return a 500 response" - {
+    "should handle an incoming GET request to the /submission/:submissionId endpoint" - {
 
-        "when the request contains a valid EORI" in new Setup {
-          val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
+      "when the request contains a valid EORI" - {
 
-          val app: Application = guiceApplicationBuilder
-            .overrides(
-              inject.bind[AesIE507Repository].toInstance(aesIE507Repository)
+        "and return a 200 response" - {
+
+          "when there is a submission found with that EORI and given submissionId" in new Setup {
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
             )
-            .build()
 
-          stubFor(
-            post(urlEqualTo("/auth/authorise"))
-              .willReturn(
-                aResponse()
-                  .withStatus(200)
-                  .withHeader("Content-Type", "application/json")
-                  .withBody(authSuccessPayload)
-              )
-          )
+            await(aesIE507Repository.collection.insertMany(Seq(mongoAesIE507Message1, mongoAesIE507Message2)).head())
 
-          val mongoUnexpectedError: MongoError = MongoError.UnexpectedError(RuntimeException("Unexpected error"))
+            val request: FakeRequest[AnyContentAsEmpty.type] =
+              FakeRequest(HttpVerbs.GET, s"/automated-export-system/submission/$id1")
+                .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
 
-          when(aesIE507Repository.getMessages(EoriNumber(eori)))
-            .thenReturn(EitherT(Future.successful(Left(mongoUnexpectedError))))
+            val submissionXml: Elem =
+              <Submission>
+                <submissionId>{id1}</submissionId>
+                <status>1</status>
+                <ExportOperation>
+                  <exportOperationType>1</exportOperationType>
+                  <mrn>mrn</mrn>
+                  <discrepanciesExist>false</discrepanciesExist>
+                  <splitIndicator>true</splitIndicator>
+                </ExportOperation>
+                <CustomsOfficeOfExitActual>
+                  <referenceNumber>referenceNumber</referenceNumber>
+                </CustomsOfficeOfExitActual>
+                <GoodsShipment>
+                  <Consignment>
+                    <modeOfTransportAtBorder>1</modeOfTransportAtBorder>
+                    <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
+                    <parentUCRID>parentUcrId</parentUCRID>
+                    <TransportEquipment>
+                      <sequenceNumber>1</sequenceNumber>
+                      <containerIdentificationNumber>1</containerIdentificationNumber>
+                      <numberOfSeals>1</numberOfSeals>
+                    </TransportEquipment>
+                    <Seal>
+                      <sequenceNumber>1</sequenceNumber>
+                      <identifier>sealIdentifier</identifier>
+                    </Seal>
+                    <GoodsReference>
+                      <sequenceNumber>1</sequenceNumber>
+                      <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                    </GoodsReference>
+                    <LocationOfGoods>
+                      <typeOfLocation>typeOfLocation</typeOfLocation>
+                      <qualifierOfIdentification>qualifierOfIdentification</qualifierOfIdentification>
+                      <authorisationNumber>authorisationNumber</authorisationNumber>
+                      <additionalIdentifier>additionalIdentifier</additionalIdentifier>
+                      <UNLocode>unLocode</UNLocode>
+                    </LocationOfGoods>
+                    <ActiveBorderTransportMeans>
+                      <typeOfIdentification>typeOfIdentification</typeOfIdentification>
+                      <identificationNumber>identificationNumber</identificationNumber>
+                      <nationality>nationality</nationality>
+                    </ActiveBorderTransportMeans>
+                    <TransportDocument>
+                      <sequenceNumber>1</sequenceNumber>
+                      <type>1</type>
+                      <referenceNumber>referenceNumber</referenceNumber>
+                    </TransportDocument>
+                  </Consignment>
+                  <GoodsItem>
+                    <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                    <Commodity>
+                      <grossMass>100.55</grossMass>
+                      <netMass>80.45</netMass>
+                    </Commodity>
+                    <Packaging>
+                      <sequenceNumber>1</sequenceNumber>
+                      <typeOfPackages>typeOfPackages</typeOfPackages>
+                      <numberOfPackages>1</numberOfPackages>
+                      <shippingMarks>shippingMarks</shippingMarks>
+                    </Packaging>
+                  </GoodsItem>
+                </GoodsShipment>
+                <updatedAt>2026-08-03T00:00:00</updatedAt>
+              </Submission>
+            end submissionXml
 
-          val request: FakeRequest[AnyContentAsEmpty.type] =
-            FakeRequest(HttpVerbs.GET, "/automated-export-system/submissions")
-              .withHeaders(
-                HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
-                "X-Session-ID"            -> "some-session-id"
-              )
-
-          val submissionRetrievalFailureXml: Elem =
-            <errorResponse>
-              <status>500</status>
-              <code>INTERNAL_SERVER_ERROR</code>
-              <message>Submission retrieval failed for EORI: GB123456789000</message>
-            </errorResponse>
-
-          Helpers.running(app) {
             val result:        Future[Result] = Helpers.route(app, request).value
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.INTERNAL_SERVER_ERROR
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(submissionRetrievalFailureXml).toString
+            Helpers.status(result)      shouldBe StatusValues.OK
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionXml)
+          }
+        }
+
+        "and return a 404 response" - {
+
+          "when there is no submission found with that EORI and given submissionId" in new Setup {
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
+            )
+
+            await(aesIE507Repository.collection.insertOne(mongoAesIE507Message2).head())
+
+            val request: FakeRequest[AnyContentAsEmpty.type] =
+              FakeRequest(HttpVerbs.GET, s"/automated-export-system/submission/$id1")
+                .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+
+            val submissionNotFoundXml: Elem =
+              <errorResponse>
+                  <status>404</status>
+                  <code>NOT_FOUND</code>
+                  <message>Submission not found for EORI:
+                    {eori}
+                    and submissionId:
+                    {id1}
+                  </message>
+                </errorResponse>
+
+            val result:        Future[Result] = Helpers.route(app, request).value
+            val resultContent: String         = Helpers.contentAsString(result)
+            val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
+
+            Helpers.status(result)      shouldBe StatusValues.NOT_FOUND
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionNotFoundXml)
+          }
+
+        }
+
+        "and return a 500 response" - {
+
+          "when there is an unexpected error encountered while retrieving the submission" in new Setup {
+            val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
+
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
+            )
+
+            val app: Application = guiceApplicationBuilder
+              .overrides(
+                inject.bind[AesIE507Repository].toInstance(aesIE507Repository)
+              )
+              .build()
+
+            when(aesIE507Repository.getMessage(EoriNumber(eori), SubmissionId(id1)))
+              .thenReturn(
+                EitherT(
+                  Future.successful(
+                    Left(
+                      MongoError.UnexpectedError(Exception("Unexpected error"))
+                    )
+                  )
+                )
+              )
+
+            val request: FakeRequest[AnyContentAsEmpty.type] =
+              FakeRequest(HttpVerbs.GET, s"/automated-export-system/submission/$id1")
+                .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+
+            val submissionRetrieveFailureXml: Elem =
+              <errorResponse>
+                  <status>500</status>
+                  <code>INTERNAL_SERVER_ERROR</code>
+                  <message>Submission retrieval failed for EORI:
+                    {eori}
+                    and submissionId:
+                    {id1}
+                  </message>
+                </errorResponse>
+
+            Helpers.running(app) {
+              val result:        Future[Result] = Helpers.route(app, request).value
+              val resultContent: String         = Helpers.contentAsString(result)
+              val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionRetrieveFailureXml)
+            }
           }
         }
       }

@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class Mrn(value: String) extends AnyVal
 
 object Mrn:
   given mongoFormat: Format[Mrn] = Json.valueFormat[Mrn]
+
+  given mrnXmlWriter: XmlWriter[Mrn] =
+    (o, label) => o.value.toXml(label)

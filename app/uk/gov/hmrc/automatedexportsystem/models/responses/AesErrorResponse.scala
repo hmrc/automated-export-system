@@ -17,48 +17,50 @@
 package uk.gov.hmrc.automatedexportsystem.models.responses
 
 import cats.data.NonEmptyList
+import play.api.http.Writeable
 import play.api.mvc.Result
 import play.api.mvc.Results.Status
 import uk.gov.hmrc.automatedexportsystem.errors.*
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.AesErrorResponseValidationError
+import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{RootedXmlWriter, XmlRootTag, XmlWriter}
 
 import scala.xml.*
 
 final case class AesErrorResponse(status: Int, code: String, message: String, errors: Option[NonEmptyList[AesErrorResponseValidationError]]):
-  def toXml: Elem =
-    val errorNodes: Option[List[Elem]] =
-      errors.map(nel =>
-        nel
-          .map(err => <error>
-              <line>{err.line}</line>
-              <column>{err.column}</column>
-              <message>{err.message}</message>
-            </error>)
-          .toList
-      )
+  private def self: AesErrorResponse = this
 
-    val xml: Elem =
-      <errorResponse>
-        <status>{status}</status>
-        <code>{code}</code>
-        <message>{message}</message>
-        {
-        errorNodes.fold(NodeSeq.Empty)(nodes => <errors>
-            {nodes}
-          </errors>)
-      }
-      </errorResponse>
-
-    xml
-  end toXml
-
-  def toResult: Result = Status(status)(toXml)
-end AesErrorResponse
+  def toResult(using Writeable[NodeSeq]): Result = Status(status)(self.toXmlRoot)
 
 object AesErrorResponse:
+  given aesErrorResponseTag: XmlRootTag[AesErrorResponse] = XmlRootTag("errorResponse")
+
+  given aesErrorResponseXmlWriter: XmlWriter[AesErrorResponse] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.status.toXml("status")
+          ++ o.code.toXml("code")
+          ++ o.message.toXml("message")
+          ++ XmlWriter.optElem("errors", o.errors.toXmlRoot)
+
+      XmlWriter.elem(label, children)
+
   final case class AesErrorResponseValidationError(line: Int, column: Int, message: String)
 
   object AesErrorResponseValidationError:
+    given aesErrorResponseValidationErrorTag: XmlRootTag[AesErrorResponseValidationError] =
+      XmlRootTag("error")
+
+    given aesErrorResponseValidationErrorXmlWriter: XmlWriter[AesErrorResponseValidationError] =
+      (o, label) =>
+        val children: NodeSeq =
+          o.line.toXml("line")
+            ++ o.column.toXml("column")
+            ++ o.message.toXml("message")
+
+        XmlWriter.elem(label, children)
+
     def fromXmlSchemaValidationError(error: XmlSchemaValidationError): AesErrorResponseValidationError =
       AesErrorResponseValidationError(error.line, error.column, error.message)
 

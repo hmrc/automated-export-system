@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class NetMass(value: BigDecimal) extends AnyVal
 
 object NetMass:
   given mongoFormat: Format[NetMass] = Json.valueFormat[NetMass]
+
+  given netMassXmlWriter: XmlWriter[NetMass] =
+    (o, label) => o.value.toXml(label)

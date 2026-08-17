@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class SealIdentifier(value: String) extends AnyVal
 
 object SealIdentifier:
   given mongoFormat: Format[SealIdentifier] = Json.valueFormat[SealIdentifier]
+
+  given sealIdentifierXmlWriter: XmlWriter[SealIdentifier] =
+    (o, label) => o.value.toXml(label)

@@ -18,9 +18,24 @@ package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import cats.data.NonEmptyList
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+
+import scala.xml.NodeSeq
 
 final case class GoodsShipment(consignment: Consignment, goodsItem: Option[NonEmptyList[GoodsItem]])
 
 object GoodsShipment:
   import uk.gov.hmrc.automatedexportsystem.models.formats.NonEmptyListFormat.nonEmptyListFormat
+
   given mongoFormat: Format[GoodsShipment] = Json.format[GoodsShipment]
+
+  given goodsShipmentTag: XmlRootTag[GoodsShipment] = XmlRootTag("GoodsShipment")
+
+  given goodsShipmentXmlWriter: XmlWriter[GoodsShipment] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.consignment.toXmlRoot
+          ++ o.goodsItem.toXmlRoot
+
+      XmlWriter.elem(label, children)

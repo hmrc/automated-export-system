@@ -17,6 +17,8 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.*
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 enum ExportOperationType(val status: Int):
   case Standard extends ExportOperationType(1)
@@ -33,3 +35,6 @@ object ExportOperationType:
     ),
     Writes.IntWrites.contramap(exportOperationType => exportOperationType.status)
   )
+
+  given exportOperationTypeXmlWriter: XmlWriter[ExportOperationType] =
+    (o, label) => o.status.toXml(label)

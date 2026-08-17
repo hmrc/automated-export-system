@@ -17,6 +17,10 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+
+import scala.xml.NodeSeq
 
 final case class ActiveBorderTransportMeans(
   typeOfIdentification: Option[TypeOfIdentification],
@@ -26,3 +30,15 @@ final case class ActiveBorderTransportMeans(
 
 object ActiveBorderTransportMeans:
   given mongoFormat: Format[ActiveBorderTransportMeans] = Json.format[ActiveBorderTransportMeans]
+
+  given activeBorderTransportMeansTag: XmlRootTag[ActiveBorderTransportMeans] =
+    XmlRootTag("ActiveBorderTransportMeans")
+
+  given activeBorderTransportMeansXmlWriter: XmlWriter[ActiveBorderTransportMeans] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.typeOfIdentification.toXml("typeOfIdentification")
+          ++ o.identificationNumber.toXml("identificationNumber")
+          ++ o.nationality.toXml("nationality")
+
+      XmlWriter.elem(label, children)

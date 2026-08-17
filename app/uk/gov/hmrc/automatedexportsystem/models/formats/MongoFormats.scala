@@ -19,17 +19,29 @@ package uk.gov.hmrc.automatedexportsystem.models.formats
 import play.api.libs.json.*
 
 import java.time.Instant
+import scala.util.Try
 
 object MongoFormats:
   given mongoDateInstantReads: Reads[Instant] =
-    (JsPath \ "$date" \ "$numberLong")
-      .read[String]
-      .flatMapResult(s =>
-        s.toLongOption match {
-          case Some(long) => JsSuccess(Instant.ofEpochMilli(long))
-          case None       => JsError("error.expected.long")
-        }
-      )
+    (JsPath \ "$date")
+      .read[JsValue]
+      .flatMapResult {
+        case JsString(s) =>
+          Try(Instant.parse(s)).toOption match {
+            case Some(instant) => JsSuccess(instant)
+            case None          => JsError("error.expected.iso8601date")
+          }
+        case obj: JsObject =>
+          (JsPath \ "$numberLong")
+            .read[String]
+            .reads(obj)
+            .flatMap(s =>
+              s.toLongOption match
+                case Some(long) => JsSuccess(Instant.ofEpochMilli(long))
+                case None       => JsError("error.expected.epochmillis")
+            )
+        case _ => JsError("error.expected.iso8601dateorepochmillis")
+      }
 
   given mongoDateInstantWrites: Writes[Instant] =
     (o: Instant) =>

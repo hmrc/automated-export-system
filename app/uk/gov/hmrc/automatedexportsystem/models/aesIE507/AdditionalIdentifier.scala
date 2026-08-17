@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class AdditionalIdentifier(value: String) extends AnyVal
 
 object AdditionalIdentifier:
   given mongoFormat: Format[AdditionalIdentifier] = Json.valueFormat[AdditionalIdentifier]
+
+  given additionalIdentifierXmlWriter: XmlWriter[AdditionalIdentifier] =
+    (o, label) => o.value.toXml(label)

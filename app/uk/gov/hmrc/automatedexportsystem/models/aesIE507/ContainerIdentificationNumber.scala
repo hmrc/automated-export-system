@@ -17,8 +17,13 @@
 package uk.gov.hmrc.automatedexportsystem.models.aesIE507
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class ContainerIdentificationNumber(value: String) extends AnyVal
 
 object ContainerIdentificationNumber:
   given mongoFormat: Format[ContainerIdentificationNumber] = Json.valueFormat[ContainerIdentificationNumber]
+
+  given containerIdentificationNumberXmlWriter: XmlWriter[ContainerIdentificationNumber] =
+    (o, label) => o.value.toXml(label)

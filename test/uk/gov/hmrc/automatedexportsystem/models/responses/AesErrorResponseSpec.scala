@@ -21,49 +21,42 @@ import helpers.XmlOps
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.AesErrorResponseValidationError
+import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 
 import scala.xml.*
 
 class AesErrorResponseSpec extends AnyFreeSpecLike, Matchers:
   "AesErrorResponse" - {
 
-    ".toXml" - {
+    "should be able to be serialized to XML" - {
 
-      "should render the response into an XML document" - {
+      "when there are no validation errors" in {
+        val aesErrorResponse: AesErrorResponse =
+          AesErrorResponse(400, "BAD_REQUEST", "Request was bad", None)
 
-        "when there are no validation errors" in {
-          val aesErrorResponse: AesErrorResponse =
-            AesErrorResponse(400, "BAD_REQUEST", "Request was bad", None)
-
-          val normalizedResponseXmlString: String = XmlOps.normalize(aesErrorResponse.toXml).toString
-
-          val xml: Elem =
-            <errorResponse>
+        val xml: Elem =
+          <errorResponse>
               <status>400</status>
               <code>BAD_REQUEST</code>
               <message>Request was bad</message>
             </errorResponse>
 
-          val normalizedXmlString: String = XmlOps.normalize(xml).toString
+        XmlOps.normalize(aesErrorResponse.toXmlRoot) shouldBe XmlOps.normalize(xml)
+      }
 
-          normalizedResponseXmlString shouldBe normalizedXmlString
-        }
+      "when there are validation errors" - {
 
-        "when there are validation errors" - {
+        "one validation error" in {
+          val aesErrorResponse: AesErrorResponse =
+            AesErrorResponse(
+              400,
+              "BAD_REQUEST",
+              "Request was bad",
+              Some(NonEmptyList.one(AesErrorResponseValidationError(1, 1, "Bad parse error")))
+            )
 
-          "one validation error" in {
-            val aesErrorResponse: AesErrorResponse =
-              AesErrorResponse(
-                400,
-                "BAD_REQUEST",
-                "Request was bad",
-                Some(NonEmptyList.one(AesErrorResponseValidationError(1, 1, "Bad parse error")))
-              )
-
-            val normalizedResponseXmlString: String = XmlOps.normalize(aesErrorResponse.toXml).toString
-
-            val xml: Elem =
-              <errorResponse>
+          val xml: Elem =
+            <errorResponse>
                 <status>400</status>
                 <code>BAD_REQUEST</code>
                 <message>Request was bad</message>
@@ -76,32 +69,28 @@ class AesErrorResponseSpec extends AnyFreeSpecLike, Matchers:
                 </errors>
               </errorResponse>
 
-            val normalizedXmlString: String = XmlOps.normalize(xml).toString
+          XmlOps.normalize(aesErrorResponse.toXmlRoot) shouldBe XmlOps.normalize(xml)
+        }
 
-            normalizedResponseXmlString shouldBe normalizedXmlString
-          }
-
-          "more than one validation error" in {
-            val aesErrorResponse: AesErrorResponse =
-              AesErrorResponse(
-                400,
-                "BAD_REQUEST",
-                "Request was bad",
-                Some(
-                  NonEmptyList.of(
-                    AesErrorResponseValidationError(1, 1, "Bad parse error 1"),
-                    AesErrorResponseValidationError(2, 1, "Bad parse error 2"),
-                    AesErrorResponseValidationError(3, 1, "Bad parse error 3"),
-                    AesErrorResponseValidationError(4, 1, "Bad parse error 4"),
-                    AesErrorResponseValidationError(5, 1, "Bad parse error 5")
-                  )
+        "more than one validation error" in {
+          val aesErrorResponse: AesErrorResponse =
+            AesErrorResponse(
+              400,
+              "BAD_REQUEST",
+              "Request was bad",
+              Some(
+                NonEmptyList.of(
+                  AesErrorResponseValidationError(1, 1, "Bad parse error 1"),
+                  AesErrorResponseValidationError(2, 1, "Bad parse error 2"),
+                  AesErrorResponseValidationError(3, 1, "Bad parse error 3"),
+                  AesErrorResponseValidationError(4, 1, "Bad parse error 4"),
+                  AesErrorResponseValidationError(5, 1, "Bad parse error 5")
                 )
               )
+            )
 
-            val normalizedResponseXmlString: String = XmlOps.normalize(aesErrorResponse.toXml).toString
-
-            val xml: Elem =
-              <errorResponse>
+          val xml: Elem =
+            <errorResponse>
                 <status>400</status>
                 <code>BAD_REQUEST</code>
                 <message>Request was bad</message>
@@ -134,10 +123,7 @@ class AesErrorResponseSpec extends AnyFreeSpecLike, Matchers:
                 </errors>
               </errorResponse>
 
-            val normalizedXmlString: String = XmlOps.normalize(xml).toString
-
-            normalizedResponseXmlString shouldBe normalizedXmlString
-          }
+          XmlOps.normalize(aesErrorResponse.toXmlRoot) shouldBe XmlOps.normalize(xml)
         }
       }
     }

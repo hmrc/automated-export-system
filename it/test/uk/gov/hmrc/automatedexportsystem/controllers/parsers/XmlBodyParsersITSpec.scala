@@ -61,7 +61,7 @@ class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuit
                 .map(_.value)
                 .futureValue
 
-            XmlOps.normalize(result).toString shouldBe XmlOps.normalize(xml).toString
+            XmlOps.normalize(result) shouldBe XmlOps.normalize(xml)
           }
         }
 
@@ -89,9 +89,9 @@ class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuit
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(errorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
 
           "when applied to a Request where the Content-Type charset parameter is not utf-8" in {
@@ -117,9 +117,9 @@ class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuit
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(errorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
 
           "when applied to a Request where the Content-Type is not xml" in {
@@ -139,9 +139,9 @@ class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuit
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)               shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
-            Helpers.contentType(result)          shouldBe Some(MimeTypes.XML)
-            XmlOps.normalize(resultXml).toString shouldBe XmlOps.normalize(errorResponseXml).toString
+            Helpers.status(result)      shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
         }
       }

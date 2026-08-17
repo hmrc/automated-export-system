@@ -20,10 +20,11 @@ import helpers.XmlOps
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 
 import java.time.LocalDateTime
 import java.util.UUID
-import scala.xml.Elem
+import scala.xml.{Elem, Node}
 
 class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
   object TestData:
@@ -58,13 +59,11 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
 
   "SubmissionSummary" - {
 
-    ".toXml" - {
+    "should be able to be serialized to XML" - {
 
-      "should render the submission into an XML document" - {
-
-        "when the ducr is present" in {
-          val xml: Elem =
-            <Submission>
+      "when the ducr is present" in {
+        val xml: Elem =
+          <Submission>
               <submissionId>{TestData.id}</submissionId>
               <mrn>mrn</mrn>
               <ducr>referenceNumberUcr</ducr>
@@ -73,25 +72,20 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
               <status>1</status>
             </Submission>
 
-          XmlOps.normalize(TestData.submissionSummary.toXml).toString shouldBe
-            XmlOps.normalize(xml).toString
-        }
+        XmlOps.normalize(TestData.submissionSummary.toXmlRoot) shouldBe XmlOps.normalize(xml)
+      }
 
-        "when the ducr is not present" in {
-          val xml: Elem =
-            <Submission>
-              <submissionId>
-                {TestData.id}
-              </submissionId>
+      "when the ducr is not present" in {
+        val xml: Elem =
+          <Submission>
+              <submissionId>{TestData.id}</submissionId>
               <mrn>mrn</mrn>
               <officeOfExitCode>referenceNumber</officeOfExitCode>
               <updatedAt>2026-07-31T00:00:00</updatedAt>
               <status>1</status>
             </Submission>
 
-          XmlOps.normalize(TestData.submissionSummaryNoDucr.toXml).toString shouldBe
-            XmlOps.normalize(xml).toString
-        }
+        XmlOps.normalize(TestData.submissionSummaryNoDucr.toXmlRoot) shouldBe XmlOps.normalize(xml)
       }
     }
   }
@@ -122,8 +116,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
               </Submission>
             </Submissions>
 
-          XmlOps.normalize(TestData.submissionSummaryList.toXml).toString shouldBe
-            XmlOps.normalize(xml).toString
+          XmlOps.normalize(TestData.submissionSummaryList.toXmlRoot) shouldBe XmlOps.normalize(xml)
         }
 
         "when the list is empty" in {
@@ -131,8 +124,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
             <Submissions>
             </Submissions>
 
-          XmlOps.normalize(TestData.submissionSummaryListEmpty.toXml).toString shouldBe
-            XmlOps.normalize(xml).toString
+          XmlOps.normalize(TestData.submissionSummaryListEmpty.toXmlRoot) shouldBe XmlOps.normalize(xml)
         }
       }
     }
