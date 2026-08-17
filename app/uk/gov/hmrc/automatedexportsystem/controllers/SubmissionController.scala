@@ -113,3 +113,18 @@ class SubmissionController @Inject() (
 
   def submission(id: UUID): EssentialAction =
     aesAuthEssentialAction(submissionByEoriAndSubmissionIdAction(id))
+
+  private def cancelBySubmissionIdAction(id: UUID) =
+    Action
+      .andThen(aesAuthRequestRefiner)
+      .async {
+        submissionService
+          .cancelSubmission(SubmissionId(id))
+          .fold(
+            error => error.toErrorResponse.toResult,
+            _ => Status(ResponseCode.NoContent.status)
+          )
+      }
+
+  def cancel(id: UUID): EssentialAction =
+    aesAuthEssentialAction(cancelBySubmissionIdAction(id))
