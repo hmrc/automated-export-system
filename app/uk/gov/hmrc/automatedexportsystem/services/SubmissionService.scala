@@ -24,6 +24,7 @@ import uk.gov.hmrc.automatedexportsystem.models.request.{SubmissionRequest, Subm
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
+import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,10 +39,14 @@ trait SubmissionService:
 
   def getSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, Submission]
 
-  def cancelSubmission(submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, UpdateStatus]
+  def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, UpdateStatus]
 
 @Singleton
-class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(using ExecutionContext) extends SubmissionService:
+class SubmissionServiceImpl @Inject() (
+  aesIE507Repository: AesIE507Repository,
+  clock:              Clock
+)(using ExecutionContext)
+    extends SubmissionService:
   def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList] =
     val submissionSummaryListResult: EitherT[Future, MongoError, SubmissionSummaryList] =
       aesIE507Repository
@@ -83,12 +88,12 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
     )
   end getSubmission
 
-  def cancelSubmission(submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, UpdateStatus] =
+  def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, UpdateStatus] =
     aesIE507Repository
-      .cancel(submissionId)
+      .cancel(eoriNumber, submissionId, Instant.now(clock))
       .leftMap(
         SubmissionService
-          .MongoErrorMapper(s"submissionId: ${submissionId.value}")
+          .MongoErrorMapper(s"EORI: ${eoriNumber.value}, submissionId: ${submissionId.value}")
           .withUpdateMongoError
           .apply
       )

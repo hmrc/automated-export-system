@@ -31,7 +31,7 @@ import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
-import java.time.{Instant, LocalDateTime}
+import java.time.*
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,7 +40,11 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
   val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
 
-  val submissionService: SubmissionService = SubmissionServiceImpl(aesIE507Repository)
+  val instant: Instant = Instant.parse("2026-08-12T00:00:00.000Z")
+
+  val clock: Clock = Clock.fixed(instant, ZoneOffset.UTC)
+
+  val submissionService: SubmissionService = SubmissionServiceImpl(aesIE507Repository, clock)
 
   object TestData:
     val eoriNumber: EoriNumber = EoriNumber("eoriNumber")
@@ -218,24 +222,24 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
       "should cancel a submission" - {
 
-        "when on submission with the given submissionId is found in the mongodb collection" - {
+        "when a submission with the given EORI and submissionId is found in the mongodb collection" - {
 
           "and the submission is not cancelled yet" in {
-            when(aesIE507Repository.cancel(TestData.submissionId))
+            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
               .thenReturn(EitherT(Future.successful(Right(UpdateStatus.Updated("cancel", 1, 1)))))
 
             val result: UpdateStatus =
-              submissionService.cancelSubmission(TestData.submissionId).value.futureValue.value
+              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
 
             result shouldBe UpdateStatus.Updated("cancel", 1, 1)
           }
 
           "and the submission is already cancelled" in {
-            when(aesIE507Repository.cancel(TestData.submissionId))
+            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
               .thenReturn(EitherT(Future.successful(Right(UpdateStatus.AlreadyUpToDate("cancel", 1)))))
 
             val result: UpdateStatus =
-              submissionService.cancelSubmission(TestData.submissionId).value.futureValue.value
+              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
 
             result shouldBe UpdateStatus.AlreadyUpToDate("cancel", 1)
           }
@@ -245,31 +249,33 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
       "should return an error" - {
 
         "when there is no submission with the given submissionId found in the mongodb collection" in {
-          when(aesIE507Repository.cancel(TestData.submissionId))
+          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
             .thenReturn(EitherT(Future.successful(Left(MongoError.DocumentNotFound("")))))
 
           val error: SubmissionServiceError =
             SubmissionServiceError.SubmissionNotFound(
-              s"Submission not found. submissionId: ${TestData.submissionId.value}"
+              s"Submission not found. EORI: ${TestData.eoriNumber.value}, " +
+                s"submissionId: ${TestData.submissionId.value}"
             )
 
           val result: SubmissionServiceError =
-            submissionService.cancelSubmission(TestData.submissionId).value.futureValue.left.value
+            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
 
           result shouldBe error
         }
 
         "when the update operation returns an unexpected error" in {
-          when(aesIE507Repository.cancel(TestData.submissionId))
+          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
             .thenReturn(EitherT(Future.successful(Left(MongoError.UnexpectedError(Exception())))))
 
           val error: SubmissionServiceError =
             SubmissionServiceError.SubmissionOperationFailure(
-              s"Submission update failed. submissionId: ${TestData.submissionId.value}"
+              s"Submission update failed. EORI: ${TestData.eoriNumber.value}, " +
+                s"submissionId: ${TestData.submissionId.value}"
             )
 
           val result: SubmissionServiceError =
-            submissionService.cancelSubmission(TestData.submissionId).value.futureValue.left.value
+            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
 
           result shouldBe error
         }

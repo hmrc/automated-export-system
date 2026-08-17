@@ -36,6 +36,7 @@ import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageS
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
+import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
@@ -58,6 +59,8 @@ class AesIE507RepositoryISpec
   protected val repository: AesIE507RepositoryImpl = AesIE507RepositoryImpl(mongoComponent, appConfig)
 
   object TestData:
+    val instant: Instant = Instant.parse("2026-08-17T00:00:00.000Z")
+
     val submissionId: SubmissionId = SubmissionId(UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317"))
 
     val eoriNumber: EoriNumber = EoriNumber("eoriNumber")
@@ -264,16 +267,17 @@ class AesIE507RepositoryISpec
 
       "should set the document's ExportOperationType to Cancel" - {
 
-        "when there is a document in the collection with that submissionId" - {
+        "when there is a document in the collection with that eori and submissionId" - {
 
           "and ExportOperationType is not Cancel" in {
-            val mongoAesIE507MessagesDifferentId: Seq[MongoAesIE507Message] =
+            val mongoAesIE507MessagesDifferentEoriAndId: Seq[MongoAesIE507Message] =
               Seq.fill(2)(arbitrary[MongoAesIE507Message].sample).flatten
 
-            val mongoAesIE507MessagesMatchingId: Seq[MongoAesIE507Message] =
+            val mongoAesIE507MessagesMatchingEoriAndId: Seq[MongoAesIE507Message] =
               Seq
                 .fill(1)(
                   arbitrary[MongoAesIE507Message]
+                    .withEori(TestData.eoriNumber)
                     .withSubmissionId(TestData.submissionId)
                     .withExportOperationType(ExportOperationType.Standard)
                     .sample
@@ -281,52 +285,63 @@ class AesIE507RepositoryISpec
                 .flatten
 
             val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
-              mongoAesIE507MessagesDifferentId ++ mongoAesIE507MessagesMatchingId
+              mongoAesIE507MessagesDifferentEoriAndId ++ mongoAesIE507MessagesMatchingEoriAndId
 
-            val mongoAesIE507MessagesMatchingIdCancelled: Seq[MongoAesIE507Message] =
-              mongoAesIE507MessagesMatchingId.map(m =>
-                m.copy(exportOperation = m.exportOperation.copy(exportOperationType = ExportOperationType.Cancel))
+            val mongoAesIE507MessagesMatchingEoriAndIdCancelled: Seq[MongoAesIE507Message] =
+              mongoAesIE507MessagesMatchingEoriAndId.map(m =>
+                m.copy(
+                  exportOperation = m.exportOperation.copy(exportOperationType = ExportOperationType.Cancel),
+                  updatedAt = TestData.instant
+                )
               )
 
             repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-            val updateStatus: UpdateStatus = repository.cancel(TestData.submissionId).value.futureValue.value
+            val updateStatus: UpdateStatus =
+              repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.instant).value.futureValue.value
 
             updateStatus shouldBe UpdateStatus.Updated("cancel", 1, 1)
 
             val result: Seq[MongoAesIE507Message] =
-              find(Filters.eq("submissionId", TestData.submissionId.value.toString)).futureValue
+              find(
+                Filters.and(
+                  Filters.eq("eoriNumber", TestData.eoriNumber.value),
+                  Filters.eq("submissionId", TestData.submissionId.value.toString)
+                )
+              ).futureValue
 
-            result shouldBe mongoAesIE507MessagesMatchingIdCancelled
+            result shouldBe mongoAesIE507MessagesMatchingEoriAndIdCancelled
           }
 
           "and ExportOperationType is Cancel" in {
-            val mongoAesIE507MessagesDifferentId: Seq[MongoAesIE507Message] =
+            val mongoAesIE507MessagesDifferentEoriAndId: Seq[MongoAesIE507Message] =
               Seq.fill(2)(arbitrary[MongoAesIE507Message].sample).flatten
 
-            val mongoAesIE507MessagesMatchingId: Seq[MongoAesIE507Message] =
+            val mongoAesIE507MessagesMatchingEoriAndId: Seq[MongoAesIE507Message] =
               Seq
                 .fill(1)(
                   arbitrary[MongoAesIE507Message]
                     .withSubmissionId(TestData.submissionId)
+                    .withEori(TestData.eoriNumber)
                     .withExportOperationType(ExportOperationType.Cancel)
                     .sample
                 )
                 .flatten
 
             val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
-              mongoAesIE507MessagesDifferentId ++ mongoAesIE507MessagesMatchingId
+              mongoAesIE507MessagesDifferentEoriAndId ++ mongoAesIE507MessagesMatchingEoriAndId
 
             repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-            val updateStatus: UpdateStatus = repository.cancel(TestData.submissionId).value.futureValue.value
+            val updateStatus: UpdateStatus =
+              repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.instant).value.futureValue.value
 
             updateStatus shouldBe UpdateStatus.AlreadyUpToDate("cancel", 1)
 
             val result: Seq[MongoAesIE507Message] =
               find(Filters.eq("submissionId", TestData.submissionId.value.toString)).futureValue
 
-            result shouldBe mongoAesIE507MessagesMatchingId
+            result shouldBe mongoAesIE507MessagesMatchingEoriAndId
           }
         }
       }
@@ -339,7 +354,8 @@ class AesIE507RepositoryISpec
 
           repository.collection.insertMany(mongoAesIE507MessagesDifferentId).head().futureValue
 
-          val result: MongoError = repository.cancel(TestData.submissionId).value.futureValue.left.value
+          val result: MongoError =
+            repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.instant).value.futureValue.left.value
 
           result shouldBe MongoError.DocumentNotFound(
             s"No document found for submissionId: ${TestData.submissionId.value}"

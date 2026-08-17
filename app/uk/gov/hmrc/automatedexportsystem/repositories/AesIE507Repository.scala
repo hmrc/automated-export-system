@@ -22,9 +22,9 @@ import com.mongodb.client.model.{IndexModel, IndexOptions, Sorts}
 import com.mongodb.{MongoNotPrimaryException, MongoSocketException, MongoTimeoutException}
 import org.apache.pekko.pattern.RetrySupport
 import org.bson.codecs.Codec
-import org.mongodb.scala.MongoException
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
+import org.mongodb.scala.{Document, MongoException, bson}
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
@@ -35,6 +35,7 @@ import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProje
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -48,7 +49,7 @@ trait AesIE507Repository:
 
   def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, Boolean]
 
-  def cancel(submissionId: SubmissionId): EitherT[Future, MongoError, UpdateStatus]
+  def cancel(eori: EoriNumber, submissionId: SubmissionId, updatedAt: Instant): EitherT[Future, MongoError, UpdateStatus]
 
 @Singleton
 class AesIE507RepositoryImpl @Inject() (
@@ -147,13 +148,31 @@ class AesIE507RepositoryImpl @Inject() (
         .map(updateResult => Right(updateResult.wasAcknowledged()))
     }
 
-  def cancel(submissionId: SubmissionId): EitherT[Future, MongoError, UpdateStatus] = {
+  def cancel(eori: EoriNumber, submissionId: SubmissionId, updatedAt: Instant): EitherT[Future, MongoError, UpdateStatus] =
     val operationName: String = "cancel"
 
-    val filter: Bson = Filters.eq("submissionId", submissionId.value.toString)
+    val filter: Bson = Filters.and(
+      Filters.eq("eoriNumber", eori.value),
+      Filters.eq("submissionId", submissionId.value.toString)
+    )
 
-    val update: Bson =
-      Updates.set("exportOperation.exportOperationType", ExportOperationType.Cancel.status)
+    val exportOperationTypeCancel: Int = ExportOperationType.Cancel.status
+
+    val update: Seq[Bson] =
+      Seq(
+        Document(s"""{
+          |  "$$set": {
+          |    "updatedAt": {
+          |      "$$cond": [
+          |          { "$$ne": ["$$exportOperation.exportOperationType", $exportOperationTypeCancel] },
+          |          { "$$date": { "$$numberLong": "${updatedAt.toEpochMilli}" } },
+          |          "$$updatedAt"
+          |      ]
+          |    },
+          |    "exportOperation.exportOperationType": $exportOperationTypeCancel
+          |  }
+          |}""".stripMargin)
+      )
 
     retryOperation(
       operationName = operationName,
@@ -163,7 +182,16 @@ class AesIE507RepositoryImpl @Inject() (
         .updateOne(filter, update)
         .toFuture()
         .map(updateResult =>
-          if !updateResult.wasAcknowledged() then Left(writeUnacknowledgedError(operationName, submissionId))
+          if !updateResult.wasAcknowledged() then
+            Left(
+              writeUnacknowledgedError(
+                operationName,
+                context = Map(
+                  "eoriNumber"   -> eori.value,
+                  "submissionId" -> submissionId.value.toString
+                )
+              )
+            )
           else
             val matchedCount:  Long = updateResult.getMatchedCount
             val modifiedCount: Long = updateResult.getModifiedCount
@@ -173,12 +201,15 @@ class AesIE507RepositoryImpl @Inject() (
             else Right(UpdateStatus.Updated(operationName, matchedCount, modifiedCount))
         )
     }
-  }
 
-  private def writeUnacknowledgedError(operation: String, submissionId: SubmissionId): MongoError =
+  private def writeUnacknowledgedError(operation: String, context: Map[String, String]): MongoError =
+    val contextString: String =
+      if context.isEmpty then ""
+      else context.map { case (k, v) => s"$k: $v" }.mkString(", ", ", ", "")
+
     logger.error(
       s"Write was unacknowledged when attempting '$operation' operation. " +
-        s"submissionId: $submissionId, write concern: ${collection.writeConcern}"
+        s"write concern: ${collection.writeConcern}$contextString]"
     )
 
     MongoError.WriteUnacknowledgedError
