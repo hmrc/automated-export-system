@@ -86,7 +86,6 @@ class SubmissionServiceImpl @Inject() (
         .withRetrieveMongoError
         .apply
     )
-  end getSubmission
 
   def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, UpdateStatus] =
     aesIE507Repository
@@ -141,3 +140,4 @@ object SubmissionService:
   object MongoErrorMapper:
     def apply(context: String): MongoErrorMapper =
       new MongoErrorMapper(context, PartialFunction.empty)
+end SubmissionService

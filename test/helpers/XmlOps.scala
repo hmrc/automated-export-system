@@ -34,7 +34,7 @@ object XmlOps:
     )
 
     stringBuilder.result() match
-      case ""  => Seq.empty
+      case ""  => NodeSeq.Empty
       case res => Text(res)
 
   private def trimSpaces(n: Node): NodeSeq =

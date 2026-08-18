@@ -17,6 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.controllers
 
 import cats.data.{EitherT, NonEmptyList}
+import helpers.EitherTFutureOps.{toEitherTLeft, toEitherTRight}
 import helpers.XmlOps
 import org.apache.pekko.util.ByteString
 import org.mockito.ArgumentMatchers.any
@@ -33,6 +34,7 @@ import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.*
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.request.SubmissionResult.Created
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
@@ -80,8 +82,9 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
     )
 
   object TestData:
-    val submissionId: SubmissionId =
-      SubmissionId(UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317"))
+    val id: UUID = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+
+    val submissionId: SubmissionId = SubmissionId(id)
 
     val eoriNumber: EoriNumber = EoriNumber("GB123456789000")
 
@@ -386,7 +389,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
           "that returns a 200 Result with a payload containing all the submissions" - {
 
-            "and there are submissions found with that EORI" in {
+            "when there are submissions found with that EORI" in {
               when(submissionService.getSubmissions(TestData.eoriNumber))
                 .thenReturn(EitherT(Future.successful(Right(TestData.submissionSummaryList))))
 
@@ -425,7 +428,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
             }
 
-            "and there are no submissions found with that EORI" in {
+            "when there are no submissions found with that EORI" in {
               when(submissionService.getSubmissions(TestData.eoriNumber))
                 .thenReturn(EitherT(Future.successful(Right(TestData.submissionSummaryListEmpty))))
 
@@ -498,7 +501,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
           "that returns a 200 Result with a payload containing a single submission" - {
 
-            "and there is a submission found with that EORI and given submissionId" in {
+            "when there is a submission found with that EORI and given submissionId" in {
               when(submissionService.getSubmission(TestData.eoriNumber, TestData.submissionId))
                 .thenReturn(EitherT(Future.successful(Right(TestData.submission))))
 
@@ -614,6 +617,110 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
               Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionRetrieveFailureXml)
+            }
+          }
+        }
+      }
+    }
+
+    ".cancel" - {
+
+      "should return an Action" - {
+
+        "when applied with a request that contains a valid EORI" - {
+
+          "that returns a 204 Result" - {
+
+            "when there is a submission found with that EORI and submissionId" - {
+
+              "and the submission is not cancelled yet" in {
+                when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
+                  .thenReturn(UpdateStatus.Updated("cancel", 1, 1).toEitherTRight[SubmissionServiceError])
+
+                val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+
+                val result: Future[Result] = Helpers.call(submissionController.cancel(TestData.id), request)
+
+                Helpers.status(result)         shouldBe StatusValues.NO_CONTENT
+                Helpers.contentType(result)    shouldBe None
+                Helpers.contentAsBytes(result) shouldBe ByteString.empty
+              }
+
+              "and the submission is already cancelled" in {
+                when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
+                  .thenReturn(UpdateStatus.AlreadyUpToDate("cancel", 1).toEitherTRight[SubmissionServiceError])
+
+                val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+
+                val result: Future[Result] = Helpers.call(submissionController.cancel(TestData.id), request)
+
+                Helpers.status(result)         shouldBe StatusValues.NO_CONTENT
+                Helpers.contentType(result)    shouldBe None
+                Helpers.contentAsBytes(result) shouldBe ByteString.empty
+              }
+            }
+          }
+
+          "that returns a 404 Result" - {
+
+            "when there is no submission found with that EORI and submissionId" in {
+              val error: SubmissionServiceError = SubmissionServiceError.SubmissionNotFound(
+                s"Submission not found. EORI: ${TestData.eoriNumber.value}, submissionId: ${TestData.id}"
+              )
+
+              when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
+                .thenReturn(error.toEitherTLeft[UpdateStatus])
+
+              val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+
+              val result: Future[Result] =
+                Helpers.call(submissionController.cancel(TestData.id), request)
+
+              val submissionUpdateFailureXml: Elem =
+                <errorResponse>
+                  <status>404</status>
+                  <code>NOT_FOUND</code>
+                  <message>{error.message}</message>
+                </errorResponse>
+
+              val resultContent: String = Helpers.contentAsString(result)
+              val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe StatusValues.NOT_FOUND
+              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionUpdateFailureXml)
+            }
+          }
+
+          "that returns a 500 Result" - {
+
+            "due to an unexpected error encountered while retrieving the submissions" in {
+              val error: SubmissionServiceError = SubmissionServiceError.SubmissionOperationFailure(
+                s"Submission update failed. EORI: ${TestData.eoriNumber.value} " +
+                  s"and submissionId: ${TestData.submissionId.value}"
+              )
+
+              when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
+                .thenReturn(error.toEitherTLeft[UpdateStatus])
+
+              val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+
+              val result: Future[Result] =
+                Helpers.call(submissionController.cancel(TestData.id), request)
+
+              val submissionUpdateFailureXml: Elem =
+                <errorResponse>
+                  <status>500</status>
+                  <code>INTERNAL_SERVER_ERROR</code>
+                  <message>{error.message}</message>
+                </errorResponse>
+
+              val resultContent: String = Helpers.contentAsString(result)
+              val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionUpdateFailureXml)
             }
           }
         }
