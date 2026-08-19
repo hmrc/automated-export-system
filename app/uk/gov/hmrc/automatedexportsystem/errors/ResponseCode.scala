@@ -21,6 +21,7 @@ import play.api.http.Status.*
 enum ResponseCode(val status: Int, val code: String):
   case Ok extends ResponseCode(OK, "OK")
   case Accepted extends ResponseCode(ACCEPTED, "ACCEPTED")
+  case NoContent extends ResponseCode(NO_CONTENT, "NO_CONTENT")
   case BadRequest extends ResponseCode(BAD_REQUEST, "BAD_REQUEST")
   case Forbidden extends ResponseCode(FORBIDDEN, "FORBIDDEN")
   case NotFound extends ResponseCode(NOT_FOUND, "NOT_FOUND")

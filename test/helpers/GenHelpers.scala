@@ -17,8 +17,10 @@
 package helpers
 
 import org.scalacheck.Gen
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, ExportOperationType, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+
+import java.time.Instant
 
 trait GenHelpers:
   extension (mongoAesIE507MessageGen: Gen[MongoAesIE507Message])
@@ -27,5 +29,11 @@ trait GenHelpers:
 
     def withSubmissionId(submissionId: SubmissionId): Gen[MongoAesIE507Message] =
       mongoAesIE507MessageGen.map(_.copy(submissionId = submissionId))
+
+    def withExportOperationType(exportOperationType: ExportOperationType): Gen[MongoAesIE507Message] =
+      mongoAesIE507MessageGen.map(m => m.copy(exportOperation = m.exportOperation.copy(exportOperationType = exportOperationType)))
+
+    def withUpdatedAt(updatedAt: Instant): Gen[MongoAesIE507Message] =
+      mongoAesIE507MessageGen.map(_.copy(updatedAt = updatedAt))
 
 object GenHelpers extends GenHelpers

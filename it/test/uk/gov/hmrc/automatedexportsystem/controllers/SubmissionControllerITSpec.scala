@@ -18,9 +18,11 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 
 import cats.data.{EitherT, NonEmptyList}
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlEqualTo}
+import helpers.EitherTFutureOps.toEitherTLeft
 import helpers.XmlOps
 import org.apache.pekko.util.ByteString
 import org.mockito.Mockito.when
+import org.mongodb.scala.model.Filters
 import org.scalatest.EitherValues
 import org.scalatest.EitherValues.convertEitherToValuable
 import org.scalatestplus.mockito.MockitoSugar
@@ -31,11 +33,12 @@ import play.api.{Application, inject}
 import test.uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.{AesIE507Repository, AesIE507RepositoryImpl}
 
-import java.time.{Instant, LocalDateTime}
+import java.time.*
 import java.util.UUID
 import scala.concurrent.Future
 import scala.xml.{Elem, NodeSeq}
@@ -177,7 +180,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
         createdAt = instant,
         updatedAt = instant,
         exportOperation = ExportOperation(
-          exportOperationType = ExportOperationType.Standard,
+          exportOperationType = ExportOperationType.Cancel,
           mrn = Mrn("mrn"),
           discrepanciesExist = DiscrepanciesExist(false),
           splitIndicator = SplitIndicator(true)
@@ -480,7 +483,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                   <mrn>mrn</mrn>
                   <officeOfExitCode>referenceNumber</officeOfExitCode>
                   <updatedAt>2026-08-03T00:00:00</updatedAt>
-                  <status>1</status>
+                  <status>3</status>
                 </Submission>
               </Submissions>
 
@@ -562,7 +565,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               <errorResponse>
                   <status>500</status>
                   <code>INTERNAL_SERVER_ERROR</code>
-                  <message>Submission retrieval failed for EORI: GB123456789000</message>
+                  <message>Submission retrieval failed. EORI: GB123456789000</message>
                 </errorResponse>
 
             Helpers.running(app) {
@@ -702,11 +705,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               <errorResponse>
                   <status>404</status>
                   <code>NOT_FOUND</code>
-                  <message>Submission not found for EORI:
-                    {eori}
-                    and submissionId:
-                    {id1}
-                  </message>
+                  <message>Submission not found. EORI: {eori}, submissionId: {id1}</message>
                 </errorResponse>
 
             val result:        Future[Result] = Helpers.route(app, request).value
@@ -717,7 +716,6 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionNotFoundXml)
           }
-
         }
 
         "and return a 500 response" - {
@@ -760,11 +758,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               <errorResponse>
                   <status>500</status>
                   <code>INTERNAL_SERVER_ERROR</code>
-                  <message>Submission retrieval failed for EORI:
-                    {eori}
-                    and submissionId:
-                    {id1}
-                  </message>
+                  <message>Submission retrieval failed. EORI: {eori}, submissionId: {id1}</message>
                 </errorResponse>
 
             Helpers.running(app) {
@@ -775,6 +769,181 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
               Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionRetrieveFailureXml)
+            }
+          }
+        }
+      }
+    }
+
+    "should handle an incoming GET request to the /cancel/:submissionId endpoint" - {
+
+      "when the request contains a valid EORI" - {
+
+        "and return a 204 response" - {
+
+          "when there is a submission found with that EORI and submissionId" - {
+
+            "and the submission is not cancelled yet" in new Setup {
+              stubFor(
+                post(urlEqualTo("/auth/authorise"))
+                  .willReturn(
+                    aResponse()
+                      .withStatus(200)
+                      .withHeader("Content-Type", "application/json")
+                      .withBody(authSuccessPayload)
+                  )
+              )
+
+              await(aesIE507Repository.collection.insertOne(mongoAesIE507Message1).head())
+
+              val request: FakeRequest[AnyContentAsEmpty.type] =
+                FakeRequest(HttpVerbs.GET, s"/automated-export-system/cancel/$id1")
+                  .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+
+              val result: Future[Result] = Helpers.route(app, request).value
+
+              Helpers.status(result)         shouldBe StatusValues.NO_CONTENT
+              Helpers.contentType(result)    shouldBe None
+              Helpers.contentAsBytes(result) shouldBe ByteString.empty
+
+              val cancelledMessage: MongoAesIE507Message =
+                await(
+                  aesIE507Repository.collection
+                    .find(
+                      Filters.and(
+                        Filters.eq("eoriNumber", eori),
+                        Filters.eq("submissionId", id1.toString)
+                      )
+                    )
+                    .head()
+                )
+
+              cancelledMessage.exportOperation.exportOperationType                shouldBe ExportOperationType.Cancel
+              cancelledMessage.updatedAt.isAfter(mongoAesIE507Message1.updatedAt) shouldBe true
+            }
+
+            "and the submission is already cancelled" in new Setup {
+              stubFor(
+                post(urlEqualTo("/auth/authorise"))
+                  .willReturn(
+                    aResponse()
+                      .withStatus(200)
+                      .withHeader("Content-Type", "application/json")
+                      .withBody(authSuccessPayload)
+                  )
+              )
+
+              await(aesIE507Repository.collection.insertOne(mongoAesIE507Message2).head())
+
+              val request: FakeRequest[AnyContentAsEmpty.type] =
+                FakeRequest(HttpVerbs.GET, s"/automated-export-system/cancel/$id2")
+                  .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+
+              val result: Future[Result] = Helpers.route(app, request).value
+
+              Helpers.status(result)         shouldBe StatusValues.NO_CONTENT
+              Helpers.contentType(result)    shouldBe None
+              Helpers.contentAsBytes(result) shouldBe ByteString.empty
+
+              val cancelledMessage: MongoAesIE507Message =
+                await(
+                  aesIE507Repository.collection
+                    .find(
+                      Filters.and(
+                        Filters.eq("eoriNumber", eori),
+                        Filters.eq("submissionId", id2.toString)
+                      )
+                    )
+                    .head()
+                )
+
+              cancelledMessage.exportOperation.exportOperationType shouldBe ExportOperationType.Cancel
+              cancelledMessage.updatedAt                           shouldBe mongoAesIE507Message2.updatedAt
+            }
+          }
+        }
+
+        "and return a 404 response" - {
+
+          "when there is no submission found with that EORI and submissionId" in new Setup {
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
+            )
+
+            await(aesIE507Repository.collection.insertOne(mongoAesIE507Message2).head())
+
+            val request: FakeRequest[AnyContentAsEmpty.type] =
+              FakeRequest(HttpVerbs.GET, s"/automated-export-system/cancel/$id1")
+                .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+
+            val submissionNotFoundXml: Elem =
+              <errorResponse>
+                <status>404</status>
+                <code>NOT_FOUND</code>
+                <message>Submission not found. EORI: {eori}, submissionId: {id1}</message>
+              </errorResponse>
+
+            val result: Future[Result] = Helpers.route(app, request).value
+
+            val resultContent: String = Helpers.contentAsString(result)
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+            Helpers.status(result)      shouldBe StatusValues.NOT_FOUND
+            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionNotFoundXml)
+          }
+        }
+
+        "and return a 500 response" - {
+
+          "when there is an unexpected error encountered while updating the submission" in new Setup {
+            val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
+
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
+            )
+
+            val app: Application = guiceApplicationBuilder
+              .overrides(
+                inject.bind[AesIE507Repository].toInstance(aesIE507Repository),
+                inject.bind[Clock].toInstance(Clock.fixed(instant, ZoneOffset.UTC))
+              )
+              .build()
+
+            when(aesIE507Repository.cancel(EoriNumber(eori), SubmissionId(id1), instant))
+              .thenReturn(MongoError.WriteUnacknowledgedError.toEitherTLeft[UpdateStatus])
+
+            val request: FakeRequest[AnyContentAsEmpty.type] =
+              FakeRequest(HttpVerbs.GET, s"/automated-export-system/cancel/$id1")
+                .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+
+            val submissionUpdateFailureXml: Elem =
+              <errorResponse>
+                <status>500</status>
+                <code>INTERNAL_SERVER_ERROR</code>
+                <message>Submission update failed. EORI: {eori}, submissionId: {id1}</message>
+              </errorResponse>
+
+            Helpers.running(app) {
+              val result:        Future[Result] = Helpers.route(app, request).value
+              val resultContent: String         = Helpers.contentAsString(result)
+              val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionUpdateFailureXml)
             }
           }
         }

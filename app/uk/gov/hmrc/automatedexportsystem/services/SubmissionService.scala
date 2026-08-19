@@ -17,12 +17,14 @@
 package uk.gov.hmrc.automatedexportsystem.services
 
 import cats.data.EitherT
-import uk.gov.hmrc.automatedexportsystem.errors.{MongoError, SubmissionServiceError}
+import uk.gov.hmrc.automatedexportsystem.errors.{AesErrorMapper, MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, ExportOperationType, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.request.{SubmissionRequest, SubmissionResult}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
+import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,8 +39,14 @@ trait SubmissionService:
 
   def getSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, Submission]
 
+  def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, UpdateStatus]
+
 @Singleton
-class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(using ExecutionContext) extends SubmissionService:
+class SubmissionServiceImpl @Inject() (
+  aesIE507Repository: AesIE507Repository,
+  clock:              Clock
+)(using ExecutionContext)
+    extends SubmissionService:
   def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList] =
     val submissionSummaryListResult: EitherT[Future, MongoError, SubmissionSummaryList] =
       aesIE507Repository
@@ -52,13 +60,14 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
     submissionSummaryListResult.leftFlatMap {
       case MongoError.DocumentNotFound(_) =>
         EitherT(Future.successful(Right(SubmissionSummaryList(Nil))))
-      case MongoError.UnexpectedError(_) =>
+      case me =>
         EitherT(
           Future.successful(
             Left(
-              SubmissionServiceError.SubmissionRetrieveFailure(
-                s"Submission retrieval failed for EORI: ${eoriNumber.value}"
-              )
+              SubmissionService
+                .MongoErrorMapper(s"EORI: ${eoriNumber.value}")
+                .withRetrieveMongoError
+                .apply(me)
             )
           )
         )
@@ -71,19 +80,22 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
         .getMessage(eoriNumber, submissionId)
         .map(Submission.fromMongoAesIE507Message)
 
-    submissionResult.leftMap {
-      case MongoError.DocumentNotFound(_) =>
-        SubmissionServiceError.SubmissionNotFound(
-          s"Submission not found for EORI: ${eoriNumber.value} " +
-            s"and submissionId: ${submissionId.value}"
-        )
-      case MongoError.UnexpectedError(ex) =>
-        SubmissionServiceError.SubmissionRetrieveFailure(
-          s"Submission retrieval failed for EORI: ${eoriNumber.value} " +
-            s"and submissionId: ${submissionId.value}"
-        )
-    }
-  end getSubmission
+    submissionResult.leftMap(
+      SubmissionService
+        .MongoErrorMapper(context = s"EORI: ${eoriNumber.value}, submissionId: ${submissionId.value}")
+        .withRetrieveMongoError
+        .apply
+    )
+
+  def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, UpdateStatus] =
+    aesIE507Repository
+      .cancel(eoriNumber, submissionId, Instant.now(clock))
+      .leftMap(
+        SubmissionService
+          .MongoErrorMapper(s"EORI: ${eoriNumber.value}, submissionId: ${submissionId.value}")
+          .withUpdateMongoError
+          .apply
+      )
 
   def submitMessage(
     request:             SubmissionRequest,
@@ -93,3 +105,39 @@ class SubmissionServiceImpl @Inject() (aesIE507Repository: AesIE507Repository)(u
     aesIE507Repository
       .submit(request.toMongoMessage(exportOperationType, eoriNumber))
       .map(created => if (created) SubmissionResult.Created else SubmissionResult.Updated)
+
+object SubmissionService:
+  final class MongoErrorMapper private (val context: String, private val mappers: PartialFunction[MongoError, SubmissionServiceError])
+      extends AesErrorMapper(mappers):
+    private def notFoundMongoErrorMapper: PartialFunction[MongoError, SubmissionServiceError] = { case _: MongoError.DocumentNotFound =>
+      SubmissionServiceError.SubmissionNotFound(s"Submission not found. $context")
+    }
+
+    def withRetrieveMongoError: MongoErrorMapper =
+      new MongoErrorMapper(
+        context,
+        withMapperAfter { case _ =>
+          SubmissionServiceError.SubmissionOperationFailure(s"Submission retrieval failed. $context")
+        }
+      )
+
+    def withUpdateMongoError: MongoErrorMapper =
+      new MongoErrorMapper(
+        context,
+        withMapperAfter { case _ =>
+          SubmissionServiceError.SubmissionOperationFailure(s"Submission update failed. $context")
+        }
+      )
+
+    override def apply(mongoError: MongoError): SubmissionServiceError =
+      new MongoErrorMapper(context, withMapperBefore(notFoundMongoErrorMapper)).mappers
+        .applyOrElse(
+          mongoError,
+          _ => SubmissionServiceError.SubmissionOperationFailure(s"Submission operation failed. $context")
+        )
+  end MongoErrorMapper
+
+  object MongoErrorMapper:
+    def apply(context: String): MongoErrorMapper =
+      new MongoErrorMapper(context, PartialFunction.empty)
+end SubmissionService

@@ -25,12 +25,13 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.automatedexportsystem.errors.{MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
-import java.time.{Instant, LocalDateTime}
+import java.time.*
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,7 +40,11 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
   val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
 
-  val submissionService: SubmissionService = SubmissionServiceImpl(aesIE507Repository)
+  val instant: Instant = Instant.parse("2026-08-12T00:00:00.000Z")
+
+  val clock: Clock = Clock.fixed(instant, ZoneOffset.UTC)
+
+  val submissionService: SubmissionService = SubmissionServiceImpl(aesIE507Repository, clock)
 
   object TestData:
     val eoriNumber: EoriNumber = EoriNumber("eoriNumber")
@@ -147,8 +152,8 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             .thenReturn(EitherT(Future.successful(Left(MongoError.UnexpectedError(Exception())))))
 
           val error: SubmissionServiceError =
-            SubmissionServiceError.SubmissionRetrieveFailure(
-              s"Submission retrieval failed for EORI: ${TestData.eoriNumber.value}"
+            SubmissionServiceError.SubmissionOperationFailure(
+              s"Submission retrieval failed. EORI: ${TestData.eoriNumber.value}"
             )
 
           val result: SubmissionServiceError =
@@ -179,14 +184,14 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
       "should return an error" - {
 
-        "when the retrieval operation returns an unexpected error" in {
+        "when there are no submissions with the given EORI and submissionId found in the mongodb collection" in {
           when(aesIE507Repository.getMessage(TestData.eoriNumber, TestData.submissionId))
             .thenReturn(EitherT(Future.successful(Left(MongoError.DocumentNotFound("")))))
 
           val error: SubmissionServiceError =
             SubmissionServiceError.SubmissionNotFound(
-              s"Submission not found for EORI: ${TestData.eoriNumber.value} " +
-                s"and submissionId: ${TestData.submissionId.value.toString}"
+              s"Submission not found. EORI: ${TestData.eoriNumber.value}, " +
+                s"submissionId: ${TestData.submissionId.value.toString}"
             )
 
           val result: SubmissionServiceError =
@@ -195,18 +200,82 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
           result shouldBe error
         }
 
-        "when there are no submissions with the given EORI and submissionId found in the mongodb collection" in {
+        "when the retrieval operation returns an unexpected error" in {
           when(aesIE507Repository.getMessage(TestData.eoriNumber, TestData.submissionId))
             .thenReturn(EitherT(Future.successful(Left(MongoError.UnexpectedError(Exception())))))
 
           val error: SubmissionServiceError =
-            SubmissionServiceError.SubmissionRetrieveFailure(
-              s"Submission retrieval failed for EORI: ${TestData.eoriNumber.value} " +
-                s"and submissionId: ${TestData.submissionId.value.toString}"
+            SubmissionServiceError.SubmissionOperationFailure(
+              s"Submission retrieval failed. EORI: ${TestData.eoriNumber.value}, " +
+                s"submissionId: ${TestData.submissionId.value.toString}"
             )
 
           val result: SubmissionServiceError =
             submissionService.getSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
+
+          result shouldBe error
+        }
+      }
+    }
+
+    ".cancelSubmission" - {
+
+      "should cancel a submission" - {
+
+        "when a submission with the given EORI and submissionId is found in the mongodb collection" - {
+
+          "and the submission is not cancelled yet" in {
+            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+              .thenReturn(EitherT(Future.successful(Right(UpdateStatus.Updated("cancel", 1, 1)))))
+
+            val result: UpdateStatus =
+              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
+
+            result shouldBe UpdateStatus.Updated("cancel", 1, 1)
+          }
+
+          "and the submission is already cancelled" in {
+            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+              .thenReturn(EitherT(Future.successful(Right(UpdateStatus.AlreadyUpToDate("cancel", 1)))))
+
+            val result: UpdateStatus =
+              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
+
+            result shouldBe UpdateStatus.AlreadyUpToDate("cancel", 1)
+          }
+        }
+      }
+
+      "should return an error" - {
+
+        "when there is no submission with the given submissionId found in the mongodb collection" in {
+          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+            .thenReturn(EitherT(Future.successful(Left(MongoError.DocumentNotFound("")))))
+
+          val error: SubmissionServiceError =
+            SubmissionServiceError.SubmissionNotFound(
+              s"Submission not found. EORI: ${TestData.eoriNumber.value}, " +
+                s"submissionId: ${TestData.submissionId.value}"
+            )
+
+          val result: SubmissionServiceError =
+            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
+
+          result shouldBe error
+        }
+
+        "when the update operation returns an unexpected error" in {
+          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+            .thenReturn(EitherT(Future.successful(Left(MongoError.UnexpectedError(Exception())))))
+
+          val error: SubmissionServiceError =
+            SubmissionServiceError.SubmissionOperationFailure(
+              s"Submission update failed. EORI: ${TestData.eoriNumber.value}, " +
+                s"submissionId: ${TestData.submissionId.value}"
+            )
+
+          val result: SubmissionServiceError =
+            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
 
           result shouldBe error
         }
