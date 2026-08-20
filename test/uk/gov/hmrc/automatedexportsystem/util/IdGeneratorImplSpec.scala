@@ -16,18 +16,20 @@
 
 package uk.gov.hmrc.automatedexportsystem.util
 
-import com.google.inject.ImplementedBy
+import org.scalatest.freespec.AnyFreeSpecLike
+import org.scalatest.matchers.should.Matchers
 
-import java.util.UUID
-import javax.inject.Singleton
+class IdGeneratorImplSpec extends AnyFreeSpecLike, Matchers:
+  val idGenerator: IdGenerator = IdGeneratorImpl()
 
-@ImplementedBy(classOf[IdGeneratorImpl])
-trait IdGenerator:
-  def generate: UUID
+  "IdGenerator" - {
 
-  def generate35Char: String
-@Singleton
-class IdGeneratorImpl extends IdGenerator:
-  def generate: UUID = UUID.randomUUID()
+    ".generate35Char" - {
 
-  def generate35Char: String = generate.toString.init
+      "should return a 35 char string" in {
+        val id: String = idGenerator.generate35Char
+
+        id should have length 35
+      }
+    }
+  }
