@@ -72,6 +72,7 @@ class AesAuthAction @Inject() (
   private def ensureCorrelationId(request: RequestHeader, acc: Accumulator[ByteString, Result]): Accumulator[ByteString, Result] =
     val maybeCorrelationId: Option[String] = request.headers.get(AuthConstants.CorrelationIdHeader)
 
+    // TODO - AES-746: should this now use the 35 char version?
     maybeCorrelationId.fold(
       acc.map(_.withHeaders(AuthConstants.CorrelationIdHeader -> idGenerator.generate.toString))
     )(_ => acc)
