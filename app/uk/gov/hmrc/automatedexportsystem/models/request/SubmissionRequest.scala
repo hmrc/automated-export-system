@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.request
 
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{CustomsOfficeOfExitActual, EoriNumber, ExportOperation, GoodsShipment, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CustomsOfficeOfExitActual, EoriNumber, ExportOperation, GoodsShipment, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType
+import uk.gov.hmrc.automatedexportsystem.models.IE507.ExportOperationType
 import java.time.Instant
 import java.util.UUID
 import play.api.Logging

@@ -19,7 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.controllers.actions
 import play.api.Logging
 import play.api.mvc.*
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{AesAuthAttr, AesAuthRequest}
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

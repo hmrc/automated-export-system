@@ -33,7 +33,7 @@ import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, Aes
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.*
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.request.SubmissionResult.Created
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
@@ -517,10 +517,10 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
                   </submissionId>
                   <status>1</status>
                   <ExportOperation>
-                    <exportOperationType>1</exportOperationType>
-                    <mrn>mrn</mrn>
-                    <discrepanciesExist>true</discrepanciesExist>
-                    <splitIndicator>true</splitIndicator>
+                    <type>1</type>
+                    <MRN>mrn</MRN>
+                    <discrepanciesExist>1</discrepanciesExist>
+                    <splitIndicator>1</splitIndicator>
                   </ExportOperation>
                   <CustomsOfficeOfExitActual>
                     <referenceNumber>referenceNumber</referenceNumber>

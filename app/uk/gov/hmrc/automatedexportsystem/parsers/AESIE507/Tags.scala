@@ -28,11 +28,11 @@ object Tags:
   val CustomsOfficeOfExitActual = "CustomsOfficeOfExitActual"
   val ReferenceNumber           = "referenceNumber"
 
-  val GoodsShipment           = "GoodsShipment"
-  val Consignment             = "Consignment"
-  val ModeOfTransportAtBorder = "modeOfTransportAtBorder"
-  val ReferenceNumberUCR      = "referenceNumberUCR"
-  val ParentUCRID             = "parentUCRID"
+  val GoodsShipment              = "GoodsShipment"
+  val Consignment                = "Consignment"
+  val ModeOfTransportAtTheBorder = "modeOfTransportAtTheBorder"
+  val ReferenceNumberUCR         = "referenceNumberUCR"
+  val ParentUCRID                = "parentUCRID"
 
   val LocationOfGoods           = "LocationOfGoods"
   val TypeOfLocation            = "typeOfLocation"

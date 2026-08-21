@@ -21,8 +21,8 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents, EssentialAction}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType.Awaiting
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.IE507.ExportOperationType.Awaiting
+import uk.gov.hmrc.automatedexportsystem.models.IE507.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.parsers.SubmissionRequestParser
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}

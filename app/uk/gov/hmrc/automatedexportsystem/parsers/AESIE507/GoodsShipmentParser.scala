@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.GoodsShipment
+import uk.gov.hmrc.automatedexportsystem.models.IE507.GoodsShipment
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.Helpers.req
 import scala.xml.Node
 

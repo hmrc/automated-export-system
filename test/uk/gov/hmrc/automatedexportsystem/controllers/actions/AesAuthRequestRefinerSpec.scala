@@ -19,7 +19,7 @@ import play.api.mvc.{AnyContentAsEmpty, Request}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseSpec
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt

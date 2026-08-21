@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{ActiveBorderTransportMeans, IdentificationNumber, Nationality, TypeOfIdentification}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{ActiveBorderTransportMeans, IdentificationNumber, Nationality, TypeOfIdentification}
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.Helpers.textOptChild
 
 import scala.xml.Node

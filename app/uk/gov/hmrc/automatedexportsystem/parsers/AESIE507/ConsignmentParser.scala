@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{Consignment, ModeOfTransportAtBorder, ParentUcrId, ReferenceNumberUcr}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{Consignment, ModeOfTransportAtTheBorder, ParentUcrId, ReferenceNumberUcr}
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.Helpers.*
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.{ActiveBorderTransportMeansParser, LocationOfGoodsParser, TransportEquipmentParser}
 
@@ -27,8 +27,8 @@ object ConsignmentParser {
     for {
       referenceNumberUcr <- req(textOptChild(n, Tags.ReferenceNumberUCR), Tags.ReferenceNumberUCR).map(ReferenceNumberUcr.apply)
 
-      modeOfTransportAtBorder <- parseOptionalInt(textOptChild(n, Tags.ModeOfTransportAtBorder), Tags.ModeOfTransportAtBorder)
-                                   .map(_.map(ModeOfTransportAtBorder.apply))
+      modeOfTransportAtTheBorder <- parseOptionalInt(textOptChild(n, Tags.ModeOfTransportAtTheBorder), Tags.ModeOfTransportAtTheBorder)
+                                      .map(_.map(ModeOfTransportAtTheBorder.apply))
 
       locationNode    <- req((n \ Tags.LocationOfGoods).headOption, Tags.LocationOfGoods)
       locationOfGoods <- LocationOfGoodsParser.parseLocationOfGoods(locationNode)
@@ -39,7 +39,7 @@ object ConsignmentParser {
       borderMeans        <- ActiveBorderTransportMeansParser.parseActiveBorderTransportMeans(n)
       transportDocs      <- TransportDocumentParser.parseTransportDocuments(n)
     } yield Consignment(
-      modeOfTransportAtBorder = modeOfTransportAtBorder,
+      modeOfTransportAtTheBorder = modeOfTransportAtTheBorder,
       referenceNumberUCR = referenceNumberUcr,
       parentUcrId = textOptChild(n, Tags.ParentUCRID).map(ParentUcrId.apply),
       transportEquipment = transportEquipment,
