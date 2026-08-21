@@ -21,3 +21,5 @@ GET /cancel/:submissionId uk.gov.hmrc.automatedexportsystem.controllers.Submissi
 POST /cds/aesIE507Request/v1 uk.gov.hmrc.automatedexportsystem.controllers.IE507StubController.submit
 
 POST /message uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController.message
+
+POST /notification uk.gov.hmrc.automatedexportsystem.controllers.NotificationController.notification

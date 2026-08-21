@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.config
+package uk.gov.hmrc.automatedexportsystem.controllers
 
-import play.api.Configuration
+import play.api.Logging
+import play.api.mvc.*
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.ValidatedNotificationRequestAction
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.Future
 
-@Singleton
-class AppConfig @Inject() (config: Configuration):
-  lazy val appName: String = config.get[String]("appName")
+@Singleton()
+class NotificationController @Inject() (
+  cc:                     ControllerComponents,
+  validatedRequestAction: ValidatedNotificationRequestAction
+) extends AbstractController(cc)
+    with Logging:
 
-  lazy val documentTtl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
-
-  lazy val replaceIndexes: Boolean = config.get[Boolean]("mongodb.replaceIndexes")
-
-  lazy val mongoRetryAttempts: Int = config.get[Int]("mongodb.retryAttempts")
-
-  lazy val notificationToken: String = config.get[String]("microservice.services.notification.bearer-token")
+  def notification: Action[AnyContent] = validatedRequestAction.async { implicit req =>
+    Future.successful(NoContent)
+  }
