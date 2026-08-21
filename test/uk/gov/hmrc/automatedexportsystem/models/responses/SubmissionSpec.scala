@@ -20,7 +20,7 @@ import cats.data.NonEmptyList
 import helpers.XmlOps
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 
 import java.time.LocalDateTime
@@ -49,7 +49,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         goodsShipment = Some(
           GoodsShipment(
             consignment = Consignment(
-              modeOfTransportAtBorder = Some(ModeOfTransportAtBorder(1)),
+              modeOfTransportAtTheBorder = Some(ModeOfTransportAtTheBorder(1)),
               referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
               parentUcrId = Some(ParentUcrId("parentUcrId")),
               transportEquipment = Some(
@@ -193,7 +193,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         goodsShipment = Some(
           GoodsShipment(
             consignment = Consignment(
-              modeOfTransportAtBorder = None,
+              modeOfTransportAtTheBorder = None,
               referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
               parentUcrId = None,
               transportEquipment = Some(
@@ -337,7 +337,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         goodsShipment = Some(
           GoodsShipment(
             consignment = Consignment(
-              modeOfTransportAtBorder = None,
+              modeOfTransportAtTheBorder = None,
               referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
               parentUcrId = None,
               transportEquipment = None,
@@ -388,17 +388,17 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             <submissionId>{TestData.id}</submissionId>
             <status>1</status>
             <ExportOperation>
-              <exportOperationType>1</exportOperationType>
-              <mrn>mrn</mrn>
-              <discrepanciesExist>true</discrepanciesExist>
-              <splitIndicator>true</splitIndicator>
+              <type>1</type>
+              <MRN>mrn</MRN>
+              <discrepanciesExist>1</discrepanciesExist>
+              <splitIndicator>1</splitIndicator>
             </ExportOperation>
             <CustomsOfficeOfExitActual>
               <referenceNumber>referenceNumber</referenceNumber>
             </CustomsOfficeOfExitActual>
             <GoodsShipment>
               <Consignment>
-                <modeOfTransportAtBorder>1</modeOfTransportAtBorder>
+                <modeOfTransportAtTheBorder>1</modeOfTransportAtTheBorder>
                 <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
                 <parentUCRID>parentUcrId</parentUCRID>
                 <TransportEquipment>
@@ -502,10 +502,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             <submissionId>{TestData.id}</submissionId>
             <status>1</status>
             <ExportOperation>
-              <exportOperationType>1</exportOperationType>
-              <mrn>mrn</mrn>
-              <discrepanciesExist>true</discrepanciesExist>
-              <splitIndicator>true</splitIndicator>
+              <type>1</type>
+              <MRN>mrn</MRN>
+              <discrepanciesExist>1</discrepanciesExist>
+              <splitIndicator>1</splitIndicator>
             </ExportOperation>
             <CustomsOfficeOfExitActual>
               <referenceNumber>referenceNumber</referenceNumber>
@@ -557,10 +557,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             <submissionId>{TestData.id}</submissionId>
             <status>1</status>
             <ExportOperation>
-              <exportOperationType>1</exportOperationType>
-              <mrn>mrn</mrn>
-              <discrepanciesExist>true</discrepanciesExist>
-              <splitIndicator>true</splitIndicator>
+              <type>1</type>
+              <MRN>mrn</MRN>
+              <discrepanciesExist>1</discrepanciesExist>
+              <splitIndicator>1</splitIndicator>
             </ExportOperation>
             <CustomsOfficeOfExitActual>
               <referenceNumber>referenceNumber</referenceNumber>
@@ -587,10 +587,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             <submissionId>{TestData.id}</submissionId>
             <status>1</status>
             <ExportOperation>
-              <exportOperationType>1</exportOperationType>
-              <mrn>mrn</mrn>
-              <discrepanciesExist>true</discrepanciesExist>
-              <splitIndicator>true</splitIndicator>
+              <type>1</type>
+              <MRN>mrn</MRN>
+              <discrepanciesExist>1</discrepanciesExist>
+              <splitIndicator>1</splitIndicator>
             </ExportOperation>
             <CustomsOfficeOfExitActual>
               <referenceNumber>referenceNumber</referenceNumber>

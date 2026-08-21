@@ -18,7 +18,7 @@ package uk.gov.hmrc.automatedexportsystem.parsers
 
 import org.scalatest.EitherValues.*
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseSpec
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType
+import uk.gov.hmrc.automatedexportsystem.models.IE507.ExportOperationType
 
 import scala.xml.XML
 

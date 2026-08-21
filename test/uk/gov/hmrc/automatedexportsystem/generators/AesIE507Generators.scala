@@ -19,7 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.generators
 import cats.data.NonEmptyList
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 
 import java.util.UUID
@@ -75,9 +75,9 @@ trait AesIE507Generators extends BaseGenerators:
       arbitrary[ReferenceNumber].map(CustomsOfficeOfExitActual.apply)
     }
 
-  given modeOfTransportAtBorderArb: Arbitrary[ModeOfTransportAtBorder] =
+  given modeOfTransportAtTheBorderArb: Arbitrary[ModeOfTransportAtTheBorder] =
     Arbitrary {
-      arbitrary[Int].map(ModeOfTransportAtBorder.apply)
+      arbitrary[Int].map(ModeOfTransportAtTheBorder.apply)
     }
 
   given referenceNumberUcrArb: Arbitrary[ReferenceNumberUcr] =
@@ -217,7 +217,7 @@ trait AesIE507Generators extends BaseGenerators:
   given consignmentArb: Arbitrary[Consignment] =
     Arbitrary {
       for
-        modeOfTransportAtBorder    <- arbitrary[Option[ModeOfTransportAtBorder]]
+        modeOfTransportAtTheBorder <- arbitrary[Option[ModeOfTransportAtTheBorder]]
         referenceNumberUCR         <- arbitrary[ReferenceNumberUcr]
         parentUcrId                <- arbitrary[Option[ParentUcrId]]
         transportEquipment         <- arbitrary[Option[NonEmptyList[TransportEquipment]]]
@@ -227,7 +227,7 @@ trait AesIE507Generators extends BaseGenerators:
         activeBorderTransportMeans <- arbitrary[Option[ActiveBorderTransportMeans]]
         transportDocument          <- arbitrary[Option[NonEmptyList[TransportDocument]]]
       yield Consignment(
-        modeOfTransportAtBorder,
+        modeOfTransportAtTheBorder,
         referenceNumberUCR,
         parentUcrId,
         transportEquipment,

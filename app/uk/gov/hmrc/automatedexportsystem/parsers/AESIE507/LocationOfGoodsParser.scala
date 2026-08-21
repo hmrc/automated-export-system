@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{AdditionalIdentifier, AuthorisationNumber, LocationOfGoods, QualifierOfIdentification, TypeOfLocation, UnLocode}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{AdditionalIdentifier, AuthorisationNumber, LocationOfGoods, QualifierOfIdentification, TypeOfLocation, UnLocode}
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.Helpers.{req, textOptChild}
 
 import scala.xml.Node

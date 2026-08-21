@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.parsers
 
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.request.SubmissionRequest
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.Helpers.*
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.{ExportOperationParser, GoodsShipmentParser, Tags}

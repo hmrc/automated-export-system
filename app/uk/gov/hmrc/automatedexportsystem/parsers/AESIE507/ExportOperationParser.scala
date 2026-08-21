@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{DiscrepanciesExist, ExportOperation, ExportOperationType, Mrn, SplitIndicator}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{DiscrepanciesExist, ExportOperation, ExportOperationType, Mrn, SplitIndicator}
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.Helpers.{parseBoolean, req, textOptChild}
 
 import scala.xml.Node

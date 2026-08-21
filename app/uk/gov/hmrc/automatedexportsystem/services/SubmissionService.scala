@@ -18,7 +18,7 @@ package uk.gov.hmrc.automatedexportsystem.services
 
 import cats.data.EitherT
 import uk.gov.hmrc.automatedexportsystem.errors.{AesErrorMapper, MongoError, SubmissionServiceError}
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, ExportOperationType, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.request.{SubmissionRequest, SubmissionResult}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}

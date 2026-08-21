@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 
 import cats.data.NonEmptyList
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{NumberOfPackages, Packaging, SequenceNumber, ShippingMarks, TypeOfPackages}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{NumberOfPackages, Packaging, SequenceNumber, ShippingMarks, TypeOfPackages}
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.Helpers.{parseOptionalInt, sequence, textOptChild}
 
 import scala.xml.Node

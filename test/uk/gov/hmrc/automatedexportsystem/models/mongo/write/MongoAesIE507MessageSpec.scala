@@ -23,7 +23,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 
 import java.time.Instant
 import java.util.UUID
@@ -52,7 +52,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         goodsShipment = Some(
           GoodsShipment(
             consignment = Consignment(
-              modeOfTransportAtBorder = Some(ModeOfTransportAtBorder(1)),
+              modeOfTransportAtTheBorder = Some(ModeOfTransportAtTheBorder(1)),
               referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
               parentUcrId = Some(ParentUcrId("parentUcrId")),
               transportEquipment = Some(
@@ -156,7 +156,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |  },
           |  "goodsShipment" : {
           |    "consignment" : {
-          |      "modeOfTransportAtBorder" : 1,
+          |      "modeOfTransportAtTheBorder" : 1,
           |      "referenceNumberUCR" : "referenceNumberUcr",
           |      "parentUcrId" : "parentUcrId",
           |      "transportEquipment" : [ {
@@ -270,7 +270,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         goodsShipment = Some(
           GoodsShipment(
             consignment = Consignment(
-              modeOfTransportAtBorder = None,
+              modeOfTransportAtTheBorder = None,
               referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
               parentUcrId = None,
               transportEquipment = Some(
@@ -414,7 +414,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         goodsShipment = Some(
           GoodsShipment(
             consignment = Consignment(
-              modeOfTransportAtBorder = Some(ModeOfTransportAtBorder(1)),
+              modeOfTransportAtTheBorder = Some(ModeOfTransportAtTheBorder(1)),
               referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
               parentUcrId = Some(ParentUcrId("parentUcrId")),
               transportEquipment = None,
@@ -467,7 +467,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |  },
           |  "goodsShipment" : {
           |    "consignment" : {
-          |      "modeOfTransportAtBorder" : 1,
+          |      "modeOfTransportAtTheBorder" : 1,
           |      "referenceNumberUCR" : "referenceNumberUcr",
           |      "parentUcrId" : "parentUcrId",
           |      "locationOfGoods" : {
