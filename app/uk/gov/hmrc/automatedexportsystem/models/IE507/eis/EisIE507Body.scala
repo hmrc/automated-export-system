@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507.eis
 
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.AesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CustomsOfficeOfExitActual, ExportOperation, GoodsShipment}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
@@ -39,3 +40,10 @@ object EisIE507Body:
           ++ o.goodsShipment.toXmlRoot
 
       XmlWriter.elem(label, children)
+
+  def fromAesIE507Message(aesIE507Message: AesIE507Message): EisIE507Body =
+    EisIE507Body(
+      aesIE507Message.exportOperation,
+      aesIE507Message.customsOfficeOfExitActual,
+      aesIE507Message.goodsShipment
+    )

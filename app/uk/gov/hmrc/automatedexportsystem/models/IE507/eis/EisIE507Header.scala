@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507.eis
 
+import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
 
@@ -44,3 +45,16 @@ object EisIE507Header:
           ++ o.messageType.toXml("messageType")
 
       XmlWriter.elem(label, children)
+
+  def apply(
+    eoriNumber:             EoriNumber,
+    preparationDateAndTime: LocalDateTime,
+    messageIdentification:  MessageIdentification
+  ): EisIE507Header =
+    EisIE507Header(
+      MessageSender(eoriNumber.value),
+      MessageRecipient("NECA.XI"),
+      preparationDateAndTime,
+      messageIdentification,
+      MessageType("CC507C")
+    )

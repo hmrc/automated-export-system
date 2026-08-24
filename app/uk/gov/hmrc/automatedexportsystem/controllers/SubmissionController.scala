@@ -59,11 +59,11 @@ class SubmissionController @Inject() (
         case Left(parseErr) =>
           val errorXml =
             <Error>
-                <Code>INVALID_XML</Code>
-                <Message>
-                  {parseErr}
-                </Message>
-              </Error>
+              <Code>INVALID_XML</Code>
+              <Message>
+                {parseErr}
+              </Message>
+            </Error>
 
           Future.successful(BadRequest(errorXml).as(ContentTypes.XML))
 
