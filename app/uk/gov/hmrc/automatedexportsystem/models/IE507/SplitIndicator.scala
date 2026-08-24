@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 
 final case class SplitIndicator(value: Boolean) extends AnyVal
 
@@ -26,3 +26,6 @@ object SplitIndicator:
 
   given splitIndicatorXmlWriter: XmlWriter[SplitIndicator] =
     XmlWriter.intBasedBooleanWriter.contramap(_.value)
+
+  given splitIndicatorXmlReader: XmlReader[SplitIndicator] =
+    XmlReader.booleanReader.map(SplitIndicator.apply)

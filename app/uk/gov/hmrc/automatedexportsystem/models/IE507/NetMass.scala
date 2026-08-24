@@ -17,8 +17,8 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 
 final case class NetMass(value: BigDecimal) extends AnyVal
 
@@ -27,3 +27,6 @@ object NetMass:
 
   given netMassXmlWriter: XmlWriter[NetMass] =
     (o, label) => o.value.toXml(label)
+
+  given netMassXmlReader: XmlReader[NetMass] =
+    XmlReader.bigDecimalReader.map(NetMass.apply)

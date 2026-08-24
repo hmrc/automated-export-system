@@ -17,16 +17,16 @@
 package uk.gov.hmrc.automatedexportsystem.parsers
 
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
-import uk.gov.hmrc.automatedexportsystem.models.request.SubmissionRequest
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.Helpers.*
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.{ExportOperationParser, GoodsShipmentParser, Tags}
 
 import java.util.UUID
 import scala.xml.{Node, NodeSeq}
 
-object SubmissionRequestParser {
+object AesIE507MessageParser {
 
-  def fromXml(xml: NodeSeq): Either[String, SubmissionRequest] =
+  def fromXml(xml: NodeSeq): Either[String, AesIE507Message] =
     for {
       submissionId <- parseOptionalSubmissionId(textOptDeep(xml, Tags.SubmissionId))
       exportOpNode <- req((xml \\ Tags.ExportOperation).headOption, Tags.ExportOperation)
@@ -36,7 +36,7 @@ object SubmissionRequestParser {
       office     <- parseCustomsOfficeOfExitActual(officeNode)
 
       shipment <- GoodsShipmentParser.parseGoodsShipmentOpt(xml.head)
-    } yield SubmissionRequest(
+    } yield AesIE507Message(
       submissionId = submissionId,
       exportOperation = exportOp,
       customsOfficeOfExitActual = office,

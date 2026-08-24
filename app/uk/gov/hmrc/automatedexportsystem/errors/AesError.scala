@@ -60,7 +60,7 @@ enum XmlReaderError(val path: String, val message: String) extends AesError:
   val responseCode: ResponseCode      = BadRequest
   val exception:    Option[Throwable] = None
 
-  case MissingOrEmpty(override val path: String) extends XmlReaderError(path, "Element is empty or missing")
+  case Missing(override val path: String) extends XmlReaderError(path, "Element is missing")
   case ParseError(override val path: String, override val message: String) extends XmlReaderError(path, message)
 
 enum MongoError(val message: String, val responseCode: ResponseCode, val exception: Option[Throwable]) extends AesError:

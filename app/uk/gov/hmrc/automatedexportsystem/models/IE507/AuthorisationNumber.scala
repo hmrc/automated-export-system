@@ -17,8 +17,8 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 
 final case class AuthorisationNumber(value: String) extends AnyVal
 
@@ -27,3 +27,6 @@ object AuthorisationNumber:
 
   given authorisationNumberXmlWriter: XmlWriter[AuthorisationNumber] =
     (o, label) => o.value.toXml(label)
+
+  given authorisationNumberXmlReader: XmlReader[AuthorisationNumber] =
+    XmlReader.stringReader.map(AuthorisationNumber.apply)

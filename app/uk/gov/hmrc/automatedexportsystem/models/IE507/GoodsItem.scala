@@ -17,10 +17,11 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import cats.data.NonEmptyList
+import cats.implicits.catsSyntaxTuple4Semigroupal
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
 import scala.xml.NodeSeq
 
@@ -42,7 +43,18 @@ object GoodsItem:
     (o, label) =>
       val children: NodeSeq =
         o.declarationGoodsItemNumber.toXml("declarationGoodsItemNumber")
+          ++ o.referenceNumberUcr.toXml("referenceNumberUCR")
           ++ o.commodity.toXmlRoot
           ++ o.packaging.toXmlRoot
 
       XmlWriter.elem(label, children)
+
+  given goodsItemXmlReader: XmlReader[GoodsItem] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (
+        (XmlPath \ "declarationGoodsItemNumber").read[Option[DeclarationGoodsItemNumber]](xml, path),
+        (XmlPath \ "referenceNumberUCR").read[Option[ReferenceNumberUcr]](xml, path),
+        XmlPath.readRoot[Commodity](xml, path),
+        XmlPath.readRoot[Option[NonEmptyList[Packaging]]](xml, path)
+      ).mapN(GoodsItem.apply)
+    }

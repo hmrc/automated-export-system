@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
+import cats.data.Validated
 import play.api.libs.json.*
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.errors.XmlReaderError
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 
 enum ExportOperationType(val status: Int):
   case Standard extends ExportOperationType(1)
@@ -38,3 +40,17 @@ object ExportOperationType:
 
   given exportOperationTypeXmlWriter: XmlWriter[ExportOperationType] =
     (o, label) => o.status.toXml(label)
+
+  given exportOperationTypeXmlReader: XmlReader[ExportOperationType] =
+    XmlReader.intReader.flatMapResult { case (value, path) =>
+      ExportOperationType.values
+        .find(_.status == value)
+        .fold(
+          Validated.invalidNel(
+            XmlReaderError.ParseError(
+              path.toString,
+              s"Failed to parse `$value` to ExportOperationType"
+            )
+          )
+        )(Validated.validNel)
+    }

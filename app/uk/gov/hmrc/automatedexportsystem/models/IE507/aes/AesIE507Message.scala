@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.request
+package uk.gov.hmrc.automatedexportsystem.models.IE507.aes
 
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{CustomsOfficeOfExitActual, EoriNumber, ExportOperation, GoodsShipment, SubmissionId}
+import cats.implicits.catsSyntaxTuple4Semigroupal
+import play.api.Logging
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.IE507.ExportOperationType
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader}
+
 import java.time.Instant
 import java.util.UUID
-import play.api.Logging
 
-case class SubmissionRequest(
+case class AesIE507Message(
   submissionId:              Option[SubmissionId],
   exportOperation:           ExportOperation,
   customsOfficeOfExitActual: CustomsOfficeOfExitActual,
@@ -34,7 +36,10 @@ case class SubmissionRequest(
     eoriNumber:    EoriNumber
   ): MongoAesIE507Message = {
     logger.info(
-      s"Converting SubmissionRequest to MongoAesIE507Message with submissionId: ${submissionId.getOrElse("None")}, eoriNumber: $eoriNumber, operationType: $operationType"
+      s"Converting SubmissionRequest to MongoAesIE507Message with " +
+        s"submissionId: ${submissionId.getOrElse("None")}, " +
+        s"eoriNumber: $eoriNumber, " +
+        s"operationType: $operationType"
     )
     val now = Instant.now()
     MongoAesIE507Message(
@@ -48,10 +53,14 @@ case class SubmissionRequest(
     )
   }
 }
-sealed trait SubmissionResult
 
-object SubmissionResult {
-  case object Created extends SubmissionResult
-  case object Updated extends SubmissionResult
-  case object Awaiting extends SubmissionResult
-}
+object AesIE507Message:
+  given aesIE507MessageXmlReader: XmlReader[AesIE507Message] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (
+        (XmlPath \ "submissionId").read[Option[SubmissionId]](xml, path),
+        XmlPath.readRoot[ExportOperation](xml, path),
+        XmlPath.readRoot[CustomsOfficeOfExitActual](xml, path),
+        XmlPath.readRoot[Option[GoodsShipment]](xml, path)
+      ).mapN(AesIE507Message.apply)
+    }

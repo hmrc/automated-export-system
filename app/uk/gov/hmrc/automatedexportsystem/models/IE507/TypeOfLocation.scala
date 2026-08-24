@@ -17,8 +17,8 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 
 final case class TypeOfLocation(value: String) extends AnyVal
 
@@ -27,3 +27,6 @@ object TypeOfLocation:
 
   given typeOfLocationXmlWriter: XmlWriter[TypeOfLocation] =
     (o, label) => o.value.toXml(label)
+
+  given typeOfLocationXmlReader: XmlReader[TypeOfLocation] =
+    XmlReader.stringReader.map(TypeOfLocation.apply)

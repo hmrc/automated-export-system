@@ -24,6 +24,7 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 
 import java.time.Instant
 import java.util.UUID

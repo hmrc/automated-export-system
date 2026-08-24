@@ -17,8 +17,8 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 
 case class TransportDocumentType(value: Int) extends AnyVal
 
@@ -27,3 +27,6 @@ object TransportDocumentType:
 
   given transportDocumentTypeXmlWriter: XmlWriter[TransportDocumentType] =
     (o, label) => o.value.toXml(label)
+
+  given transportDocumentTypeXmlReader: XmlReader[TransportDocumentType] =
+    XmlReader.intReader.map(TransportDocumentType.apply)

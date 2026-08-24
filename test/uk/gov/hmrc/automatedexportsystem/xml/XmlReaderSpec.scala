@@ -83,11 +83,11 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
         }
 
         "unsuccessfully" in {
-          val intTable: TableFor2[Elem, XmlReaderError] = Table(
+          val intTable: TableFor2[NodeSeq, XmlReaderError] = Table(
             ("xml", "error"),
-            (<xml></xml>, XmlReaderError.MissingOrEmpty("/")),
-            (<xml>   </xml>, XmlReaderError.MissingOrEmpty("/")),
-            (<xml> 1239ASD  </xml>, XmlReaderError.ParseError("/", s"Failed to parse '1239ASD' to Int"))
+            (<xml> </xml>, XmlReaderError.ParseError("/", "Failed to parse '' to Int")),
+            (NodeSeq.Empty, XmlReaderError.Missing("/")),
+            (<xml> 1239ASD  </xml>, XmlReaderError.ParseError("/", "Failed to parse '1239ASD' to Int"))
           )
 
           forAll(intTable) { (xml, error) =>
@@ -116,10 +116,9 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
         "unsuccessfully" in {
           val stringReader: XmlReader[String] = implicitly
 
-          val stringTable: TableFor2[Elem, XmlReaderError] = Table(
+          val stringTable: TableFor2[NodeSeq, XmlReaderError] = Table(
             ("xml", "error"),
-            (<xml></xml>, XmlReaderError.MissingOrEmpty("/")),
-            (<xml>    </xml>, XmlReaderError.MissingOrEmpty("/"))
+            (NodeSeq.Empty, XmlReaderError.Missing("/"))
           )
 
           forAll(stringTable) { (xml, error) =>
@@ -146,10 +145,10 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
         }
 
         "unsuccessfully" in {
-          val booleanTable: TableFor2[Elem, XmlReaderError] = Table(
+          val booleanTable: TableFor2[NodeSeq, XmlReaderError] = Table(
             ("xml", "error"),
-            (<xml></xml>, XmlReaderError.MissingOrEmpty("/")),
-            (<xml></xml>, XmlReaderError.MissingOrEmpty("/")),
+            (NodeSeq.Empty, XmlReaderError.Missing("/")),
+            (<xml> </xml>, XmlReaderError.ParseError("/", s"Failed to parse '' to Boolean")),
             (<xml>not true </xml>, XmlReaderError.ParseError("/", s"Failed to parse 'not true' to Boolean")),
             (<xml> not false</xml>, XmlReaderError.ParseError("/", s"Failed to parse 'not false' to Boolean"))
           )
@@ -186,20 +185,7 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
 
           "when missing" in {
             nonEmptyReader.read(NodeSeq.Empty, XmlPath).toEither.left.value shouldBe
-              NonEmptyList.one(XmlReaderError.MissingOrEmpty("/"))
-          }
-
-          "when empty" in {
-            val testTable: TableFor1[Elem] = Table(
-              "xml",
-              <xml></xml>,
-              <xml>    </xml>
-            )
-
-            forAll(testTable)(xml =>
-              nonEmptyReader.read(xml, XmlPath).toEither.left.value shouldBe
-                NonEmptyList.one(XmlReaderError.MissingOrEmpty("/"))
-            )
+              NonEmptyList.one(XmlReaderError.Missing("/"))
           }
         }
       }
@@ -212,11 +198,11 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
         "successfully" - {
           val optionReader: XmlReader[Option[Unit]] = XmlReader.optionReader(using TestData.unitSuccessfulReader)
 
-          "when not missing or empty" in {
+          "when not missing" in {
             val testTable: TableFor1[Elem] = Table(
               "xml",
               <xml>not missing</xml>,
-              <xml>  not   empty   </xml>,
+              <xml></xml>,
               <xml>  not  missing or   empty   </xml>
             )
 
@@ -225,16 +211,6 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
 
           "when missing" in {
             optionReader.read(NodeSeq.Empty, XmlPath).toEither.value shouldBe None
-          }
-
-          "when empty" in {
-            val testTable: TableFor1[Elem] = Table(
-              "xml",
-              <xml></xml>,
-              <xml>    </xml>
-            )
-
-            forAll(testTable)(xml => optionReader.read(xml, XmlPath).toEither.value shouldBe None)
           }
         }
 
@@ -287,8 +263,8 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
               "for one element" in {
                 val xml: NodeSeq =
                   <xml1>1</xml1>
-                    <xml2>2</xml2>
-                    <xml3>three</xml3>
+                  <xml2>2</xml2>
+                  <xml3>three</xml3>
 
                 listIntReader.read(xml, XmlPath).toEither.left.value shouldBe NonEmptyList.one(
                   XmlReaderError.ParseError(s"/[2]", "Failed to parse 'three' to Int")
@@ -298,17 +274,17 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
               "for multiple elements" in {
                 val xml: NodeSeq =
                   <xml1>1</xml1>
-                    <xml2></xml2>
-                    <xml3>3</xml3>
-                    <xml4>four</xml4>
-                    <xml5></xml5>
-                    <xml6>six</xml6>
+                  <xml2></xml2>
+                  <xml3>3</xml3>
+                  <xml4>four</xml4>
+                  <xml5></xml5>
+                  <xml6>six</xml6>
 
                 val errors: NonEmptyList[XmlReaderError] =
                   NonEmptyList.of(
-                    XmlReaderError.MissingOrEmpty("/[1]"),
+                    XmlReaderError.ParseError("/[1]", "Failed to parse '' to Int"),
                     XmlReaderError.ParseError("/[3]", "Failed to parse 'four' to Int"),
-                    XmlReaderError.MissingOrEmpty("/[4]"),
+                    XmlReaderError.ParseError("/[4]", "Failed to parse '' to Int"),
                     XmlReaderError.ParseError("/[5]", "Failed to parse 'six' to Int")
                   )
 
@@ -384,9 +360,9 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
 
                 val errors: NonEmptyList[XmlReaderError] =
                   NonEmptyList.of(
-                    XmlReaderError.MissingOrEmpty("/[1]"),
+                    XmlReaderError.ParseError("/[1]", "Failed to parse '' to Int"),
                     XmlReaderError.ParseError("/[3]", "Failed to parse 'four' to Int"),
-                    XmlReaderError.MissingOrEmpty("/[4]"),
+                    XmlReaderError.ParseError("/[4]", "Failed to parse '' to Int"),
                     XmlReaderError.ParseError("/[5]", "Failed to parse 'six' to Int")
                   )
 
@@ -467,7 +443,6 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
                   </xml>,
                   NonEmptyList.of(
                     XmlReaderError.ParseError("/a", "Failed to parse '12e' to Int"),
-                    XmlReaderError.MissingOrEmpty("/b"),
                     XmlReaderError.ParseError("/c", "Failed to parse 'not true' to Boolean")
                   )
                 )
@@ -493,7 +468,7 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
                     <c></c>
                   </xml>,
                   NonEmptyList.one(
-                    XmlReaderError.MissingOrEmpty("/c")
+                    XmlReaderError.ParseError("/c", "Failed to parse '' to Boolean")
                   )
                 )
 
@@ -701,11 +676,10 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
 
             val errors1: NonEmptyList[XmlReaderError] =
               NonEmptyList.of(
-                XmlReaderError.MissingOrEmpty("/a"),
-                XmlReaderError.MissingOrEmpty("/b/a"),
-                XmlReaderError.MissingOrEmpty("/b/c"),
+                XmlReaderError.Missing("/a"),
+                XmlReaderError.Missing("/b/a"),
+                XmlReaderError.Missing("/b/c"),
                 XmlReaderError.ParseError("/c/[1]/a", "Failed to parse 'thirty-one' to Int"),
-                XmlReaderError.MissingOrEmpty("/c/[1]/b"),
                 XmlReaderError.ParseError("/c/[1]/c", "Failed to parse 'not false' to Boolean"),
                 XmlReaderError.ParseError("/d", "Failed to parse empty list into NonEmptyList")
               )
@@ -732,13 +706,17 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
 
             val errors2: NonEmptyList[XmlReaderError] =
               NonEmptyList.of(
-                XmlReaderError.MissingOrEmpty("/a/a"),
+                XmlReaderError.Missing("/a/a"),
                 XmlReaderError.ParseError("/a/c", "Failed to parse 'not true' to Boolean"),
-                XmlReaderError.MissingOrEmpty("/c/[0]"),
+                XmlReaderError.Missing("/c/[0]/a"),
+                XmlReaderError.Missing("/c/[0]/b"),
+                XmlReaderError.Missing("/c/[0]/c"),
                 XmlReaderError.ParseError("/c/[1]/a", "Failed to parse 'thirty-two' to Int"),
-                XmlReaderError.MissingOrEmpty("/c/[1]/b"),
-                XmlReaderError.MissingOrEmpty("/c/[1]/c"),
-                XmlReaderError.MissingOrEmpty("/d/[0]"),
+                XmlReaderError.Missing("/c/[1]/b"),
+                XmlReaderError.Missing("/c/[1]/c"),
+                XmlReaderError.Missing("/d/[0]/a"),
+                XmlReaderError.Missing("/d/[0]/b"),
+                XmlReaderError.Missing("/d/[0]/c"),
                 XmlReaderError.ParseError("/d/[1]/c", "Failed to parse '-1' to Boolean")
               )
 

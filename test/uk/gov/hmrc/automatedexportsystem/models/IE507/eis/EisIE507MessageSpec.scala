@@ -185,7 +185,7 @@ class EisIE507MessageSpec extends AnyFreeSpecLike, Matchers:
       )
     end eisIE507Message
 
-    val eisIE507MessageNoRootOptionals: EisIE507Message =
+    val eisIE507MessageNoNonRootOptionals: EisIE507Message =
       EisIE507Message(
         header = eisIE507Header,
         body = EisIE507Body(
@@ -279,7 +279,7 @@ class EisIE507MessageSpec extends AnyFreeSpecLike, Matchers:
                       grossMass = GrossMass(100.55),
                       netMass = NetMass(80.45)
                     ),
-                    referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
+                    referenceNumberUcr = None,
                     packaging = Some(
                       NonEmptyList.of(
                         Packaging(
@@ -303,7 +303,7 @@ class EisIE507MessageSpec extends AnyFreeSpecLike, Matchers:
                       grossMass = GrossMass(100.55),
                       netMass = NetMass(80.45)
                     ),
-                    referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
+                    referenceNumberUcr = None,
                     packaging = Some(
                       NonEmptyList.of(
                         Packaging(
@@ -327,7 +327,7 @@ class EisIE507MessageSpec extends AnyFreeSpecLike, Matchers:
           )
         )
       )
-    end eisIE507MessageNoRootOptionals
+    end eisIE507MessageNoNonRootOptionals
 
     val eisIE507MessageNoGoodsShipmentChildrenOptionals: EisIE507Message =
       EisIE507Message(
@@ -467,6 +467,7 @@ class EisIE507MessageSpec extends AnyFreeSpecLike, Matchers:
                 </Consignment>
                 <GoodsItem>
                   <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                  <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
                   <Commodity>
                     <grossMass>100.55</grossMass>
                     <netMass>80.45</netMass>
@@ -486,6 +487,7 @@ class EisIE507MessageSpec extends AnyFreeSpecLike, Matchers:
                 </GoodsItem>
                 <GoodsItem>
                   <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
+                  <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
                   <Commodity>
                     <grossMass>100.55</grossMass>
                     <netMass>80.45</netMass>
@@ -569,7 +571,7 @@ class EisIE507MessageSpec extends AnyFreeSpecLike, Matchers:
           </n:CC507C>
         end xml
 
-        XmlOps.normalize(TestData.eisIE507MessageNoRootOptionals.toXmlRoot) shouldBe XmlOps.normalize(xml)
+        XmlOps.normalize(TestData.eisIE507MessageNoNonRootOptionals.toXmlRoot) shouldBe XmlOps.normalize(xml)
       }
 
       "when GoodsShipment children optional fields are missing" in {

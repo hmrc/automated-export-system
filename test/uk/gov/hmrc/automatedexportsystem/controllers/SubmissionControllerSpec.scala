@@ -34,8 +34,8 @@ import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.*
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
-import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
-import uk.gov.hmrc.automatedexportsystem.models.request.SubmissionResult.Created
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.mongo.{SubmissionResult, UpdateStatus}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
@@ -163,7 +163,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
             when(xmlValidationService.validate(requestXml)).thenReturn(EitherT(Future.successful(Right(()))))
 
-            when(submissionService.submitMessage(any(), any(), any())).thenReturn(EitherT(Future.successful(Right(Created))))
+            when(submissionService.submitMessage(any(), any(), any())).thenReturn(EitherT(Future.successful(Right(SubmissionResult.Created))))
 
             val result: Future[Result] = Helpers.call(submissionController.message, request)
 

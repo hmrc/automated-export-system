@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
+import cats.implicits.catsSyntaxTuple4Semigroupal
 import play.api.libs.json.*
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
 import scala.xml.NodeSeq
 
@@ -43,3 +44,13 @@ object ExportOperation:
           ++ o.splitIndicator.toXml("splitIndicator")
 
       XmlWriter.elem(label, children)
+
+  given exportOperationXmlReader: XmlReader[ExportOperation] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (
+        (XmlPath \ "type").read[ExportOperationType](xml, path),
+        (XmlPath \ "MRN").read[Mrn](xml, path),
+        (XmlPath \ "discrepanciesExist").read[DiscrepanciesExist](xml, path),
+        (XmlPath \ "splitIndicator").read[SplitIndicator](xml, path)
+      ).mapN(ExportOperation.apply)
+    }

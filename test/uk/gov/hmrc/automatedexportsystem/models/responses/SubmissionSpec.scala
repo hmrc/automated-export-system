@@ -21,6 +21,7 @@ import helpers.XmlOps
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 
 import java.time.LocalDateTime
@@ -271,7 +272,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                     grossMass = GrossMass(100.55),
                     netMass = NetMass(80.45)
                   ),
-                  referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
+                  referenceNumberUcr = None,
                   packaging = Some(
                     NonEmptyList.of(
                       Packaging(
@@ -295,7 +296,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                     grossMass = GrossMass(100.55),
                     netMass = NetMass(80.45)
                   ),
-                  referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
+                  referenceNumberUcr = None,
                   packaging = Some(
                     NonEmptyList.of(
                       Packaging(
@@ -452,6 +453,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
               </Consignment>
               <GoodsItem>
                 <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
                 <Commodity>
                   <grossMass>100.55</grossMass>
                   <netMass>80.45</netMass>
@@ -471,6 +473,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
               </GoodsItem>
               <GoodsItem>
                 <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
+                <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
                 <Commodity>
                   <grossMass>100.55</grossMass>
                   <netMass>80.45</netMass>

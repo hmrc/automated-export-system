@@ -28,7 +28,8 @@ import org.mongodb.scala.{Document, MongoException, bson}
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProjections, UpdateStatus}

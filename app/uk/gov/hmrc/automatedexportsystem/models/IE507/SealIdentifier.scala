@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class SealIdentifier(value: String) extends AnyVal
@@ -27,3 +27,6 @@ object SealIdentifier:
 
   given sealIdentifierXmlWriter: XmlWriter[SealIdentifier] =
     (o, label) => o.value.toXml(label)
+
+  given sealIdentifierXmlReader: XmlReader[SealIdentifier] =
+    XmlReader.stringReader.map(SealIdentifier.apply)

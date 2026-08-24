@@ -22,7 +22,7 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.ExportOperationType
 
 import scala.xml.XML
 
-class SubmissionRequestParserSpec extends BaseSpec {
+class AesIE507MessageParserSpec extends BaseSpec {
 
   "SubmissionRequestParser.fromXml" - {
 
@@ -69,7 +69,7 @@ class SubmissionRequestParserSpec extends BaseSpec {
               |""".stripMargin
         )
 
-      val result = SubmissionRequestParser.fromXml(xml)
+      val result = AesIE507MessageParser.fromXml(xml)
 
       result.isRight shouldBe true
       val parsed = result.value
@@ -107,7 +107,7 @@ class SubmissionRequestParserSpec extends BaseSpec {
               |""".stripMargin
         )
 
-      val result = SubmissionRequestParser.fromXml(xml)
+      val result = AesIE507MessageParser.fromXml(xml)
 
       result.isRight            shouldBe true
       result.value.submissionId shouldBe None
@@ -125,7 +125,7 @@ class SubmissionRequestParserSpec extends BaseSpec {
               |""".stripMargin
         )
 
-      val result = SubmissionRequestParser.fromXml(xml)
+      val result = AesIE507MessageParser.fromXml(xml)
 
       result.isLeft                 shouldBe true
       result.left.value.toLowerCase shouldBe "missing required field: exportoperation"
@@ -146,7 +146,7 @@ class SubmissionRequestParserSpec extends BaseSpec {
               |""".stripMargin
         )
 
-      val result = SubmissionRequestParser.fromXml(xml)
+      val result = AesIE507MessageParser.fromXml(xml)
 
       result.isLeft                 shouldBe true
       result.left.value.toLowerCase shouldBe "missing required field: type"
@@ -169,7 +169,7 @@ class SubmissionRequestParserSpec extends BaseSpec {
               |""".stripMargin
         )
 
-      val result = SubmissionRequestParser.fromXml(xml)
+      val result = AesIE507MessageParser.fromXml(xml)
 
       result.isLeft                 shouldBe true
       result.left.value.toLowerCase shouldBe "missing required field: referencenumber"
@@ -193,7 +193,7 @@ class SubmissionRequestParserSpec extends BaseSpec {
               |""".stripMargin
         )
 
-      val result = SubmissionRequestParser.fromXml(xml)
+      val result = AesIE507MessageParser.fromXml(xml)
 
       result.isRight             shouldBe true
       result.value.goodsShipment shouldBe None

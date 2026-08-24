@@ -33,6 +33,7 @@ import play.api.{Application, inject}
 import test.uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
@@ -656,6 +657,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                   </Consignment>
                   <GoodsItem>
                     <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                    <referenceNumberUCR>ducr</referenceNumberUCR>
                     <Commodity>
                       <grossMass>100.55</grossMass>
                       <netMass>80.45</netMass>

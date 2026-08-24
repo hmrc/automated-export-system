@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
+import cats.implicits.catsSyntaxTuple5Semigroupal
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
 import scala.xml.NodeSeq
 
@@ -45,3 +46,14 @@ object LocationOfGoods:
           ++ o.unLocode.toXml("UNLocode")
 
       XmlWriter.elem(label, children)
+
+  given locationOfGoodsXmlReader: XmlReader[LocationOfGoods] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (
+        (XmlPath \ "typeOfLocation").read[TypeOfLocation](xml, path),
+        (XmlPath \ "qualifierOfIdentification").read[QualifierOfIdentification](xml, path),
+        (XmlPath \ "authorisationNumber").read[Option[AuthorisationNumber]](xml, path),
+        (XmlPath \ "additionalIdentifier").read[Option[AdditionalIdentifier]](xml, path),
+        (XmlPath \ "UNLocode").read[Option[UnLocode]](xml, path)
+      ).mapN(LocationOfGoods.apply)
+    }

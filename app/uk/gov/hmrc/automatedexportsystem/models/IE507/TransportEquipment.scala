@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
+import cats.implicits.catsSyntaxTuple3Semigroupal
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
 import scala.xml.NodeSeq
 
@@ -41,3 +42,12 @@ object TransportEquipment:
           ++ o.numberOfSeals.toXml("numberOfSeals")
 
       XmlWriter.elem(label, children)
+
+  given transportEquipmentXmlReader: XmlReader[TransportEquipment] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (
+        (XmlPath \ "sequenceNumber").read[Option[SequenceNumber]](xml, path),
+        (XmlPath \ "containerIdentificationNumber").read[Option[ContainerIdentificationNumber]](xml, path),
+        (XmlPath \ "numberOfSeals").read[Option[NumberOfSeals]](xml, path)
+      ).mapN(TransportEquipment.apply)
+    }

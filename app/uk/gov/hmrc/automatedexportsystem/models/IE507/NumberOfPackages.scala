@@ -17,8 +17,8 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 
 final case class NumberOfPackages(value: Int) extends AnyVal
 
@@ -27,3 +27,6 @@ object NumberOfPackages:
 
   given numberOfPackagesXmlWriter: XmlWriter[NumberOfPackages] =
     (o, label) => o.value.toXml(label)
+
+  given numberOfPackagesXmlReader: XmlReader[NumberOfPackages] =
+    XmlReader.intReader.map(NumberOfPackages.apply)

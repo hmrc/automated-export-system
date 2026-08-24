@@ -17,8 +17,8 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 
 final case class ShippingMarks(value: String) extends AnyVal
 
@@ -27,3 +27,6 @@ object ShippingMarks:
 
   given shippingMarksXmlWriter: XmlWriter[ShippingMarks] =
     (o, label) => o.value.toXml(label)
+
+  given shippingMarksXmlReader: XmlReader[ShippingMarks] =
+    XmlReader.stringReader.map(ShippingMarks.apply)

@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
+import cats.implicits.catsSyntaxTuple2Semigroupal
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
 import scala.xml.NodeSeq
 
@@ -36,3 +37,11 @@ object Seal:
           ++ o.sealIdentifier.toXml("identifier")
 
       XmlWriter.elem(label, children)
+
+  given sealXmlReader: XmlReader[Seal] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (
+        (XmlPath \ "sequenceNumber").read[Option[SequenceNumber]](xml, path),
+        (XmlPath \ "identifier").read[Option[SealIdentifier]](xml, path)
+      ).mapN(Seal.apply)
+    }

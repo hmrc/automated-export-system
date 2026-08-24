@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
+import cats.implicits.catsSyntaxTuple2Semigroupal
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
 import scala.xml.NodeSeq
 
@@ -36,3 +37,11 @@ object Commodity:
           ++ o.netMass.toXml("netMass")
 
       XmlWriter.elem(label, children)
+
+  given commodityXmlReader: XmlReader[Commodity] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (
+        (XmlPath \ "grossMass").read[GrossMass](xml, path),
+        (XmlPath \ "netMass").read[NetMass](xml, path)
+      ).mapN(Commodity.apply)
+    }

@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.IE507
+package uk.gov.hmrc.automatedexportsystem.models.mongo
 
-import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
+sealed trait SubmissionResult
 
-final case class UnLocode(value: String) extends AnyVal
-
-object UnLocode:
-  given mongoFormat: Format[UnLocode] = Json.valueFormat[UnLocode]
-
-  given unLocodeXmlWriter: XmlWriter[UnLocode] =
-    (o, label) => o.value.toXml(label)
-
-  given unLocodeXmlReader: XmlReader[UnLocode] =
-    XmlReader.stringReader.map(UnLocode.apply)
+object SubmissionResult {
+  case object Created extends SubmissionResult
+  case object Updated extends SubmissionResult
+  case object Awaiting extends SubmissionResult
+}

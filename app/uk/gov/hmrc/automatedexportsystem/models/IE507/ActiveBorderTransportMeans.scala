@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
+import cats.implicits.catsSyntaxTuple3Semigroupal
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
 import scala.xml.NodeSeq
 
@@ -42,3 +43,12 @@ object ActiveBorderTransportMeans:
           ++ o.nationality.toXml("nationality")
 
       XmlWriter.elem(label, children)
+
+  given activeBorderTransportMeansXmlReader: XmlReader[ActiveBorderTransportMeans] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (
+        (XmlPath \ "typeOfIdentification").read[Option[TypeOfIdentification]](xml, path),
+        (XmlPath \ "identificationNumber").read[Option[IdentificationNumber]](xml, path),
+        (XmlPath \ "nationality").read[Option[Nationality]](xml, path)
+      ).mapN(ActiveBorderTransportMeans.apply)
+    }

@@ -18,7 +18,7 @@ package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
 case class CustomsOfficeOfExitActual(referenceNumber: ReferenceNumber)
 
@@ -29,3 +29,10 @@ object CustomsOfficeOfExitActual:
 
   given customsOfficeOfExitActualXmlWriter: XmlWriter[CustomsOfficeOfExitActual] =
     (o, label) => XmlWriter.elem(label, o.referenceNumber.toXml("referenceNumber"))
+
+  given customsOfficeOfExitActualXmlReader: XmlReader[CustomsOfficeOfExitActual] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (XmlPath \ "referenceNumber")
+        .read[ReferenceNumber](xml, path)
+        .map(CustomsOfficeOfExitActual.apply)
+    }

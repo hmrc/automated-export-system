@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.IE507
+package uk.gov.hmrc.automatedexportsystem.models.IE507.aes
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 
 import java.util.UUID
 
@@ -29,3 +29,6 @@ object SubmissionId:
 
   given submissionIdXmlWriter: XmlWriter[SubmissionId] =
     (o, label) => o.value.toString.toXml(label)
+
+  given submissionIdXmlReader: XmlReader[SubmissionId] =
+    XmlReader.uuidReader.map(SubmissionId.apply)

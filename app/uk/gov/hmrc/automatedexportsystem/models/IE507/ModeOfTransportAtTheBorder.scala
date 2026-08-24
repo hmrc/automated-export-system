@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlReader, XmlWriter}
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 
 final case class ModeOfTransportAtTheBorder(value: Int) extends AnyVal
@@ -27,3 +27,6 @@ object ModeOfTransportAtTheBorder:
 
   given modeOfTransportAtTheBorderXmlWriter: XmlWriter[ModeOfTransportAtTheBorder] =
     (o, label) => o.value.toXml(label)
+
+  given modeOfTransportAtTheBorderXmlReader: XmlReader[ModeOfTransportAtTheBorder] =
+    XmlReader.intReader.map(ModeOfTransportAtTheBorder.apply)

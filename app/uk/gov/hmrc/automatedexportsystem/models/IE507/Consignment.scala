@@ -17,10 +17,11 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import cats.data.NonEmptyList
+import cats.implicits.catsSyntaxTuple9Semigroupal
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
 import scala.xml.NodeSeq
 
@@ -57,3 +58,18 @@ object Consignment:
           ++ o.transportDocument.toXmlRoot
 
       XmlWriter.elem(label, children)
+
+  given consignmentXmlReader: XmlReader[Consignment] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (
+        (XmlPath \ "modeOfTransportAtTheBorder").read[Option[ModeOfTransportAtTheBorder]](xml, path),
+        (XmlPath \ "referenceNumberUCR").read[ReferenceNumberUcr](xml, path),
+        (XmlPath \ "parentUCRID").read[Option[ParentUcrId]](xml, path),
+        XmlPath.readRoot[Option[NonEmptyList[TransportEquipment]]](xml, path),
+        XmlPath.readRoot[Option[NonEmptyList[Seal]]](xml, path),
+        XmlPath.readRoot[Option[NonEmptyList[GoodsReference]]](xml, path),
+        XmlPath.readRoot[LocationOfGoods](xml, path),
+        XmlPath.readRoot[Option[ActiveBorderTransportMeans]](xml, path),
+        XmlPath.readRoot[Option[NonEmptyList[TransportDocument]]](xml, path)
+      ).mapN(Consignment.apply)
+    }
