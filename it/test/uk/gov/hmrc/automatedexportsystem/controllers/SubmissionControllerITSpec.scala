@@ -608,7 +608,6 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val submissionXml: Elem =
               <Submission>
                 <submissionId>{id1}</submissionId>
-                <status>1</status>
                 <ExportOperation>
                   <exportOperationType>1</exportOperationType>
                   <mrn>mrn</mrn>

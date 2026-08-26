@@ -36,7 +36,6 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
     val submission: Submission =
       Submission(
         submissionId = SubmissionId(id),
-        status = ExportOperationType.Standard,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -180,7 +179,6 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
     val submissionNoNonRootOptionals: Submission =
       Submission(
         submissionId = SubmissionId(id),
-        status = ExportOperationType.Standard,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -324,7 +322,6 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
     val submissionNoGoodsShipmentChildrenOptionals: Submission =
       Submission(
         submissionId = SubmissionId(id),
-        status = ExportOperationType.Standard,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -363,7 +360,6 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
     val submissionNoGoodsShipment: Submission =
       Submission(
         submissionId = SubmissionId(id),
-        status = ExportOperationType.Standard,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -386,7 +382,6 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
-            <status>1</status>
             <ExportOperation>
               <exportOperationType>1</exportOperationType>
               <mrn>mrn</mrn>
@@ -500,7 +495,6 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
-            <status>1</status>
             <ExportOperation>
               <exportOperationType>1</exportOperationType>
               <mrn>mrn</mrn>
@@ -555,7 +549,6 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
-            <status>1</status>
             <ExportOperation>
               <exportOperationType>1</exportOperationType>
               <mrn>mrn</mrn>
@@ -585,7 +578,6 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
-            <status>1</status>
             <ExportOperation>
               <exportOperationType>1</exportOperationType>
               <mrn>mrn</mrn>
