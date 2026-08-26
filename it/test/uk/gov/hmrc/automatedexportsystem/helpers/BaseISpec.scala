@@ -18,42 +18,27 @@ package test.uk.gov.hmrc.automatedexportsystem.helpers
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import org.scalatest.*
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.{Status, *}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.Results
 import play.api.test.*
 import uk.gov.hmrc.http.test.WireMockSupport
 
 trait BaseISpec
     extends AnyFreeSpecLike
-    with BeforeAndAfterAll
-    with GuiceOneAppPerSuite
     with Matchers
-    with Inspectors
-    with ScalaFutures
+    with GuiceOneAppPerSuite
     with DefaultAwaitTimeout
-    with Writeables
     with FutureAwaits
-    with EssentialActionCaller
-    with RouteInvokers
-    with LoneElement
-    with Inside
+    with ScalaFutures
     with OptionValues
-    with Results
-    with Status
-    with HeaderNames
-    with MimeTypes
-    with HttpProtocol
-    with HttpVerbs
-    with ResultExtractors
-    with WireMockSupport
-    with Eventually {
-
+    with EitherValues
+    with MockitoSugar
+    with WireMockSupport:
   lazy val guiceApplicationBuilder: GuiceApplicationBuilder =
     GuiceApplicationBuilder()
       .configure(
@@ -69,4 +54,3 @@ trait BaseISpec
     super.beforeEach()
     WireMock.reset()
   }
-}

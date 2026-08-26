@@ -19,14 +19,12 @@ package uk.gov.hmrc.automatedexportsystem.controllers.actions
 import cats.data.{EitherT, NonEmptyList}
 import helpers.XmlOps
 import org.apache.pekko.util.ByteString
-import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.*
 import org.scalactic.source.Position
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
 import play.api.mvc.Results.Status
 import play.api.mvc.{AnyContent, Request, Result}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
@@ -55,22 +53,22 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
       "should return a Result" - {
         val successfulBlock: Request[AnyContent] => Future[Result] = _ =>
           Future.successful(
-            Status(StatusValues.OK)
+            Status(Helpers.OK)
           )
 
         "when XML validation succeeds" in {
           val xml: Elem =
             <element>validate me</element>
 
-          val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
+          val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
           val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
 
-          when(xmlValidationService.validate(eqTo(xml))).thenReturn(EitherT(Future.successful(Right(()))))
+          when(xmlValidationService.validate(xml)).thenReturn(EitherT(Future.successful(Right(()))))
 
           val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
 
-          Helpers.status(result)         shouldBe StatusValues.OK
+          Helpers.status(result)         shouldBe Helpers.OK
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
         }
 
@@ -80,13 +78,13 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val xml: Elem =
               <element>validate me</element>
 
-            val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
+            val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
             val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
 
             val schemaError: SchemaError = SchemaError.SchemaNotFoundError("/schemas/dummy.xsd")
 
-            when(xmlValidationService.validate(eqTo(xml))).thenReturn(EitherT(Future.successful(Left(schemaError))))
+            when(xmlValidationService.validate(xml)).thenReturn(EitherT(Future.successful(Left(schemaError))))
 
             val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
 
@@ -100,8 +98,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(schemaNotFoundErrorResponseXml)
           }
 
@@ -109,13 +107,13 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val xml: Elem =
               <element>validate me</element>
 
-            val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
+            val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
             val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
 
             val schemaError: SchemaError = SchemaError.SchemaParseError(SchemaError.XsdStructureError(1, 1, "Bad parse error"))
 
-            when(xmlValidationService.validate(eqTo(xml))).thenReturn(EitherT(Future.successful(Left(schemaError))))
+            when(xmlValidationService.validate(xml)).thenReturn(EitherT(Future.successful(Left(schemaError))))
 
             val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
 
@@ -129,8 +127,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.UNPROCESSABLE_ENTITY
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.UNPROCESSABLE_ENTITY
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(schemaParseErrorResponseXml)
           }
 
@@ -138,7 +136,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val xml: Elem =
               <element>validate me</element>
 
-            val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
+            val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
             val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
 
@@ -149,7 +147,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
                 )
               )
 
-            when(xmlValidationService.validate(eqTo(xml))).thenReturn(
+            when(xmlValidationService.validate(xml)).thenReturn(
               EitherT(Future.successful(Left(xmlFailedValidationError)))
             )
 
@@ -172,8 +170,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
           }
 
@@ -181,7 +179,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val xml: Elem =
               <element>validate me</element>
 
-            val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.POST, "/dummy/path")
+            val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
             val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
 
@@ -196,7 +194,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
                 )
               )
 
-            when(xmlValidationService.validate(eqTo(xml))).thenReturn(
+            when(xmlValidationService.validate(xml)).thenReturn(
               EitherT(Future.successful(Left(xmlFailedValidationError)))
             )
 
@@ -239,8 +237,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
           }
         }

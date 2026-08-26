@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers
 
-import play.api.test.FakeRequest
+import play.api.test.Helpers.*
+import play.api.test.{FakeRequest, Helpers}
 import test.uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 
 import scala.xml.{Elem, XML as Xml}
@@ -45,57 +46,57 @@ class NotificationControllerISpec extends BaseISpec:
   "POST /notification" - {
 
     "return 204 when authorization header is valid and payload is valid" in {
-      val request = FakeRequest(POST, endpoint)
+      val request = FakeRequest(Helpers.POST, endpoint)
         .withHeaders("Authorization" -> "some-token")
         .withXmlBody(validPayload)
 
-      val result = route(app, request).value
-      status(result) shouldBe NO_CONTENT
+      val result = Helpers.route(app, request).value
+      Helpers.status(result) shouldBe Helpers.NO_CONTENT
     }
 
     "return 401 when authorization header is invalid" in {
-      val request = FakeRequest(POST, endpoint)
+      val request = FakeRequest(Helpers.POST, endpoint)
         .withHeaders("Authorization" -> "invalid-token")
         .withXmlBody(validPayload)
 
-      val result = route(app, request).value
-      status(result)      shouldBe UNAUTHORIZED
-      contentType(result) shouldBe Some("application/xml")
-      val resultXml = Xml.loadString(contentAsString(result))
+      val result = Helpers.route(app, request).value
+      Helpers.status(result)      shouldBe Helpers.UNAUTHORIZED
+      Helpers.contentType(result) shouldBe Some("application/xml")
+      val resultXml = Xml.loadString(Helpers.contentAsString(result))
       (resultXml \ "code").text.trim shouldBe "UNAUTHORIZED"
     }
 
     "return 400 when authorization header is valid and payload is missing" in {
-      val request = FakeRequest(POST, endpoint)
+      val request = FakeRequest(Helpers.POST, endpoint)
         .withHeaders("Authorization" -> "some-token")
 
-      val result = route(app, request).value
-      status(result)      shouldBe BAD_REQUEST
-      contentType(result) shouldBe Some("application/xml")
-      val resultXml = Xml.loadString(contentAsString(result))
+      val result = Helpers.route(app, request).value
+      Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+      Helpers.contentType(result) shouldBe Some("application/xml")
+      val resultXml = Xml.loadString(Helpers.contentAsString(result))
       (resultXml \ "code").text shouldBe "BAD_REQUEST"
     }
     "return 400 when authorization header is valid and payload is invalid" in {
-      val request = FakeRequest(POST, endpoint)
+      val request = FakeRequest(Helpers.POST, endpoint)
         .withHeaders("Authorization" -> "some-token")
         .withBody(invalidPayload)
 
-      val result = route(app, request).value
-      status(result)      shouldBe BAD_REQUEST
-      contentType(result) shouldBe Some("application/xml")
-      val resultXml = Xml.loadString(contentAsString(result))
+      val result = Helpers.route(app, request).value
+      Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+      Helpers.contentType(result) shouldBe Some("application/xml")
+      val resultXml = Xml.loadString(Helpers.contentAsString(result))
       (resultXml \ "code").text shouldBe "BAD_REQUEST"
     }
 
     "return 400 when authorization header is valid and payload is invalid xml" in {
-      val request = FakeRequest(POST, endpoint)
+      val request = FakeRequest(Helpers.POST, endpoint)
         .withHeaders("Authorization" -> "some-token")
         .withBody(invalidXmlPayload)
 
-      val result = route(app, request).value
-      status(result)      shouldBe BAD_REQUEST
-      contentType(result) shouldBe Some("application/xml")
-      val resultXml = Xml.loadString(contentAsString(result))
+      val result = Helpers.route(app, request).value
+      Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+      Helpers.contentType(result) shouldBe Some("application/xml")
+      val resultXml = Xml.loadString(Helpers.contentAsString(result))
       (resultXml \ "code").text shouldBe "INVALID_NOTIFICATION"
     }
   }

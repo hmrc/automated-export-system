@@ -21,7 +21,6 @@ import org.apache.pekko.util.ByteString
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
-import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
 import play.api.mvc.*
 import play.api.mvc.Results.Status
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
@@ -44,12 +43,12 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
       "should return a Result" - {
         val successfulBlockNodeSeq: Request[NodeSeq] => Future[Result] = _ =>
           Future.successful(
-            Status(StatusValues.OK)
+            Status(Helpers.OK)
           )
 
         val successfulBlockAnyContent: Request[AnyContent] => Future[Result] = _ =>
           Future.successful(
-            Status(StatusValues.OK)
+            Status(Helpers.OK)
           )
 
         "when the body of the request is XML (NodeSeq)" in {
@@ -57,12 +56,12 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
             <element>I'm XML</element>
 
           val request: FakeRequest[NodeSeq] =
-            FakeRequest(HttpVerbs.GET, "/dummy/path")
+            FakeRequest(Helpers.GET, "/dummy/path")
               .withBody(xml)
 
           val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(AesAuthRequest(eori, request), successfulBlockNodeSeq)
 
-          Helpers.status(result)         shouldBe StatusValues.OK
+          Helpers.status(result)         shouldBe Helpers.OK
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
         }
 
@@ -71,12 +70,12 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
             <element>I'm XML</element>
 
           val request: FakeRequest[AnyContentAsXml] =
-            FakeRequest(HttpVerbs.GET, "/dummy/path")
+            FakeRequest(Helpers.GET, "/dummy/path")
               .withXmlBody(xml)
 
           val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(AesAuthRequest(eori, request), successfulBlockAnyContent)
 
-          Helpers.status(result)         shouldBe StatusValues.OK
+          Helpers.status(result)         shouldBe Helpers.OK
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
         }
 
@@ -84,7 +83,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
           val text: String = "<element>I'm XML in disguise</element>"
 
           val request: FakeRequest[AnyContentAsText] =
-            FakeRequest(HttpVerbs.GET, "/dummy/path")
+            FakeRequest(Helpers.GET, "/dummy/path")
               .withTextBody(text)
 
           val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(AesAuthRequest(eori, request), successfulBlockAnyContent)
@@ -99,8 +98,8 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
           val resultContent: String = Helpers.contentAsString(result)
           val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-          Helpers.status(result)      shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
-          Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+          Helpers.status(result)      shouldBe Helpers.UNSUPPORTED_MEDIA_TYPE
+          Helpers.contentType(result) shouldBe Some(Helpers.XML)
           XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(expectedXmlBodyErrorResponseXml)
         }
       }

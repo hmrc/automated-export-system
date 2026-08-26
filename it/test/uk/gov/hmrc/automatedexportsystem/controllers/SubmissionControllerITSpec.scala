@@ -23,11 +23,8 @@ import helpers.XmlOps
 import org.apache.pekko.util.ByteString
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.Filters
-import org.scalatest.EitherValues
-import org.scalatest.EitherValues.convertEitherToValuable
-import org.scalatestplus.mockito.MockitoSugar
-import play.api.http.{HeaderNames, HttpVerbs, MimeTypes, Status as StatusValues}
 import play.api.mvc.{AnyContentAsEmpty, Result}
+import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
 import play.api.{Application, inject}
 import test.uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
@@ -44,7 +41,7 @@ import java.util.UUID
 import scala.concurrent.Future
 import scala.xml.{Elem, NodeSeq}
 
-class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
+class SubmissionControllerITSpec extends BaseISpec:
   val aesIE507Repository: AesIE507RepositoryImpl = app.injector.instanceOf[AesIE507RepositoryImpl]
 
   override def beforeEach(): Unit =
@@ -235,16 +232,16 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               )
           )
 
-          val request: FakeRequest[NodeSeq] = FakeRequest(HttpVerbs.POST, "/automated-export-system/message")
+          val request: FakeRequest[NodeSeq] = FakeRequest(Helpers.POST, "/automated-export-system/message")
             .withHeaders(
-              HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
-              "X-Session-ID"            -> "some-session-id"
+              Helpers.AUTHORIZATION -> "Bearer valid-token-123",
+              "X-Session-ID"        -> "some-session-id"
             )
             .withBody(requestXml)
 
           val result: Future[Result] = Helpers.route(app, request).value
 
-          Helpers.status(result)         shouldBe StatusValues.ACCEPTED
+          Helpers.status(result)         shouldBe Helpers.ACCEPTED
           Helpers.contentType(result)    shouldBe None
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
         }
@@ -262,16 +259,16 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               )
           )
 
-          val request: FakeRequest[NodeSeq] = FakeRequest(HttpVerbs.POST, "/automated-export-system/message")
+          val request: FakeRequest[NodeSeq] = FakeRequest(Helpers.POST, "/automated-export-system/message")
             .withHeaders(
-              HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
-              "X-Session-ID"            -> "some-session-id"
+              Helpers.AUTHORIZATION -> "Bearer valid-token-123",
+              "X-Session-ID"        -> "some-session-id"
             )
             .withBody(requestXml)
 
           val result: Future[Result] = Helpers.route(app, request).value
 
-          Helpers.status(result)         shouldBe StatusValues.ACCEPTED
+          Helpers.status(result)         shouldBe Helpers.ACCEPTED
           Helpers.contentType(result)    shouldBe None
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
         }
@@ -293,10 +290,10 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                 )
             )
 
-            val request: FakeRequest[NodeSeq] = FakeRequest(HttpVerbs.POST, "/automated-export-system/message")
+            val request: FakeRequest[NodeSeq] = FakeRequest(Helpers.POST, "/automated-export-system/message")
               .withHeaders(
-                HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
-                "X-Session-ID"            -> "some-session-id"
+                Helpers.AUTHORIZATION -> "Bearer valid-token-123",
+                "X-Session-ID"        -> "some-session-id"
               )
               .withBody(requestXml)
 
@@ -333,8 +330,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
           }
 
@@ -351,10 +348,10 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                 )
             )
 
-            val request: FakeRequest[NodeSeq] = FakeRequest(HttpVerbs.POST, "/automated-export-system/message")
+            val request: FakeRequest[NodeSeq] = FakeRequest(Helpers.POST, "/automated-export-system/message")
               .withHeaders(
-                HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
-                "X-Session-ID"            -> "some-session-id"
+                Helpers.AUTHORIZATION -> "Bearer valid-token-123",
+                "X-Session-ID"        -> "some-session-id"
               )
               .withBody(requestXml)
 
@@ -431,8 +428,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
           }
         }
@@ -459,10 +456,10 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             await(aesIE507Repository.collection.insertMany(Seq(mongoAesIE507Message1, mongoAesIE507Message2)).head())
 
             val request: FakeRequest[AnyContentAsEmpty.type] =
-              FakeRequest(HttpVerbs.GET, "/automated-export-system/submissions")
+              FakeRequest(Helpers.GET, "/automated-export-system/submissions")
                 .withHeaders(
-                  HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
-                  "X-Session-ID"            -> "some-session-id"
+                  Helpers.AUTHORIZATION -> "Bearer valid-token-123",
+                  "X-Session-ID"        -> "some-session-id"
                 )
 
             val submissionSummaryListXml: Elem =
@@ -492,8 +489,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.OK
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.OK
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
           }
 
@@ -509,10 +506,10 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             )
 
             val request: FakeRequest[AnyContentAsEmpty.type] =
-              FakeRequest(HttpVerbs.GET, "/automated-export-system/submissions")
+              FakeRequest(Helpers.GET, "/automated-export-system/submissions")
                 .withHeaders(
-                  HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
-                  "X-Session-ID"            -> "some-session-id"
+                  Helpers.AUTHORIZATION -> "Bearer valid-token-123",
+                  "X-Session-ID"        -> "some-session-id"
                 )
 
             val submissionSummaryListXml: Elem =
@@ -523,8 +520,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.OK
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.OK
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
           }
         }
@@ -556,10 +553,10 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               .thenReturn(EitherT(Future.successful(Left(mongoUnexpectedError))))
 
             val request: FakeRequest[AnyContentAsEmpty.type] =
-              FakeRequest(HttpVerbs.GET, "/automated-export-system/submissions")
+              FakeRequest(Helpers.GET, "/automated-export-system/submissions")
                 .withHeaders(
-                  HeaderNames.AUTHORIZATION -> "Bearer valid-token-123",
-                  "X-Session-ID"            -> "some-session-id"
+                  Helpers.AUTHORIZATION -> "Bearer valid-token-123",
+                  "X-Session-ID"        -> "some-session-id"
                 )
 
             val submissionRetrieveFailureXml: Elem =
@@ -574,8 +571,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               val resultContent: String         = Helpers.contentAsString(result)
               val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-              Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
-              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(Helpers.XML)
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionRetrieveFailureXml)
             }
           }
@@ -603,8 +600,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             await(aesIE507Repository.collection.insertMany(Seq(mongoAesIE507Message1, mongoAesIE507Message2)).head())
 
             val request: FakeRequest[AnyContentAsEmpty.type] =
-              FakeRequest(HttpVerbs.GET, s"/automated-export-system/submission/$id1")
-                .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+              FakeRequest(Helpers.GET, s"/automated-export-system/submission/$id1")
+                .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token-123")
 
             val submissionXml: Elem =
               <Submission>
@@ -678,8 +675,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.OK
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.OK
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionXml)
           }
         }
@@ -700,8 +697,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             await(aesIE507Repository.collection.insertOne(mongoAesIE507Message2).head())
 
             val request: FakeRequest[AnyContentAsEmpty.type] =
-              FakeRequest(HttpVerbs.GET, s"/automated-export-system/submission/$id1")
-                .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+              FakeRequest(Helpers.GET, s"/automated-export-system/submission/$id1")
+                .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token-123")
 
             val submissionNotFoundXml: Elem =
               <errorResponse>
@@ -714,8 +711,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String         = Helpers.contentAsString(result)
             val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.NOT_FOUND
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.NOT_FOUND
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionNotFoundXml)
           }
         }
@@ -753,8 +750,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               )
 
             val request: FakeRequest[AnyContentAsEmpty.type] =
-              FakeRequest(HttpVerbs.GET, s"/automated-export-system/submission/$id1")
-                .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+              FakeRequest(Helpers.GET, s"/automated-export-system/submission/$id1")
+                .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token-123")
 
             val submissionRetrieveFailureXml: Elem =
               <errorResponse>
@@ -768,8 +765,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               val resultContent: String         = Helpers.contentAsString(result)
               val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-              Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
-              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(Helpers.XML)
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionRetrieveFailureXml)
             }
           }
@@ -799,12 +796,12 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               await(aesIE507Repository.collection.insertOne(mongoAesIE507Message1).head())
 
               val request: FakeRequest[AnyContentAsEmpty.type] =
-                FakeRequest(HttpVerbs.GET, s"/automated-export-system/cancel/$id1")
-                  .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+                FakeRequest(Helpers.GET, s"/automated-export-system/cancel/$id1")
+                  .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token-123")
 
               val result: Future[Result] = Helpers.route(app, request).value
 
-              Helpers.status(result)         shouldBe StatusValues.NO_CONTENT
+              Helpers.status(result)         shouldBe Helpers.NO_CONTENT
               Helpers.contentType(result)    shouldBe None
               Helpers.contentAsBytes(result) shouldBe ByteString.empty
 
@@ -838,12 +835,12 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               await(aesIE507Repository.collection.insertOne(mongoAesIE507Message2).head())
 
               val request: FakeRequest[AnyContentAsEmpty.type] =
-                FakeRequest(HttpVerbs.GET, s"/automated-export-system/cancel/$id2")
-                  .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+                FakeRequest(Helpers.GET, s"/automated-export-system/cancel/$id2")
+                  .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token-123")
 
               val result: Future[Result] = Helpers.route(app, request).value
 
-              Helpers.status(result)         shouldBe StatusValues.NO_CONTENT
+              Helpers.status(result)         shouldBe Helpers.NO_CONTENT
               Helpers.contentType(result)    shouldBe None
               Helpers.contentAsBytes(result) shouldBe ByteString.empty
 
@@ -881,8 +878,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             await(aesIE507Repository.collection.insertOne(mongoAesIE507Message2).head())
 
             val request: FakeRequest[AnyContentAsEmpty.type] =
-              FakeRequest(HttpVerbs.GET, s"/automated-export-system/cancel/$id1")
-                .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+              FakeRequest(Helpers.GET, s"/automated-export-system/cancel/$id1")
+                .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token-123")
 
             val submissionNotFoundXml: Elem =
               <errorResponse>
@@ -896,8 +893,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.NOT_FOUND
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.NOT_FOUND
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionNotFoundXml)
           }
         }
@@ -928,8 +925,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               .thenReturn(MongoError.WriteUnacknowledgedError.toEitherTLeft[UpdateStatus])
 
             val request: FakeRequest[AnyContentAsEmpty.type] =
-              FakeRequest(HttpVerbs.GET, s"/automated-export-system/cancel/$id1")
-                .withHeaders(HeaderNames.AUTHORIZATION -> "Bearer valid-token-123")
+              FakeRequest(Helpers.GET, s"/automated-export-system/cancel/$id1")
+                .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token-123")
 
             val submissionUpdateFailureXml: Elem =
               <errorResponse>
@@ -943,8 +940,8 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
               val resultContent: String         = Helpers.contentAsString(result)
               val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
 
-              Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
-              Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+              Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(Helpers.XML)
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionUpdateFailureXml)
             }
           }

@@ -61,7 +61,7 @@ class AesAuthActionSpec extends BaseSpec with AllMocks {
       }
 
       val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(POST, "/dummy-uri")
-        .withHeaders(play.api.http.HeaderNames.AUTHORIZATION -> "Bearer valid-token")
+        .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token")
 
       val essentialAction: EssentialAction = authenticatedAction.apply(action)
       val result:          Future[Result]  = call(essentialAction, request)
@@ -113,7 +113,7 @@ class AesAuthActionSpec extends BaseSpec with AllMocks {
       }
 
       val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(POST, "/dummy-uri")
-        .withHeaders(play.api.http.HeaderNames.AUTHORIZATION -> "Bearer valid-token")
+        .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token")
 
       val essentialAction: EssentialAction = authenticatedAction.apply(action)
       val result:          Future[Result]  = call(essentialAction, request)

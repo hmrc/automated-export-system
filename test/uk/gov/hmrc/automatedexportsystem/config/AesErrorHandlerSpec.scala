@@ -17,14 +17,12 @@
 package uk.gov.hmrc.automatedexportsystem.config
 
 import helpers.XmlOps
-import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.when
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.*
-import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
 import play.api.mvc.{AnyContent, Result}
 import play.api.routing.Router
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
@@ -43,11 +41,11 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
   val router:        Provider[Router]     = mock[Provider[Router]]
 
   "AesErrorHandler" - {
-    val request: FakeRequest[AnyContent] = FakeRequest(HttpVerbs.DELETE, "/dummy/path")
+    val request: FakeRequest[AnyContent] = FakeRequest(Helpers.DELETE, "/dummy/path")
 
     ".onClientError" - {
       when(environment.mode).thenReturn(Mode.Dev)
-      when(configuration.getOptional[String](eqTo("play.editor"))(eqTo(ConfigLoader.stringLoader))).thenReturn(None)
+      when(configuration.getOptional[String]("play.editor")(ConfigLoader.stringLoader)).thenReturn(None)
       when(router.get()).thenReturn(Router.empty)
 
       val aesErrorHandler: AesErrorHandler =
@@ -71,8 +69,8 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.BAD_REQUEST
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
 
@@ -90,8 +88,8 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.FORBIDDEN
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.FORBIDDEN
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
 
@@ -109,8 +107,8 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.NOT_FOUND
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.NOT_FOUND
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
 
@@ -128,14 +126,14 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.UNPROCESSABLE_ENTITY
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.UNPROCESSABLE_ENTITY
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
 
           "other 4xx error not corresponding to any known ResponseCode" in {
             val result: Future[Result] =
-              aesErrorHandler.onClientError(request, StatusValues.IM_A_TEAPOT, "Very I'm a teapot request")
+              aesErrorHandler.onClientError(request, Helpers.IM_A_TEAPOT, "Very I'm a teapot request")
 
             val errorResponseXml: Elem =
               <errorResponse>
@@ -147,8 +145,8 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.IM_A_TEAPOT
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.IM_A_TEAPOT
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
         }
@@ -163,7 +161,7 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
 
           "when in non-prod mode" in {
             when(environment.mode).thenReturn(Mode.Dev)
-            when(configuration.getOptional[String](eqTo("play.editor"))(eqTo(ConfigLoader.stringLoader))).thenReturn(None)
+            when(configuration.getOptional[String]("play.editor")(ConfigLoader.stringLoader)).thenReturn(None)
             when(router.get).thenReturn(Router.empty)
 
             val aesErrorHandler: AesErrorHandler =
@@ -181,14 +179,14 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
 
           "when in prod mode" in {
             when(environment.mode).thenReturn(Mode.Prod)
-            when(configuration.getOptional[String](eqTo("play.editor"))(eqTo(ConfigLoader.stringLoader))).thenReturn(None)
+            when(configuration.getOptional[String]("play.editor")(ConfigLoader.stringLoader)).thenReturn(None)
             when(router.get).thenReturn(Router.empty)
 
             val aesErrorHandler: AesErrorHandler =
@@ -206,14 +204,14 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
 
           "when server error handling failed" in {
             when(environment.mode).thenReturn(Mode.Prod)
-            when(configuration.getOptional[String](eqTo("play.editor"))(eqTo(ConfigLoader.stringLoader))).thenReturn(None)
+            when(configuration.getOptional[String]("play.editor")(ConfigLoader.stringLoader)).thenReturn(None)
             when(router.get).thenReturn(Router.empty)
 
             val aesErrorHandler: AesErrorHandler =
@@ -226,8 +224,8 @@ class AesErrorHandlerSpec extends AnyFreeSpecLike, Matchers, EitherValues, Defau
 
             val resultContent: String = Helpers.contentAsString(result)
 
-            Helpers.status(result)      shouldBe StatusValues.INTERNAL_SERVER_ERROR
-            Helpers.contentType(result) shouldBe Some(MimeTypes.TEXT)
+            Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+            Helpers.contentType(result) shouldBe Some(Helpers.TEXT)
             resultContent               shouldBe errorResponseText
           }
         }

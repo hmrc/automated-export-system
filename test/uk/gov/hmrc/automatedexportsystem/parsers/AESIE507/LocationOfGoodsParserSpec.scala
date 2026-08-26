@@ -17,8 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseSpec
-import org.scalatest.EitherValues
-import org.scalatest.EitherValues.*
+
 import scala.xml.XML
 
 class LocationOfGoodsParserSpec extends BaseSpec {
