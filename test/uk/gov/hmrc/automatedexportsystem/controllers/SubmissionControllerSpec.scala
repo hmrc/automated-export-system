@@ -119,7 +119,6 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
     val submission: Submission =
       Submission(
         submissionId = submissionId,
-        status = ExportOperationType.Standard,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -515,7 +514,6 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
                   <submissionId>
                     {TestData.submissionId.value}
                   </submissionId>
-                  <status>1</status>
                   <ExportOperation>
                     <type>1</type>
                     <MRN>mrn</MRN>
