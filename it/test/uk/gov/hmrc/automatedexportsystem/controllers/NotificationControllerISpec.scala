@@ -19,18 +19,35 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 import play.api.test.FakeRequest
 import test.uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 
-import scala.xml.XML as Xml
+import scala.xml.{Elem, XML as Xml}
 
 class NotificationControllerISpec extends BaseISpec:
 
   private val endpoint = "/automated-export-system/notification"
+  val validPayload: Elem =
+    <notification>
+      <correlationId>8f3c2a19-7d2b-4b74-a9f0-123456789012</correlationId>
+      <eori>GB123456789000</eori>
+      <mrn>25GB1234567890ABCDE</mrn>
+      <dateCreated>2026-08-12T10:15:30Z</dateCreated>
+      <status>1</status>
+    </notification>
+
+  val invalidPayload = """<not-notification>
+                         |      <status>1</status>
+                         |    </notification>""".stripMargin
+
+  val invalidXmlPayload =
+    """<notification>
+      |      <status>1</status>
+      |    </notification>""".stripMargin
 
   "POST /notification" - {
 
     "return 204 when authorization header is valid and payload is valid" in {
       val request = FakeRequest(POST, endpoint)
         .withHeaders("Authorization" -> "some-token")
-        .withTextBody("<valid>xml</valid>")
+        .withXmlBody(validPayload)
 
       val result = route(app, request).value
       status(result) shouldBe NO_CONTENT
@@ -39,13 +56,13 @@ class NotificationControllerISpec extends BaseISpec:
     "return 401 when authorization header is invalid" in {
       val request = FakeRequest(POST, endpoint)
         .withHeaders("Authorization" -> "invalid-token")
-        .withTextBody("<valid>xml</valid>")
+        .withXmlBody(validPayload)
 
       val result = route(app, request).value
       status(result)      shouldBe UNAUTHORIZED
       contentType(result) shouldBe Some("application/xml")
       val resultXml = Xml.loadString(contentAsString(result))
-      (resultXml \ "code").text.trim shouldBe "unauthorized"
+      (resultXml \ "code").text.trim shouldBe "UNAUTHORIZED"
     }
 
     "return 400 when authorization header is valid and payload is missing" in {
@@ -56,17 +73,29 @@ class NotificationControllerISpec extends BaseISpec:
       status(result)      shouldBe BAD_REQUEST
       contentType(result) shouldBe Some("application/xml")
       val resultXml = Xml.loadString(contentAsString(result))
-      (resultXml \ "code").text shouldBe "bad_request"
+      (resultXml \ "code").text shouldBe "BAD_REQUEST"
     }
-    "return 400 when authorization header is valid and payload is invalid xml" in {
+    "return 400 when authorization header is valid and payload is invalid" in {
       val request = FakeRequest(POST, endpoint)
         .withHeaders("Authorization" -> "some-token")
-        .withTextBody("<valid>xml</invalid>")
+        .withBody(invalidPayload)
 
       val result = route(app, request).value
       status(result)      shouldBe BAD_REQUEST
       contentType(result) shouldBe Some("application/xml")
       val resultXml = Xml.loadString(contentAsString(result))
-      (resultXml \ "code").text shouldBe "bad_request"
+      (resultXml \ "code").text shouldBe "BAD_REQUEST"
+    }
+
+    "return 400 when authorization header is valid and payload is invalid xml" in {
+      val request = FakeRequest(POST, endpoint)
+        .withHeaders("Authorization" -> "some-token")
+        .withBody(invalidXmlPayload)
+
+      val result = route(app, request).value
+      status(result)      shouldBe BAD_REQUEST
+      contentType(result) shouldBe Some("application/xml")
+      val resultXml = Xml.loadString(contentAsString(result))
+      (resultXml \ "code").text shouldBe "INVALID_NOTIFICATION"
     }
   }

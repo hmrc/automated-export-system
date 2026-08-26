@@ -23,7 +23,7 @@ import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import scala.xml.XML
+import scala.xml.{NodeSeq, XML}
 
 case class ValidatedNotificationRequest[A](request: Request[A]) extends WrappedRequest[A](request)
 
@@ -48,7 +48,7 @@ class ValidatedNotificationRequestAction @Inject() (
 
     if (maybeAuth.forall(_ != expectedNotificationHeader)) {
       logger.warn(s"Unauthorized request. Authorization header present: ${maybeAuth.isDefined}")
-      Future.successful(Left(unauthorized("Invalid Authorization header")))
+      Future.successful(Left(unauthorised("Invalid Authorization header")))
     } else {
       val maybeXmlString = extractBodyAsString(request.body)
 
@@ -70,10 +70,9 @@ class ValidatedNotificationRequestAction @Inject() (
   private def extractBodyAsString(any: Any): Option[String] =
     any match {
       case c: AnyContent =>
-        c.asXml
-          .map(_.toString)
-          .orElse(c.asText)
-          .orElse(c.asRaw.flatMap(_.asBytes().map(_.utf8String)))
+        c.asXml.map(_.toString).orElse(c.asText)
+      case nodeSeq: NodeSeq =>
+        Some(nodeSeq.toString)
       case _ => None
     }
 
@@ -81,17 +80,17 @@ class ValidatedNotificationRequestAction @Inject() (
     Results
       .BadRequest(
         <error>
-              <code>bad_request</code>
+              <code>BAD_REQUEST</code>
               <message>{message}</message>
             </error>
       )
       .as("application/xml")
 
-  private def unauthorized(message: String): Result =
+  private def unauthorised(message: String): Result =
     Results
       .Unauthorized(
         <error>
-              <code>unauthorized</code>
+              <code>UNAUTHORIZED</code>
               <message>{message}</message>
             </error>
       )

@@ -20,8 +20,10 @@ import org.mockito.Mockito.when
 import play.api.mvc.*
 import play.api.test.Helpers.POST
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.ValidatedNotificationRequestAction
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.{ValidatedNotificationRequestAction, XmlNotificationPayloadActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
+
+import scala.xml.Elem
 
 class NotificationControllerSpec extends BaseSpec, AllMocks:
   trait Setup:
@@ -35,17 +37,31 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
       parser,
       mockAppConfig
     )
+    val xmlNotificationPayloadActionRefiner = new XmlNotificationPayloadActionRefiner()
 
     val controller =
-      new NotificationController(controllerComponents, notificationAction)
+      new NotificationController(controllerComponents, notificationAction, xmlNotificationPayloadActionRefiner)
 
     val fakeRequest = FakeRequest(POST, "notification")
+
+    val validPayload: Elem =
+      <notification>
+        <correlationId>8f3c2a19-7d2b-4b74-a9f0-123456789012</correlationId>
+        <eori>GB123456789000</eori>
+        <mrn>25GB1234567890ABCDE</mrn>
+        <dateCreated>2026-08-12T10:15:30Z</dateCreated>
+        <status>1</status>
+      </notification>
+
+  val invalidPayload: Elem =
+    <someXml>data</someXml>
 
   "notification" - {
     "authorization header is valid and payload is valid" in new Setup {
       val request = fakeRequest
         .withHeaders("Authorization" -> "some-token")
-        .withTextBody("<valid>xml</valid>")
+        .withXmlBody(validPayload)
+
       val result = controller.notification(request)
       Helpers.status(result) shouldBe NO_CONTENT
     }
@@ -53,7 +69,7 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
     "authorization header is invalid" in new Setup {
       val request = fakeRequest
         .withHeaders("Authorization" -> "invalid-token")
-        .withTextBody("<valid>xml</valid>")
+        .withXmlBody(validPayload)
       val result = controller.notification(request)
       Helpers.status(result) shouldBe UNAUTHORIZED
     }
@@ -68,7 +84,7 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
     "authorization header is valid and payload is invalid" in new Setup {
       val request = fakeRequest
         .withHeaders("Authorization" -> "some-token")
-        .withTextBody("<valid>xml</invalid>")
+        .withXmlBody(invalidPayload)
       val result = controller.notification(request)
       Helpers.status(result) shouldBe BAD_REQUEST
     }

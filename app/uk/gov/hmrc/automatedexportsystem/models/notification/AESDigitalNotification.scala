@@ -19,45 +19,41 @@ package uk.gov.hmrc.automatedexportsystem.models.notification
 import scala.xml.NodeSeq
 
 final case class AESDigitalNotification(
-  header: Header,
-  body:   Body
+  correlationId:      String,
+  eori:               String,
+  mrn:                String,
+  dateCreated:        String,
+  status:             Int,
+  notificationErrors: Option[Seq[NotificationError]] = None
 )
 
-final case class Header(
-  messageSender:         String,
-  messageRecipient:      String,
-  preparationDateTime:   String,
-  messageIdentification: String,
-  messageType:           String,
-  correlationIdentifier: String
-)
-
-final case class Body(
-  messageCode: String,
-  actionCode:  String,
-  mrn:         String
-)
-
-object AESDigitalNotification {
+object AESDigitalNotification:
 
   def fromXml(xml: NodeSeq): AESDigitalNotification = {
-    val headerNode = xml \ "Header"
-    val bodyNode   = xml \ "Body"
+    val notificationErrors = (xml \\ "notificationErrors").headOption
+      .map { errorsNode =>
+        (errorsNode \\ "notificationError").map { errorNode =>
+          NotificationError(
+            code = (errorNode \\ "code").text.trim,
+            description = (errorNode \\ "description").text.trim,
+            path = {
+              val pathText = (errorNode \\ "path").text.trim
+              if (pathText.isEmpty) None else Some(pathText)
+            },
+            originalValue = {
+              val valueText = (errorNode \\ "originalValue").text.trim
+              if (valueText.isEmpty) None else Some(valueText)
+            }
+          )
+        }
+      }
 
     AESDigitalNotification(
-      header = Header(
-        messageSender = (headerNode \ "messageSender").text.trim,
-        messageRecipient = (headerNode \ "messageRecipient").text.trim,
-        preparationDateTime = (headerNode \ "preparationDateTime").text.trim,
-        messageIdentification = (headerNode \ "messageIdentification").text.trim,
-        messageType = (headerNode \ "messageType").text.trim,
-        correlationIdentifier = (headerNode \ "correlationIdentifier").text.trim
-      ),
-      body = Body(
-        messageCode = (bodyNode \ "messageCode").text.trim,
-        actionCode = (bodyNode \ "actionCode").text.trim,
-        mrn = (bodyNode \ "MRN").text.trim
-      )
+      correlationId = (xml \\ "correlationId").text.trim,
+      eori = (xml \\ "eori").text.trim,
+      mrn = (xml \\ "mrn").text.trim,
+      dateCreated = (xml \\ "dateCreated").text.trim,
+      status = (xml \\ "status").text.trim.toInt,
+      notificationErrors = notificationErrors.map(_.toSeq)
     )
   }
-}

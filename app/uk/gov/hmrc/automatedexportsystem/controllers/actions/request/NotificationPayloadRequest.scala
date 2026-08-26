@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.notification
+package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
-case class NotificationError(
-  code:          String,
-  description:   String,
-  path:          Option[String],
-  originalValue: Option[String]
-)
+import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.automatedexportsystem.models.notification.AESDigitalNotification
+
+case class NotificationPayloadRequest[A](notification: AESDigitalNotification, request: Request[A]) extends WrappedRequest[A](request)
