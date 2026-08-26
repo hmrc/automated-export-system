@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.config
+package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
-import play.api.Configuration
+import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.automatedexportsystem.models.notification.AESDigitalNotification
 
-import javax.inject.{Inject, Singleton}
-
-@Singleton
-class AppConfig @Inject() (config: Configuration):
-  lazy val appName: String = config.get[String]("appName")
-
-  lazy val documentTtl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
-
-  lazy val replaceIndexes: Boolean = config.get[Boolean]("mongodb.replaceIndexes")
-
-  lazy val mongoRetryAttempts: Int = config.get[Int]("mongodb.retryAttempts")
-
-  lazy val notificationToken: String = config.get[String]("microservice.services.notification.bearer-token")
+case class NotificationPayloadRequest[A](notification: AESDigitalNotification, request: Request[A]) extends WrappedRequest[A](request)

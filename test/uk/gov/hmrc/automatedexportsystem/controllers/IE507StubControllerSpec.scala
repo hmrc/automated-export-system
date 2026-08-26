@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import play.api.test.Helpers.stubControllerComponents
+import uk.gov.hmrc.automatedexportsystem.helpers.BaseSpec
 
-class IE507StubControllerSpec extends AnyWordSpec with Matchers {
+class IE507StubControllerSpec extends BaseSpec:
 
   private val controller =
     new IE507StubController(
@@ -43,7 +41,7 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
       "x-message-type"   -> "aesIE507Request"
     )
 
-  "IE507StubController" should {
+  "IE507StubController" - {
 
     "return NoContent when all required headers are supplied" in {
 
@@ -133,4 +131,3 @@ class IE507StubControllerSpec extends AnyWordSpec with Matchers {
       status(result) shouldBe NO_CONTENT
     }
   }
-}

@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.config
+package uk.gov.hmrc.automatedexportsystem.models.notification
 
-import play.api.Configuration
+sealed trait NotificationStatus { def value: Int }
 
-import javax.inject.{Inject, Singleton}
-
-@Singleton
-class AppConfig @Inject() (config: Configuration):
-  lazy val appName: String = config.get[String]("appName")
-
-  lazy val documentTtl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
-
-  lazy val replaceIndexes: Boolean = config.get[Boolean]("mongodb.replaceIndexes")
-
-  lazy val mongoRetryAttempts: Int = config.get[Int]("mongodb.retryAttempts")
-
-  lazy val notificationToken: String = config.get[String]("microservice.services.notification.bearer-token")
+object NotificationStatus {
+  case object Accepted extends NotificationStatus { val value = 1 }
+  case object Diversion extends NotificationStatus { val value = 5 }
+  case object Rejected extends NotificationStatus { val value = 2 }
+}

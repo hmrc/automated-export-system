@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<!--This is the notification from our notification service-->
+    <xs:element name="notification" type="NotificationType"/>
+
+    <xs:complexType name="NotificationType">
+        <xs:sequence>
+            <xs:element name="correlationId" type="xs:string"/>
+            <xs:element name="eori" type="xs:string"/>
+            <xs:element name="mrn" type="xs:string"/>
+            <xs:element name="dateCreated" type="xs:dateTime"/>
+            <xs:element name="status" type="NotificationStatusType"/>
+            <xs:element name="notificationErrors" type="NotificationErrorsType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="NotificationStatusType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="1"/>
+            <xs:enumeration value="2"/>
+            <xs:enumeration value="5"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="NotificationErrorsType">
+        <xs:sequence>
+            <xs:element name="notificationError" type="NotificationErrorType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="NotificationErrorType">
+        <xs:sequence>
+            <xs:element name="code" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="path" type="xs:string" minOccurs="0"/>
+            <xs:element name="originalValue" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
