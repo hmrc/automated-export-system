@@ -107,7 +107,7 @@ object XmlReader:
       val text: String = xml.text.trim
 
       Try(BigDecimal(text)).toOption
-        .toValidNel(XmlReaderError.ParseError(path.toString, s"Failed to parse `$text` to BigDecimal"))
+        .toValidNel(XmlReaderError.ParseError(path.toString, s"Failed to parse '$text' to BigDecimal"))
     }
 
   given optionReader[T](using reader: XmlReader[T]): XmlReader[Option[T]] =
