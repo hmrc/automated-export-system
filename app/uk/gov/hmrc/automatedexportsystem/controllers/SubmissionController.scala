@@ -21,10 +21,10 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents, EssentialAction}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType.Awaiting
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.IE507.ExportOperationType.Awaiting
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
-import uk.gov.hmrc.automatedexportsystem.parsers.SubmissionRequestParser
+import uk.gov.hmrc.automatedexportsystem.parsers.AesIE507MessageParser
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -55,15 +55,15 @@ class SubmissionController @Inject() (
       .andThen(xmlValidationActionRefiner)
 
     composed.async { request =>
-      SubmissionRequestParser.fromXml(request.validatedXml) match {
+      AesIE507MessageParser.fromXml(request.validatedXml) match {
         case Left(parseErr) =>
           val errorXml =
             <Error>
-                <Code>INVALID_XML</Code>
-                <Message>
-                  {parseErr}
-                </Message>
-              </Error>
+              <Code>INVALID_XML</Code>
+              <Message>
+                {parseErr}
+              </Message>
+            </Error>
 
           Future.successful(BadRequest(errorXml).as(ContentTypes.XML))
 

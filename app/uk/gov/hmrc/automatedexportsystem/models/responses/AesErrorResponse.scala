@@ -17,9 +17,9 @@
 package uk.gov.hmrc.automatedexportsystem.models.responses
 
 import cats.data.NonEmptyList
-import play.api.http.Writeable
 import play.api.mvc.Result
 import play.api.mvc.Results.Status
+import uk.gov.hmrc.automatedexportsystem.controllers.writeables
 import uk.gov.hmrc.automatedexportsystem.errors.*
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.AesErrorResponseValidationError
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
@@ -31,7 +31,10 @@ import scala.xml.*
 final case class AesErrorResponse(status: Int, code: String, message: String, errors: Option[NonEmptyList[AesErrorResponseValidationError]]):
   private def self: AesErrorResponse = this
 
-  def toResult(using Writeable[NodeSeq]): Result = Status(status)(self.toXmlRoot)
+  def toResult: Result =
+    import writeables.NodeSeqFormattedWriteables.writeableOfFormattedNodeSeq
+
+    Status(status)(self.toXmlRoot)
 
 object AesErrorResponse:
   given aesErrorResponseTag: XmlRootTag[AesErrorResponse] = XmlRootTag("errorResponse")

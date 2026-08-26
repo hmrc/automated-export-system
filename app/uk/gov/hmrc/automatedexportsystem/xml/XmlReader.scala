@@ -21,6 +21,8 @@ import cats.syntax.option.*
 import cats.syntax.traverse.toTraverseOps
 import uk.gov.hmrc.automatedexportsystem.errors.XmlReaderError
 
+import java.util.UUID
+import scala.util.Try
 import scala.xml.NodeSeq
 
 sealed case class XmlPath(path: List[String]):
@@ -37,6 +39,9 @@ sealed case class XmlPath(path: List[String]):
 
     reader.read(node, path ++ this)
 
+  def readRoot[T](xml: NodeSeq, path: XmlPath)(using reader: XmlReader[T], tag: XmlRootTag[T]): ValidatedNel[XmlReaderError, T] =
+    (this \ tag.label).read(xml, path)
+
   override def toString: String = path.mkString("/", "/", "")
 
 object XmlPath extends XmlPath(List.empty)
@@ -47,11 +52,11 @@ trait XmlReader[T]:
   def map[U](f: T => U): XmlReader[U] =
     (xml, path) => read(xml, path).map(f)
 
+  def flatMapResult[U](f: (T, XmlPath) => ValidatedNel[XmlReaderError, U]): XmlReader[U] =
+    (xml, path) => read(xml, path).andThen(t => f(t, path))
+
   def flatMap[U](f: T => XmlReader[U]): XmlReader[U] =
-    (xml, path) =>
-      read(xml, path) match
-        case Validated.Valid(a)       => f(a).read(xml, path)
-        case i @ Validated.Invalid(_) => i
+    (xml, path) => read(xml, path).andThen(t => f(t).read(xml, path))
 
 object XmlReader:
   extension (xml: NodeSeq)
@@ -60,13 +65,13 @@ object XmlReader:
 
   def nonEmptyReader[T](reader: XmlReader[T]): XmlReader[T] =
     (xml, path) =>
-      val text: String = xml.text.trim
-
-      if xml.isEmpty || text.isEmpty then Validated.invalidNel(XmlReaderError.MissingOrEmpty(path.toString))
+      if xml.isEmpty then Validated.invalidNel(XmlReaderError.Missing(path.toString))
       else reader.read(xml, path)
 
   given stringReader: XmlReader[String] =
-    nonEmptyReader((xml, _) => Validated.validNel(xml.text.trim))
+    nonEmptyReader { (xml, _) =>
+      Validated.validNel(xml.text.trim)
+    }
 
   given intReader: XmlReader[Int] = nonEmptyReader { (xml, path) =>
     val text: String = xml.text.trim
@@ -89,11 +94,25 @@ object XmlReader:
         .toValidNel(XmlReaderError.ParseError(path.toString, s"Failed to parse '$text' to Boolean"))
     }
 
-  given optionReader[T](using reader: XmlReader[T]): XmlReader[Option[T]] =
-    (xml, path) =>
+  given uuidReader: XmlReader[UUID] =
+    nonEmptyReader { (xml, path) =>
       val text: String = xml.text.trim
 
-      if xml.isEmpty || text.isEmpty then Validated.validNel(None)
+      Try(UUID.fromString(text)).toOption
+        .toValidNel(XmlReaderError.ParseError(path.toString, s"Failed to parse '$text' to UUID"))
+    }
+
+  given bigDecimalReader: XmlReader[BigDecimal] =
+    nonEmptyReader { (xml, path) =>
+      val text: String = xml.text.trim
+
+      Try(BigDecimal(text)).toOption
+        .toValidNel(XmlReaderError.ParseError(path.toString, s"Failed to parse `$text` to BigDecimal"))
+    }
+
+  given optionReader[T](using reader: XmlReader[T]): XmlReader[Option[T]] =
+    (xml, path) =>
+      if xml.isEmpty then Validated.validNel(None)
       else reader.read(xml, path).map(Some(_))
 
   given listReader[T](using reader: XmlReader[T]): XmlReader[List[T]] =

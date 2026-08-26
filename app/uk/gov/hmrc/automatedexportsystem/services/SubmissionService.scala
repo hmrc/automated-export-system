@@ -18,9 +18,9 @@ package uk.gov.hmrc.automatedexportsystem.services
 
 import cats.data.EitherT
 import uk.gov.hmrc.automatedexportsystem.errors.{AesErrorMapper, MongoError, SubmissionServiceError}
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{EoriNumber, ExportOperationType, SubmissionId}
-import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
-import uk.gov.hmrc.automatedexportsystem.models.request.{SubmissionRequest, SubmissionResult}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.{SubmissionResult, UpdateStatus}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
@@ -30,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait SubmissionService:
   def submitMessage(
-    request:             SubmissionRequest,
+    message:             AesIE507Message,
     exportOperationType: ExportOperationType,
     eoriNumber:          EoriNumber
   ): EitherT[Future, MongoError, SubmissionResult]
@@ -98,12 +98,12 @@ class SubmissionServiceImpl @Inject() (
       )
 
   def submitMessage(
-    request:             SubmissionRequest,
+    message:             AesIE507Message,
     exportOperationType: ExportOperationType,
     eoriNumber:          EoriNumber
   ): EitherT[Future, MongoError, SubmissionResult] =
     aesIE507Repository
-      .submit(request.toMongoMessage(exportOperationType, eoriNumber))
+      .submit(message.toMongoMessage(exportOperationType, eoriNumber))
       .map(created => if (created) SubmissionResult.Created else SubmissionResult.Updated)
 
 object SubmissionService:

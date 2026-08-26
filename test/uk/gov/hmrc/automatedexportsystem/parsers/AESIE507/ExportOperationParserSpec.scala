@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseSpec
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperation
+import uk.gov.hmrc.automatedexportsystem.models.IE507.ExportOperation
 import org.scalatest.EitherValues
 import org.scalatest.EitherValues.*
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.ExportOperationType.Standard
+import uk.gov.hmrc.automatedexportsystem.models.IE507.ExportOperationType.Standard
 
 import scala.xml.XML
 

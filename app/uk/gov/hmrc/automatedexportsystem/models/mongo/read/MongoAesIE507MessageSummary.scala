@@ -17,7 +17,8 @@
 package uk.gov.hmrc.automatedexportsystem.models.mongo.read
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 
 import java.time.Instant
 

@@ -50,7 +50,10 @@ object XmlWriter:
       writer.write(o, label)
 
   def elem(label: String, children: NodeSeq): Elem =
-    Elem(null, label, Null, TopScope, false, children*)
+    elemWithScope(label, TopScope, children)
+
+  def elemWithScope(label: String, scope: NamespaceBinding, children: NodeSeq): Elem =
+    Elem(scope.prefix, label, Null, scope, false, children*)
 
   def optElem(label: String, children: NodeSeq): NodeSeq =
     if children.isEmpty then NodeSeq.Empty
@@ -83,3 +86,9 @@ object XmlWriter:
 
   given nonEmptyListWriter[T](using writer: XmlWriter[List[T]]): XmlWriter[NonEmptyList[T]] =
     writer.contramap(_.toList)
+
+  def intBasedBooleanWriter(using writer: XmlWriter[Int]): XmlWriter[Boolean] =
+    writer.contramap {
+      case true => 1
+      case _    => 0
+    }

@@ -26,7 +26,7 @@ import play.api.mvc.*
 import play.api.mvc.Results.Status
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthRequest
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}

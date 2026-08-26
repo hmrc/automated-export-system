@@ -32,7 +32,8 @@ import play.api.test.{FakeRequest, Helpers}
 import play.api.{Application, inject}
 import test.uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
@@ -95,7 +96,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
         goodsShipment = Some(
           GoodsShipment(
             consignment = Consignment(
-              modeOfTransportAtBorder = Some(ModeOfTransportAtBorder(1)),
+              modeOfTransportAtTheBorder = Some(ModeOfTransportAtTheBorder(1)),
               referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
               parentUcrId = Some(ParentUcrId("parentUcrId")),
               transportEquipment = Some(
@@ -610,17 +611,17 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                 <submissionId>{id1}</submissionId>
                 <status>1</status>
                 <ExportOperation>
-                  <exportOperationType>1</exportOperationType>
-                  <mrn>mrn</mrn>
-                  <discrepanciesExist>false</discrepanciesExist>
-                  <splitIndicator>true</splitIndicator>
+                  <type>1</type>
+                  <MRN>mrn</MRN>
+                  <discrepanciesExist>0</discrepanciesExist>
+                  <splitIndicator>1</splitIndicator>
                 </ExportOperation>
                 <CustomsOfficeOfExitActual>
                   <referenceNumber>referenceNumber</referenceNumber>
                 </CustomsOfficeOfExitActual>
                 <GoodsShipment>
                   <Consignment>
-                    <modeOfTransportAtBorder>1</modeOfTransportAtBorder>
+                    <modeOfTransportAtTheBorder>1</modeOfTransportAtTheBorder>
                     <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
                     <parentUCRID>parentUcrId</parentUCRID>
                     <TransportEquipment>
@@ -656,6 +657,7 @@ class SubmissionControllerITSpec extends BaseISpec, MockitoSugar:
                   </Consignment>
                   <GoodsItem>
                     <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                    <referenceNumberUCR>ducr</referenceNumberUCR>
                     <Commodity>
                       <grossMass>100.55</grossMass>
                       <netMass>80.45</netMass>

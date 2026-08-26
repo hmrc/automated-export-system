@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 
 import cats.data.NonEmptyList
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.{DeclarationGoodsItemNumber, GoodsReference, SequenceNumber}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{DeclarationGoodsItemNumber, GoodsReference, SequenceNumber}
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.Helpers.*
 
 import scala.xml.Node

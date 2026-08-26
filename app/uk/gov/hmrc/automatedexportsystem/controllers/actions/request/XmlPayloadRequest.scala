@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
 import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
 
 import scala.xml.NodeSeq
 

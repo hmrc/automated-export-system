@@ -19,7 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 import org.scalatest.EitherValues
 import org.scalatest.EitherValues.*
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseSpec
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.TypeOfIdentification
+import uk.gov.hmrc.automatedexportsystem.models.IE507.TypeOfIdentification
 
 import scala.xml.XML
 
@@ -31,7 +31,7 @@ class ConsignmentParserSpec extends BaseSpec {
         XML.loadString(
           """
               |<Consignment>
-              |  <modeOfTransportAtBorder>1</modeOfTransportAtBorder>
+              |  <modeOfTransportAtTheBorder>1</modeOfTransportAtTheBorder>
               |  <referenceNumberUCR>6GB536187624189-S458</referenceNumberUCR>
               |  <parentUCRID>GB/ABC-12345</parentUCRID>
               |
@@ -79,9 +79,9 @@ class ConsignmentParserSpec extends BaseSpec {
       result.isRight shouldBe true
       val parsed = result.value
 
-      parsed.modeOfTransportAtBorder.map(_.value) shouldBe Some(1)
-      parsed.referenceNumberUCR.value             shouldBe "6GB536187624189-S458"
-      parsed.parentUcrId.map(_.value)             shouldBe Some("GB/ABC-12345")
+      parsed.modeOfTransportAtTheBorder.map(_.value) shouldBe Some(1)
+      parsed.referenceNumberUCR.value                shouldBe "6GB536187624189-S458"
+      parsed.parentUcrId.map(_.value)                shouldBe Some("GB/ABC-12345")
 
       parsed.transportEquipment.map(_.length) shouldBe Some(1)
       parsed.seal.map(_.length)               shouldBe Some(1)

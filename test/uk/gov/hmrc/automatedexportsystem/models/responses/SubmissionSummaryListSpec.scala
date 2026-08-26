@@ -19,7 +19,8 @@ package uk.gov.hmrc.automatedexportsystem.models.responses
 import helpers.XmlOps
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
-import uk.gov.hmrc.automatedexportsystem.models.aesIE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 
 import java.time.LocalDateTime
