@@ -56,10 +56,7 @@ enum RequestError(val message: String, val responseCode: ResponseCode) extends A
   case MissingContentTypeHeader extends RequestError("Request Content-Type header is missing", UnsupportedMediaType)
   case ContentTypeNotUtf8Error extends RequestError("Request Content-Type charset is not UTF-8", UnsupportedMediaType)
 
-enum XmlReaderError(val path: String, val message: String) extends AesError:
-  val responseCode: ResponseCode      = BadRequest
-  val exception:    Option[Throwable] = None
-
+enum XmlReaderError(val path: String, val message: String):
   case Missing(override val path: String) extends XmlReaderError(path, "Element is missing")
   case ParseError(override val path: String, override val message: String) extends XmlReaderError(path, message)
 
@@ -73,3 +70,30 @@ enum SubmissionServiceError(val message: String, val responseCode: ResponseCode)
 
   case SubmissionOperationFailure(override val message: String) extends SubmissionServiceError(message, InternalServerError)
   case SubmissionNotFound(override val message: String) extends SubmissionServiceError(message, NotFound)
+
+enum ConnectorError(
+  val details:      String,
+  val method:       String,
+  val url:          String,
+  val responseCode: ResponseCode,
+  val exception:    Option[Throwable]
+) extends AesError:
+  val message: String = s"Error on $method request to $url. $details"
+
+  case ResponseBodyNotXmlError(
+    override val method:    String,
+    override val url:       String,
+    override val exception: Option[Throwable]
+  ) extends ConnectorError("Response body was not valid XML", method, url, BadGateway, exception)
+
+  case ResponseBodyXmlReadError(
+    override val method: String,
+    override val url:    String,
+    errors:              NonEmptyList[XmlReaderError]
+  ) extends ConnectorError("Response body XML failed deserialization", method, url, InternalServerError, None)
+
+  case UnexpectedStatusError(
+    override val method: String,
+    override val url:    String,
+    status:              Int
+  ) extends ConnectorError(s"Response status $status was not expected", method, url, BadGateway, None)

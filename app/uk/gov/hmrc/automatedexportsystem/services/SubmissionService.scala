@@ -130,7 +130,7 @@ object SubmissionService:
       )
 
     override def apply(mongoError: MongoError): SubmissionServiceError =
-      new MongoErrorMapper(context, withMapperBefore(notFoundMongoErrorMapper)).mappers
+      withMapperBefore(notFoundMongoErrorMapper)
         .applyOrElse(
           mongoError,
           _ => SubmissionServiceError.SubmissionOperationFailure(s"Submission operation failed. $context")
