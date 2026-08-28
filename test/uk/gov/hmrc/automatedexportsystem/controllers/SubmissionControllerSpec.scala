@@ -27,8 +27,8 @@ import play.api.mvc.*
 import play.api.test.Helpers.writeableOf_AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.*
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
@@ -42,7 +42,7 @@ import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import java.time.LocalDateTime
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.{Elem, NodeSeq, XML}
+import scala.xml.{Elem, NodeSeq}
 
 class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents(executionContext = ec)
@@ -53,6 +53,8 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
   val xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
+
+  val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner()
 
   val idGenerator: IdGenerator = mock[IdGenerator]
 
@@ -76,6 +78,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
       aesAuthRequestRefiner,
       xmlPayloadActionRefiner,
       xmlValidationActionRefiner,
+      aesIE507ActionRefiner,
       xmlBodyParsers,
       submissionService
     )
@@ -131,6 +134,28 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
         goodsShipment = None,
         updatedAt = dateTime
       )
+
+    val aesIE507MessageValidXml: Elem =
+      <aes:Submission xmlns:aes="http://ecs.dgtaxud.ec">
+        <ExportOperation>
+          <type>1</type>
+          <MRN>26GB0000X6524786A9</MRN>
+          <discrepanciesExist>0</discrepanciesExist>
+          <splitIndicator>0</splitIndicator>
+        </ExportOperation>
+        <CustomsOfficeOfExitActual>
+          <referenceNumber>GB000001</referenceNumber>
+        </CustomsOfficeOfExitActual>
+      </aes:Submission>
+
+    val aesIE507MessageInvalidXml: Elem =
+      <aes:Submission xmlns:aes="http://ecs.dgtaxud.ec">
+        <ExportOperation>
+          <type></type>
+          <discrepanciesExist>0</discrepanciesExist>
+          <splitIndicator>-1</splitIndicator>
+        </ExportOperation>
+      </aes:Submission>
   end TestData
 
   "SubmissionController" - {
@@ -142,27 +167,16 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
         "that returns a 202 Result" - {
 
           "when applied with a Request containing a valid XML body that passes IE507 request schema validation" in {
-            val requestXml: Elem =
-              <aes:Submission xmlns:aes="http://ecs.dgtaxud.ec">
-                <ExportOperation>
-                  <type>1</type>
-                  <MRN>26GB0000X6524786A9</MRN>
-                  <discrepanciesExist>0</discrepanciesExist>
-                  <splitIndicator>0</splitIndicator>
-                </ExportOperation>
-                <CustomsOfficeOfExitActual>
-                  <referenceNumber>GB000001</referenceNumber>
-                </CustomsOfficeOfExitActual>
-              </aes:Submission>
-
             val request: FakeRequest[NodeSeq] =
               FakeRequest(Helpers.POST, "/dummy/path")
                 .withHeaders("content-type" -> "application/xml")
-                .withBody(requestXml)
+                .withBody(TestData.aesIE507MessageValidXml)
 
-            when(xmlValidationService.validate(requestXml)).thenReturn(EitherT(Future.successful(Right(()))))
+            when(xmlValidationService.validate(TestData.aesIE507MessageValidXml))
+              .thenReturn(EitherT(Future.successful(Right(()))))
 
-            when(submissionService.submitMessage(any(), any(), any())).thenReturn(EitherT(Future.successful(Right(SubmissionResult.Created))))
+            when(submissionService.submitMessage(any(), any(), any()))
+              .thenReturn(EitherT(Future.successful(Right(SubmissionResult.Created))))
 
             val result: Future[Result] = Helpers.call(submissionController.message, request)
 
@@ -354,26 +368,48 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
             }
 
-            "due to parser error" in {
-              val badXml: scala.xml.Elem =
-                <Submission>
-                 <not>bar</not>
-               </Submission>
+            "due to an XmlFailedReadError" in {
               when(xmlValidationService.validate(any[NodeSeq]))
                 .thenReturn(EitherT.rightT[Future, AesError](()))
 
               val request: FakeRequest[NodeSeq] =
                 FakeRequest(Helpers.POST, "/dummy/path")
                   .withHeaders("Content-Type" -> "application/xml")
-                  .withBody(badXml)
+                  .withBody(TestData.aesIE507MessageInvalidXml)
 
               val result: Future[Result] = Helpers.call(submissionController.message, request)
 
-              Helpers.status(result) shouldBe Helpers.BAD_REQUEST
+              val xmlFailedReadErrorResponseXml: Elem =
+                <errorResponse>
+                  <status>422</status>
+                  <code>UNPROCESSABLE_ENTITY</code>
+                  <message>XML failed deserialization</message>
+                  <errors>
+                    <error>
+                      <path>/ExportOperation/type</path>
+                      <message>Failed to parse '' to Int</message>
+                    </error>
+                    <error>
+                      <path>/ExportOperation/MRN</path>
+                      <message>Element is missing</message>
+                    </error>
+                    <error>
+                      <path>/ExportOperation/splitIndicator</path>
+                      <message>Failed to parse '-1' to Boolean</message>
+                    </error>
+                    <error>
+                      <path>/CustomsOfficeOfExitActual</path>
+                      <message>Element is missing</message>
+                    </error>
+                  </errors>
+                </errorResponse>
 
-              val bodyXml = XML.loadString(Helpers.contentAsString(result))
-              (bodyXml \\ "Code").text.trim    shouldBe "INVALID_XML"
-              (bodyXml \\ "Message").text.trim shouldBe "Missing required field: ExportOperation"
+              val resultContent: String = Helpers.contentAsString(result)
+              val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe Helpers.UNPROCESSABLE_ENTITY
+              Helpers.contentType(result) shouldBe Some(Helpers.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedReadErrorResponseXml)
             }
           }
         }

@@ -16,22 +16,20 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers
 
-import play.api.http.ContentTypes
 import play.api.mvc.{Action, AnyContent, ControllerComponents, EssentialAction}
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.{AesAuthAction, AesAuthRequestRefiner, XmlPayloadActionRefiner, XmlValidationActionRefiner}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.ResponseCode
 import uk.gov.hmrc.automatedexportsystem.models.IE507.ExportOperationType.Awaiting
-import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
-import uk.gov.hmrc.automatedexportsystem.parsers.AesIE507MessageParser
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.xml.NodeSeq
 
 @Singleton
@@ -41,6 +39,7 @@ class SubmissionController @Inject() (
   aesAuthRequestRefiner:      AesAuthRequestRefiner,
   xmlPayloadActionRefiner:    XmlPayloadActionRefiner,
   xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService],
+  aesIE507ActionRefiner:      AesIE507ActionRefiner,
   xmlBodyParsers:             XmlBodyParsers,
   submissionService:          SubmissionService
 ) extends BackendController(cc):
@@ -53,28 +52,17 @@ class SubmissionController @Inject() (
       .andThen(aesAuthRequestRefiner)
       .andThen(xmlPayloadActionRefiner)
       .andThen(xmlValidationActionRefiner)
+      .andThen(aesIE507ActionRefiner)
 
     composed.async { request =>
-      AesIE507MessageParser.fromXml(request.validatedXml) match {
-        case Left(parseErr) =>
-          val errorXml =
-            <Error>
-              <Code>INVALID_XML</Code>
-              <Message>
-                {parseErr}
-              </Message>
-            </Error>
+      val aesIE507Message: AesIE507Message = request.message
 
-          Future.successful(BadRequest(errorXml).as(ContentTypes.XML))
+      submissionService.submitMessage(aesIE507Message, Awaiting, request.eori).value.map {
+        case Right(_) =>
+          Accepted
 
-        case Right(submissionRequest) =>
-          submissionService.submitMessage(submissionRequest, Awaiting, request.eori).value.map {
-            case Right(_) =>
-              Accepted
-
-            case Left(err) =>
-              InternalServerError(err.toString)
-          }
+        case Left(err) =>
+          InternalServerError(err.toString)
       }
     }
   }
