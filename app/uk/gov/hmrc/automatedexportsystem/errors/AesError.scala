@@ -60,6 +60,11 @@ enum XmlReaderError(val path: String, val message: String):
   case Missing(override val path: String) extends XmlReaderError(path, "Element is missing")
   case ParseError(override val path: String, override val message: String) extends XmlReaderError(path, message)
 
+case class XmlFailedReadError(errors: NonEmptyList[XmlReaderError]) extends AesError:
+  val message:      String            = "XML failed deserialization"
+  val responseCode: ResponseCode      = UnprocessableEntity
+  val exception:    Option[Throwable] = None
+
 enum MongoError(val message: String, val responseCode: ResponseCode, val exception: Option[Throwable]) extends AesError:
   case DocumentNotFound(details: String) extends MongoError(s"Document not found: $details", NotFound, None)
   case UnexpectedError(ex: Throwable) extends MongoError("Unexpected error encountered while performing DB query", InternalServerError, Some(ex))
