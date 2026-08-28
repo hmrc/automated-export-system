@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.parsers.AESIE507
 
 import cats.data.NonEmptyList
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{Commodity, DeclarationGoodsItemNumber, GoodsItem, GrossMass, NetMass, ReferenceNumberUcr}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.parsers.AESIE507.Helpers.*
 
 import scala.xml.Node
@@ -39,7 +39,7 @@ object GoodsItemsParser {
     } yield GoodsItem(
       declarationGoodsItemNumber = declarationNo,
       referenceNumberUcr = textOptChild(n, Tags.ReferenceNumberUCR).map(_.trim).filter(_.nonEmpty).map(ReferenceNumberUcr.apply),
-      commodity = Commodity(grossMass = gross, netMass = net),
+      commodity = Commodity(GoodsMeasure(gross, net)),
       packaging = packaging
     )
 

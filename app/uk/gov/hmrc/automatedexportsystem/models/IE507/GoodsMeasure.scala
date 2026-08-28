@@ -16,27 +16,32 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
+import cats.syntax.apply.catsSyntaxTuple2Semigroupal
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
 import scala.xml.NodeSeq
 
-final case class Commodity(goodsMeasure: GoodsMeasure)
+final case class GoodsMeasure(grossMass: GrossMass, netMass: NetMass)
 
-object Commodity:
-  given mongoFormat: Format[Commodity] = Json.format[Commodity]
+object GoodsMeasure:
+  given mongoFormat: Format[GoodsMeasure] = Json.format[GoodsMeasure]
 
-  given commodityTag: XmlRootTag[Commodity] = XmlRootTag("Commodity")
-
-  given commodityXmlWriter: XmlWriter[Commodity] =
+  given goodsMeasureTag: XmlRootTag[GoodsMeasure] = XmlRootTag("GoodsMeasure")
+  
+  given goodsMeasureXmlWriter: XmlWriter[GoodsMeasure] =
     (o, label) =>
       val children: NodeSeq =
-        o.goodsMeasure.toXmlRoot
+        o.grossMass.toXml("grossMass")
+          ++ o.netMass.toXml("netMass")
 
       XmlWriter.elem(label, children)
 
-  given commodityXmlReader: XmlReader[Commodity] =
+  given goodsMeasureXmlReader: XmlReader[GoodsMeasure] =
     XmlReader.nonEmptyReader { (xml, path) =>
-      XmlPath.readRoot[GoodsMeasure](xml, path).map(Commodity.apply)
+      (
+        (XmlPath \ "grossMass").read[GrossMass](xml, path),
+        (XmlPath \ "netMass").read[NetMass](xml, path)
+      ).mapN(GoodsMeasure.apply)
     }

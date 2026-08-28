@@ -125,8 +125,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 GoodsItem(
                   declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1)),
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
                   packaging = Some(
@@ -149,8 +151,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 GoodsItem(
                   declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(2)),
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
                   packaging = Some(
@@ -269,8 +273,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 GoodsItem(
                   declarationGoodsItemNumber = None,
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   referenceNumberUcr = None,
                   packaging = Some(
@@ -293,8 +299,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 GoodsItem(
                   declarationGoodsItemNumber = None,
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   referenceNumberUcr = None,
                   packaging = Some(
@@ -455,8 +463,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
                 <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
                 <Commodity>
-                  <grossMass>100.55</grossMass>
-                  <netMass>80.45</netMass>
+                  <GoodsMeasure>
+                    <grossMass>100.55</grossMass>
+                    <netMass>80.45</netMass>
+                  </GoodsMeasure>
                 </Commodity>
                 <Packaging>
                   <sequenceNumber>1</sequenceNumber>
@@ -475,8 +485,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
                 <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
                 <Commodity>
-                  <grossMass>100.55</grossMass>
-                  <netMass>80.45</netMass>
+                  <GoodsMeasure>
+                    <grossMass>100.55</grossMass>
+                    <netMass>80.45</netMass>
+                  </GoodsMeasure>
                 </Commodity>
                 <Packaging>
                   <sequenceNumber>3</sequenceNumber>
@@ -532,16 +544,20 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
               </Consignment>
               <GoodsItem>
                 <Commodity>
-                  <grossMass>100.55</grossMass>
-                  <netMass>80.45</netMass>
+                  <GoodsMeasure>
+                    <grossMass>100.55</grossMass>
+                    <netMass>80.45</netMass>
+                  </GoodsMeasure>
                 </Commodity>
                 <Packaging></Packaging>
                 <Packaging></Packaging>
               </GoodsItem>
               <GoodsItem>
                 <Commodity>
-                  <grossMass>100.55</grossMass>
-                  <netMass>80.45</netMass>
+                  <GoodsMeasure>
+                    <grossMass>100.55</grossMass>
+                    <netMass>80.45</netMass>
+                  </GoodsMeasure>
                 </Commodity>
                 <Packaging></Packaging>
                 <Packaging></Packaging>

@@ -250,12 +250,17 @@ trait AesIE507Generators extends BaseGenerators:
       arbitrary[Double].map(d => NetMass.apply(BigDecimal(d)))
     }
 
-  given commodityArb: Arbitrary[Commodity] =
+  given goodsMeasureArb: Arbitrary[GoodsMeasure] =
     Arbitrary {
       for
         grossMass <- arbitrary[GrossMass]
         netMass   <- arbitrary[NetMass]
-      yield Commodity(grossMass, netMass)
+      yield GoodsMeasure(grossMass, netMass)
+    }
+
+  given commodityArb: Arbitrary[Commodity] =
+    Arbitrary {
+      arbitrary[GoodsMeasure].map(Commodity.apply)
     }
 
   given typeOfPackagesArb: Arbitrary[TypeOfPackages] =

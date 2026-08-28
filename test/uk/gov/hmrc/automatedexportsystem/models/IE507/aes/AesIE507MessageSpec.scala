@@ -107,8 +107,10 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
               <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
               <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
               <Commodity>
-                <grossMass>100.55</grossMass>
-                <netMass>80.45</netMass>
+                <GoodsMeasure>
+                  <grossMass>100.55</grossMass>
+                  <netMass>80.45</netMass>
+                </GoodsMeasure>
               </Commodity>
               <Packaging>
                 <sequenceNumber>1</sequenceNumber>
@@ -127,8 +129,10 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
               <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
               <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
               <Commodity>
-                <grossMass>100.55</grossMass>
-                <netMass>80.45</netMass>
+                <GoodsMeasure>
+                  <grossMass>100.55</grossMass>
+                  <netMass>80.45</netMass>
+                </GoodsMeasure>
               </Commodity>
               <Packaging>
                 <sequenceNumber>3</sequenceNumber>
@@ -177,16 +181,20 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
             </Consignment>
             <GoodsItem>
               <Commodity>
-                <grossMass>100.55</grossMass>
-                <netMass>80.45</netMass>
+                <GoodsMeasure>
+                  <grossMass>100.55</grossMass>
+                  <netMass>80.45</netMass>
+                </GoodsMeasure>
               </Commodity>
               <Packaging></Packaging>
               <Packaging></Packaging>
             </GoodsItem>
             <GoodsItem>
               <Commodity>
-                <grossMass>100.55</grossMass>
-                <netMass>80.45</netMass>
+                <GoodsMeasure>
+                  <grossMass>100.55</grossMass>
+                  <netMass>80.45</netMass>
+                </GoodsMeasure>
               </Commodity>
               <Packaging></Packaging>
               <Packaging></Packaging>
@@ -337,8 +345,10 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
               <declarationGoodsItemNumber>one</declarationGoodsItemNumber>
               <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
               <Commodity>
-                <grossMass>hundred</grossMass>
-                <netMass>eighty</netMass>
+                <GoodsMeasure>
+                  <grossMass>hundred</grossMass>
+                  <netMass>eighty</netMass>
+                </GoodsMeasure>
               </Commodity>
               <Packaging>
                 <sequenceNumber></sequenceNumber>
@@ -357,8 +367,10 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
               <declarationGoodsItemNumber></declarationGoodsItemNumber>
               <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
               <Commodity>
-                <grossMass></grossMass>
-                <netMass></netMass>
+                <GoodsMeasure>
+                  <grossMass></grossMass>
+                  <netMass></netMass>
+                </GoodsMeasure>
               </Commodity>
               <Packaging>
                 <sequenceNumber></sequenceNumber>
@@ -474,8 +486,10 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
                     GoodsItem(
                       declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1)),
                       commodity = Commodity(
-                        grossMass = GrossMass(100.55),
-                        netMass = NetMass(80.45)
+                        goodsMeasure = GoodsMeasure(
+                          grossMass = GrossMass(100.55),
+                          netMass = NetMass(80.45)
+                        )
                       ),
                       referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
                       packaging = Some(
@@ -498,8 +512,10 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
                     GoodsItem(
                       declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(2)),
                       commodity = Commodity(
-                        grossMass = GrossMass(100.55),
-                        netMass = NetMass(80.45)
+                        goodsMeasure = GoodsMeasure(
+                          grossMass = GrossMass(100.55),
+                          netMass = NetMass(80.45)
+                        )
                       ),
                       referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
                       packaging = Some(
@@ -620,8 +636,10 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
                     GoodsItem(
                       declarationGoodsItemNumber = None,
                       commodity = Commodity(
-                        grossMass = GrossMass(100.55),
-                        netMass = NetMass(80.45)
+                        goodsMeasure = GoodsMeasure(
+                          grossMass = GrossMass(100.55),
+                          netMass = NetMass(80.45)
+                        )
                       ),
                       referenceNumberUcr = None,
                       packaging = Some(
@@ -644,8 +662,10 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
                     GoodsItem(
                       declarationGoodsItemNumber = None,
                       commodity = Commodity(
-                        grossMass = GrossMass(100.55),
-                        netMass = NetMass(80.45)
+                        goodsMeasure = GoodsMeasure(
+                          grossMass = GrossMass(100.55),
+                          netMass = NetMass(80.45)
+                        )
                       ),
                       referenceNumberUcr = None,
                       packaging = Some(
@@ -759,8 +779,7 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
             XmlReaderError.Missing("/GoodsShipment/Consignment/referenceNumberUCR"),
             XmlReaderError.Missing("/GoodsShipment/Consignment/LocationOfGoods/typeOfLocation"),
             XmlReaderError.Missing("/GoodsShipment/Consignment/LocationOfGoods/qualifierOfIdentification"),
-            XmlReaderError.Missing("/GoodsShipment/GoodsItem/[0]/Commodity/grossMass"),
-            XmlReaderError.Missing("/GoodsShipment/GoodsItem/[0]/Commodity/netMass")
+            XmlReaderError.Missing("/GoodsShipment/GoodsItem/[0]/Commodity/GoodsMeasure")
           )
 
         TestData.InvalidAesIE507Xml.missingNonRootRequiredFields
@@ -825,15 +844,15 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportDocument/[1]/sequenceNumber", "Failed to parse 'two' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportDocument/[1]/type", "Failed to parse 'two' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/declarationGoodsItemNumber", "Failed to parse 'one' to Int"),
-            XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/Commodity/grossMass", "Failed to parse 'hundred' to BigDecimal"),
-            XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/Commodity/netMass", "Failed to parse 'eighty' to BigDecimal"),
+            XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/Commodity/GoodsMeasure/grossMass", "Failed to parse 'hundred' to BigDecimal"),
+            XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/Commodity/GoodsMeasure/netMass", "Failed to parse 'eighty' to BigDecimal"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/Packaging/[0]/sequenceNumber", "Failed to parse '' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/Packaging/[0]/numberOfPackages", "Failed to parse '' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/Packaging/[1]/sequenceNumber", "Failed to parse '' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/Packaging/[1]/numberOfPackages", "Failed to parse '' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[1]/declarationGoodsItemNumber", "Failed to parse '' to Int"),
-            XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[1]/Commodity/grossMass", "Failed to parse '' to BigDecimal"),
-            XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[1]/Commodity/netMass", "Failed to parse '' to BigDecimal"),
+            XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[1]/Commodity/GoodsMeasure/grossMass", "Failed to parse '' to BigDecimal"),
+            XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[1]/Commodity/GoodsMeasure/netMass", "Failed to parse '' to BigDecimal"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[1]/Packaging/[0]/sequenceNumber", "Failed to parse '' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[1]/Packaging/[0]/numberOfPackages", "Failed to parse '' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[1]/Packaging/[1]/sequenceNumber", "Failed to parse '' to Int"),

@@ -65,8 +65,8 @@ class GoodsItemParserSpec extends BaseSpec {
       items.length shouldBe 1
 
       val item = items.head
-      item.commodity.grossMass.value               shouldBe BigDecimal("12.1")
-      item.commodity.netMass.value                 shouldBe BigDecimal("11.0")
+      item.commodity.goodsMeasure.grossMass.value  shouldBe BigDecimal("12.1")
+      item.commodity.goodsMeasure.netMass.value    shouldBe BigDecimal("11.0")
       item.declarationGoodsItemNumber.map(_.value) shouldBe Some(1)
       item.referenceNumberUcr.map(_.value)         shouldBe Some("UCR-123")
     }

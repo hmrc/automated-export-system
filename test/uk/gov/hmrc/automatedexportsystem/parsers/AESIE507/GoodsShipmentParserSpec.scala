@@ -120,10 +120,10 @@ class GoodsShipmentParserSpec extends BaseSpec {
       shipment.goodsItem.value.length shouldBe 1
 
       val item = shipment.goodsItem.value.head
-      item.commodity.grossMass.value  shouldBe BigDecimal("12.1")
-      item.commodity.netMass.value    shouldBe BigDecimal("11.0")
-      item.declarationGoodsItemNumber shouldBe None
-      item.referenceNumberUcr         shouldBe None
+      item.commodity.goodsMeasure.grossMass.value shouldBe BigDecimal("12.1")
+      item.commodity.goodsMeasure.netMass.value   shouldBe BigDecimal("11.0")
+      item.declarationGoodsItemNumber             shouldBe None
+      item.referenceNumberUcr                     shouldBe None
     }
   }
 }

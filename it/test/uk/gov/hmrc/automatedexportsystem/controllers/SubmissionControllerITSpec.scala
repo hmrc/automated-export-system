@@ -151,8 +151,10 @@ class SubmissionControllerITSpec extends BaseISpec:
                   referenceNumberUcr = Some(ReferenceNumberUcr("ducr")),
                   declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1)),
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   packaging = Some(
                     NonEmptyList.one(
@@ -656,8 +658,10 @@ class SubmissionControllerITSpec extends BaseISpec:
                     <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
                     <referenceNumberUCR>ducr</referenceNumberUCR>
                     <Commodity>
-                      <grossMass>100.55</grossMass>
-                      <netMass>80.45</netMass>
+                      <GoodsMeasure>
+                        <grossMass>100.55</grossMass>
+                        <netMass>80.45</netMass>
+                      </GoodsMeasure>
                     </Commodity>
                     <Packaging>
                       <sequenceNumber>1</sequenceNumber>

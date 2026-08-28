@@ -111,8 +111,10 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
                   referenceNumberUcr = None,
                   declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1)),
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   packaging = Some(
                     NonEmptyList.one(
@@ -194,8 +196,10 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |    "goodsItem" : [ {
           |      "declarationGoodsItemNumber" : 1,
           |      "commodity" : {
-          |        "grossMass" : 100.55,
-          |        "netMass" : 80.45
+          |        "goodsMeasure": {
+          |          "grossMass": 100.55,
+          |          "netMass": 80.45
+          |        }
           |      },
           |      "packaging" : [ {
           |        "sequenceNumber" : 1,
@@ -329,8 +333,10 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
                   referenceNumberUcr = None,
                   declarationGoodsItemNumber = None,
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   packaging = Some(
                     NonEmptyList.one(
@@ -388,8 +394,10 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |    },
           |    "goodsItem" : [ {
           |      "commodity" : {
-          |        "grossMass" : 100.55,
-          |        "netMass" : 80.45
+          |        "goodsMeasure": {
+          |          "grossMass": 100.55,
+          |          "netMass": 80.45
+          |        }
           |      },
           |      "packaging" : [ { } ]
           |    } ]
