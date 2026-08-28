@@ -30,4 +30,6 @@ class AppConfig @Inject() (config: Configuration):
 
   lazy val mongoRetryAttempts: Int = config.get[Int]("mongodb.retryAttempts")
 
-  lazy val notificationToken: String = config.get[String]("microservice.services.notification.bearer-token")
+  lazy val notificationToken: String = config.get[String]("microservice.services.notification.bearerToken")
+
+  lazy val eisToken: String = config.get[String]("microservice.services.eis.bearerToken")

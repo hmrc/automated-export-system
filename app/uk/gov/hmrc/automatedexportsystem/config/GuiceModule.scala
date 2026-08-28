@@ -43,7 +43,7 @@ class GuiceModule(
   @Named("eisBearerToken")
   @Singleton
   def eisBearerTokenProvider(servicesConfig: ServicesConfig): String =
-    servicesConfig.getString("microservice.services.eis.bearer-token")
+    servicesConfig.getString("microservice.services.eis.bearerToken")
 
   @Provides
   @Named("eisUrl")
@@ -61,5 +61,4 @@ class GuiceModule(
   @Singleton
   def clockProvider(): Clock =
     Clock.systemUTC()
-
 }
