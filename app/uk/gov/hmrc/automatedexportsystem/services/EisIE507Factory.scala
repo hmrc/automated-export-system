@@ -19,8 +19,8 @@ package uk.gov.hmrc.automatedexportsystem.services
 import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.AesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.IE507.eis.{EisIE507Body, EisIE507Header, EisIE507Message, MessageIdentification}
+import uk.gov.hmrc.automatedexportsystem.models.eis.{EisIE507Request, EisIE507RequestHeaders}
 import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
-import uk.gov.hmrc.automatedexportsystem.models.requests.{EisIE507Request, EisIE507RequestHeaders}
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 
 import java.time.*

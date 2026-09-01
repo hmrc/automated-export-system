@@ -21,6 +21,7 @@ import cats.syntax.option.*
 import cats.syntax.traverse.toTraverseOps
 import uk.gov.hmrc.automatedexportsystem.errors.XmlReaderError
 
+import java.time.Instant
 import java.util.UUID
 import scala.util.Try
 import scala.xml.NodeSeq
@@ -109,6 +110,20 @@ object XmlReader:
       Try(BigDecimal(text)).toOption
         .toValidNel(XmlReaderError.ParseError(path.toString, s"Failed to parse '$text' to BigDecimal"))
     }
+
+  given instantReader: XmlReader[Instant] =
+    stringReader.flatMapResult { (value, path) =>
+      Try(Instant.parse(value)).toOption
+        .toValidNel(
+          XmlReaderError
+            .ParseError(path.toString, s"Failed to parse '$value' to Instant")
+        )
+    }
+
+  given unitReader: XmlReader[Unit] =
+    (xml, path) =>
+      if xml.isEmpty then Validated.validNel(())
+      else Validated.invalidNel(XmlReaderError.ParseError(path.toString, "Expected empty XML"))
 
   given optionReader[T](using reader: XmlReader[T]): XmlReader[Option[T]] =
     (xml, path) =>

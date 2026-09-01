@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.requests
+package uk.gov.hmrc.automatedexportsystem.models.eis
 
 import play.api.http.MimeTypes
 import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
@@ -28,7 +28,18 @@ final case class EisIE507RequestHeaders(
   accept:         HttpHeader.Accept,
   authorization:  HttpHeader.Authorization,
   date:           HttpHeader.Date
-)
+):
+  def normalizedHeaders: Seq[(String, String)] =
+    Seq(
+      correlationId.normalized,
+      conversationId.normalized,
+      forwardedHost.normalized,
+      messageType.normalized,
+      contentType.normalized,
+      accept.normalized,
+      authorization.normalized,
+      date.normalized
+    )
 
 object EisIE507RequestHeaders:
   def apply(

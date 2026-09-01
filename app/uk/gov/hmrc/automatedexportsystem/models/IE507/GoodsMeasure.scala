@@ -29,7 +29,7 @@ object GoodsMeasure:
   given mongoFormat: Format[GoodsMeasure] = Json.format[GoodsMeasure]
 
   given goodsMeasureTag: XmlRootTag[GoodsMeasure] = XmlRootTag("GoodsMeasure")
-  
+
   given goodsMeasureXmlWriter: XmlWriter[GoodsMeasure] =
     (o, label) =>
       val children: NodeSeq =

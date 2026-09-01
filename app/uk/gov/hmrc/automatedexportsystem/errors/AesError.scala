@@ -102,3 +102,9 @@ enum ConnectorError(
     override val url:    String,
     status:              Int
   ) extends ConnectorError(s"Response status $status was not expected", method, url, BadGateway, None)
+
+  case UnexpectedError(
+    override val method: String,
+    override val url:    String,
+    ex:                  Throwable
+  ) extends ConnectorError(s"Unexpected error encountered while performing request", method, url, InternalServerError, Some(ex))

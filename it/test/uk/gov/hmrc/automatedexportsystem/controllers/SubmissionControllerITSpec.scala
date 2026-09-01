@@ -27,8 +27,8 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
 import play.api.{Application, inject}
-import test.uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
+import uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus

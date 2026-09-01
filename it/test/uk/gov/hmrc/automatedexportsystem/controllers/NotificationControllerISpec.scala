@@ -18,7 +18,7 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
-import test.uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
+import uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 
 import scala.xml.{Elem, XML as Xml}
 
