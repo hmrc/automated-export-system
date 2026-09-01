@@ -108,3 +108,8 @@ enum ConnectorError(
     override val url:    String,
     ex:                  Throwable
   ) extends ConnectorError(s"Unexpected error encountered while performing request", method, url, InternalServerError, Some(ex))
+
+enum EisServiceError(val message: String, val responseCode: ResponseCode) extends AesError:
+  val exception: Option[Throwable] = None
+
+  case SubmissionFailedError(override val message: String) extends EisServiceError(message, InternalServerError)

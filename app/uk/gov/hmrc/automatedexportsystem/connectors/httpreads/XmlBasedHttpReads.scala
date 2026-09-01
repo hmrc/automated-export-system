@@ -70,7 +70,11 @@ class XmlBasedHttpReads[E, S](connectorClass: Class[_]):
   ): Either[ConnectorError, T] =
     xml
       .as[T]
-      .leftMap(ConnectorError.ResponseBodyXmlReadError(method, url, _))
+      .leftMap(nel =>
+        logConnectorError(method, url, "response body XML could not be deserialized", exception = None)
+
+        ConnectorError.ResponseBodyXmlReadError(method, url, nel)
+      )
       .toEither
 
   private def responseBodyNotXmlError(

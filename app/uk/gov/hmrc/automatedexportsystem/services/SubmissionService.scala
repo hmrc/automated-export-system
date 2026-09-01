@@ -105,6 +105,7 @@ class SubmissionServiceImpl @Inject() (
     aesIE507Repository
       .submit(message.toMongoMessage(exportOperationType, eoriNumber))
       .map(created => if (created) SubmissionResult.Created else SubmissionResult.Updated)
+end SubmissionServiceImpl
 
 object SubmissionService:
   final class MongoErrorMapper private (val context: String, private val mappers: PartialFunction[MongoError, SubmissionServiceError])
