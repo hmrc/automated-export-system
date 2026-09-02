@@ -20,9 +20,10 @@ import cats.data.EitherT
 import uk.gov.hmrc.automatedexportsystem.errors.{AesErrorMapper, MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
-import uk.gov.hmrc.automatedexportsystem.models.mongo.{SubmissionResult, UpdateStatus}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
@@ -33,18 +34,19 @@ trait SubmissionService:
     message:             AesIE507Message,
     exportOperationType: ExportOperationType,
     eoriNumber:          EoriNumber
-  ): EitherT[Future, MongoError, SubmissionResult]
+  ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus]
 
   def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList]
 
   def getSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, Submission]
 
-  def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, UpdateStatus]
+  def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, SingleUpdateStatus]
 
 @Singleton
 class SubmissionServiceImpl @Inject() (
   aesIE507Repository: AesIE507Repository,
-  clock:              Clock
+  clock:              Clock,
+  idGenerator:        IdGenerator
 )(using ExecutionContext)
     extends SubmissionService:
   def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList] =
@@ -87,7 +89,7 @@ class SubmissionServiceImpl @Inject() (
         .apply
     )
 
-  def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, UpdateStatus] =
+  def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
     aesIE507Repository
       .cancel(eoriNumber, submissionId, Instant.now(clock))
       .leftMap(
@@ -101,10 +103,21 @@ class SubmissionServiceImpl @Inject() (
     message:             AesIE507Message,
     exportOperationType: ExportOperationType,
     eoriNumber:          EoriNumber
-  ): EitherT[Future, MongoError, SubmissionResult] =
+  ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
     aesIE507Repository
-      .submit(message.toMongoMessage(exportOperationType, eoriNumber))
-      .map(created => if (created) SubmissionResult.Created else SubmissionResult.Updated)
+      .submit(message.toMongoMessage(exportOperationType, eoriNumber, Instant.now(clock), idGenerator.generate))
+      .leftMap(me =>
+        val context: String =
+          Seq(
+            Some(s"EORI: ${eoriNumber.value}"),
+            message.submissionId.map(submissionId => s"submissionId: ${submissionId.value}")
+          ).flatten.mkString(", ")
+
+        SubmissionService
+          .MongoErrorMapper(context)
+          .withUpsertMongoError
+          .apply(me)
+      )
 end SubmissionServiceImpl
 
 object SubmissionService:
@@ -127,6 +140,14 @@ object SubmissionService:
         context,
         withMapperAfter { case _ =>
           SubmissionServiceError.SubmissionOperationFailure(s"Submission update failed. $context")
+        }
+      )
+
+    def withUpsertMongoError: MongoErrorMapper =
+      new MongoErrorMapper(
+        context,
+        withMapperAfter { case _ =>
+          SubmissionServiceError.SubmissionOperationFailure(s"Submission update/insert failed. $context")
         }
       )
 

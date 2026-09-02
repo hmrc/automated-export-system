@@ -57,13 +57,12 @@ class SubmissionController @Inject() (
     composed.async { request =>
       val aesIE507Message: AesIE507Message = request.message
 
-      submissionService.submitMessage(aesIE507Message, Awaiting, request.eori).value.map {
-        case Right(_) =>
-          Accepted
-
-        case Left(err) =>
-          InternalServerError(err.toString)
-      }
+      submissionService
+        .submitMessage(aesIE507Message, Awaiting, request.eori)
+        .fold(
+          error => error.toErrorResponse.toResult,
+          _ => Status(ResponseCode.Accepted.status)
+        )
     }
   }
 

@@ -33,7 +33,9 @@ case class AesIE507Message(
 ) extends Logging {
   def toMongoMessage(
     operationType: ExportOperationType,
-    eoriNumber:    EoriNumber
+    eoriNumber:    EoriNumber,
+    createdAt:     Instant,
+    uuid:          => UUID
   ): MongoAesIE507Message = {
     logger.info(
       s"Converting SubmissionRequest to MongoAesIE507Message with " +
@@ -41,12 +43,12 @@ case class AesIE507Message(
         s"eoriNumber: $eoriNumber, " +
         s"operationType: $operationType"
     )
-    val now = Instant.now()
+
     MongoAesIE507Message(
-      submissionId = submissionId.getOrElse(SubmissionId(UUID.randomUUID())),
+      submissionId = submissionId.getOrElse(SubmissionId(uuid)),
       eoriNumber = eoriNumber,
-      createdAt = now,
-      updatedAt = now,
+      createdAt = createdAt,
+      updatedAt = createdAt,
       exportOperation = exportOperation.copy(exportOperationType = operationType),
       customsOfficeOfExitActual = customsOfficeOfExitActual,
       goodsShipment = goodsShipment

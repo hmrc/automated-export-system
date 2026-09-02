@@ -16,7 +16,12 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.mongo
 
-enum UpdateStatus(val operation: String, val matchedCount: Long, val modifiedCount: Long):
-  case Updated(override val operation: String, override val matchedCount: Long, override val modifiedCount: Long)
-      extends UpdateStatus(operation, matchedCount, modifiedCount)
-  case AlreadyUpToDate(override val operation: String, override val matchedCount: Long) extends UpdateStatus(operation, matchedCount, 0)
+enum SingleUpdateStatus(
+  val operation:     String,
+  val matchedCount:  Long,
+  val modifiedCount: Long,
+  val isUpsert:      Boolean
+):
+  case Updated(override val operation: String) extends SingleUpdateStatus(operation, 1, 1, false)
+  case AlreadyUpToDate(override val operation: String) extends SingleUpdateStatus(operation, 1, 1, false)
+  case Upserted(override val operation: String) extends SingleUpdateStatus(operation, 0, 0, true)

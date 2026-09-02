@@ -31,7 +31,7 @@ import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
-import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
+import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.{AesIE507Repository, AesIE507RepositoryImpl}
@@ -926,7 +926,7 @@ class SubmissionControllerITSpec extends BaseISpec:
               .build()
 
             when(aesIE507Repository.cancel(EoriNumber(eori), SubmissionId(id1), instant))
-              .thenReturn(MongoError.WriteUnacknowledgedError.toEitherTLeft[UpdateStatus])
+              .thenReturn(MongoError.WriteUnacknowledgedError.toEitherTLeft[SingleUpdateStatus])
 
             val request: FakeRequest[AnyContentAsEmpty.type] =
               FakeRequest(Helpers.GET, s"/automated-export-system/cancel/$id1")

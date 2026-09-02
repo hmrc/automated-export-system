@@ -33,8 +33,8 @@ import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.*
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
-import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
-import uk.gov.hmrc.automatedexportsystem.models.mongo.{SubmissionResult, UpdateStatus}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
@@ -135,6 +135,21 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
         updatedAt = dateTime
       )
 
+    val aesIE507Message: AesIE507Message =
+      AesIE507Message(
+        submissionId = None,
+        exportOperation = ExportOperation(
+          exportOperationType = ExportOperationType.Standard,
+          mrn = Mrn("26GB0000X6524786A9"),
+          discrepanciesExist = DiscrepanciesExist(false),
+          splitIndicator = SplitIndicator(false)
+        ),
+        customsOfficeOfExitActual = CustomsOfficeOfExitActual(
+          referenceNumber = ReferenceNumber("GB000001")
+        ),
+        goodsShipment = None
+      )
+
     val aesIE507MessageValidXml: Elem =
       <aes:Submission xmlns:aes="http://ecs.dgtaxud.ec">
         <ExportOperation>
@@ -168,15 +183,20 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
           "when applied with a Request containing a valid XML body that passes IE507 request schema validation" in {
             val request: FakeRequest[NodeSeq] =
-              FakeRequest(Helpers.POST, "/dummy/path")
-                .withHeaders("content-type" -> "application/xml")
+              FakeRequest()
                 .withBody(TestData.aesIE507MessageValidXml)
 
             when(xmlValidationService.validate(TestData.aesIE507MessageValidXml))
               .thenReturn(EitherT(Future.successful(Right(()))))
 
-            when(submissionService.submitMessage(any(), any(), any()))
-              .thenReturn(EitherT(Future.successful(Right(SubmissionResult.Created))))
+            when(
+              submissionService.submitMessage(
+                TestData.aesIE507Message,
+                ExportOperationType.Awaiting,
+                TestData.eoriNumber
+              )
+            )
+              .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
 
             val result: Future[Result] = Helpers.call(submissionController.message, request)
 
@@ -217,6 +237,48 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
             Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
             Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(schemaNotFoundErrorResponseXml)
+          }
+
+          "when applied with a Request containing a valid XML body that passes IE507 request schema validation" - {
+
+            "due to an unexpected error encountered when upserting the submission" in {
+              val request: FakeRequest[NodeSeq] =
+                FakeRequest()
+                  .withBody(TestData.aesIE507MessageValidXml)
+
+              when(xmlValidationService.validate(TestData.aesIE507MessageValidXml))
+                .thenReturn(EitherT(Future.successful(Right(()))))
+
+              val error: SubmissionServiceError = SubmissionServiceError.SubmissionOperationFailure(
+                s"Submission update/insert failed. EORI: ${TestData.eoriNumber.value}, " +
+                  s"submissionId: ${TestData.submissionId.value.toString}"
+              )
+
+              when(
+                submissionService.submitMessage(
+                  TestData.aesIE507Message,
+                  ExportOperationType.Awaiting,
+                  TestData.eoriNumber
+                )
+              )
+                .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
+
+              val result: Future[Result] = Helpers.call(submissionController.message, request)
+
+              val submissionInsertFailureXml: Elem =
+                <errorResponse>
+                  <status>500</status>
+                  <code>INTERNAL_SERVER_ERROR</code>
+                  <message>{error.message}</message>
+                </errorResponse>
+
+              val resultContent: String = Helpers.contentAsString(result)
+              val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(Helpers.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionInsertFailureXml)
+            }
           }
         }
 
@@ -670,7 +732,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
               "and the submission is not cancelled yet" in {
                 when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
-                  .thenReturn(UpdateStatus.Updated("cancel", 1, 1).toEitherTRight[SubmissionServiceError])
+                  .thenReturn(SingleUpdateStatus.Updated("cancel").toEitherTRight[SubmissionServiceError])
 
                 val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
@@ -683,7 +745,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
               "and the submission is already cancelled" in {
                 when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
-                  .thenReturn(UpdateStatus.AlreadyUpToDate("cancel", 1).toEitherTRight[SubmissionServiceError])
+                  .thenReturn(SingleUpdateStatus.AlreadyUpToDate("cancel").toEitherTRight[SubmissionServiceError])
 
                 val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
@@ -704,7 +766,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               )
 
               when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
-                .thenReturn(error.toEitherTLeft[UpdateStatus])
+                .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
 
               val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
@@ -736,7 +798,7 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               )
 
               when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
-                .thenReturn(error.toEitherTLeft[UpdateStatus])
+                .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
 
               val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
