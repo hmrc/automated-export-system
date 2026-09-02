@@ -29,7 +29,6 @@ import scala.xml.NodeSeq
 
 final case class Submission(
   submissionId:              SubmissionId,
-  status:                    ExportOperationType,
   exportOperation:           ExportOperation,
   customsOfficeOfExitActual: CustomsOfficeOfExitActual,
   goodsShipment:             Option[GoodsShipment],
@@ -43,7 +42,6 @@ object Submission:
     (o, label) =>
       val children: NodeSeq =
         o.submissionId.toXml("submissionId")
-          ++ o.status.toXml("status")
           ++ o.exportOperation.toXmlRoot
           ++ o.customsOfficeOfExitActual.toXmlRoot
           ++ o.goodsShipment.toXmlRoot
@@ -54,7 +52,6 @@ object Submission:
   def fromMongoAesIE507Message(message: MongoAesIE507Message): Submission =
     Submission(
       submissionId = message.submissionId,
-      status = message.exportOperation.exportOperationType,
       exportOperation = message.exportOperation,
       customsOfficeOfExitActual = message.customsOfficeOfExitActual,
       goodsShipment = message.goodsShipment,
