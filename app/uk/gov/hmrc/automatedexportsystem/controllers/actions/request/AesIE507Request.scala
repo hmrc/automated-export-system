@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.mongo
+package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
-enum UpdateStatus(val operation: String, val matchedCount: Long, val modifiedCount: Long):
-  case Updated(override val operation: String, override val matchedCount: Long, override val modifiedCount: Long)
-      extends UpdateStatus(operation, matchedCount, modifiedCount)
-  case AlreadyUpToDate(override val operation: String, override val matchedCount: Long) extends UpdateStatus(operation, matchedCount, 0)
+import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.AesIE507Message
+
+final case class AesIE507Request[T](
+  message: AesIE507Message,
+  eori:    EoriNumber,
+  request: Request[T]
+) extends WrappedRequest(request)

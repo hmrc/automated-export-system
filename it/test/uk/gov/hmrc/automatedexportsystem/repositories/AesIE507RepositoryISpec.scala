@@ -18,13 +18,12 @@ package uk.gov.hmrc.automatedexportsystem.repositories
 
 import cats.data.NonEmptyList
 import org.mockito.Mockito.when
-import org.mongodb.scala.ObservableFuture
 import org.mongodb.scala.model.{Filters, Indexes}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
-import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.{EitherValues, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
@@ -32,7 +31,7 @@ import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
-import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
+import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
@@ -46,6 +45,7 @@ class AesIE507RepositoryISpec
     extends AnyFreeSpecLike,
       Matchers,
       EitherValues,
+      OptionValues,
       MockitoSugar,
       ScalaCheckDrivenPropertyChecks,
       MongoAesIE507MessageGenerator,
@@ -102,21 +102,55 @@ class AesIE507RepositoryISpec
         ).futureValue shouldBe Seq(message)
       }
 
-    "submit should upsert on same submissionId and keep one document" in
-      forAll { (message1: MongoAesIE507Message) =>
-        val message2 = message1.copy(updatedAt = message1.updatedAt.plusSeconds(30))
+    ".submit" - {
 
-        repository.submit(message1).value.futureValue shouldBe Right(true)
-        repository.submit(message2).value.futureValue shouldBe Right(true)
+      "should replace a document with the given submissionId" - {
 
-        val docs = repository.collection
-          .find(Filters.eq("submissionId", message1.submissionId.value.toString))
-          .toFuture()
-          .futureValue
+        "when there is a document in the collection with that submissionId" in {
+          val mongoAesIE507Message: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message]
+              .withSubmissionId(TestData.submissionId)
+              .sample
+              .value
 
-        docs.size shouldBe 1
-        docs.head shouldBe message2
+          val mongoAesIE507MessageReplacement: MongoAesIE507Message =
+            mongoAesIE507Message.copy(updatedAt = mongoAesIE507Message.updatedAt.plusMillis(1))
+
+          repository.collection.insertOne(mongoAesIE507Message).head().futureValue
+
+          val updateStatus: SingleUpdateStatus =
+            repository.submit(mongoAesIE507MessageReplacement).value.futureValue.value
+
+          updateStatus shouldBe SingleUpdateStatus.Updated("submitUpsert")
+
+          val result: Seq[MongoAesIE507Message] =
+            find(Filters.eq("submissionId", TestData.submissionId.value.toString)).futureValue
+
+          result shouldBe Seq(mongoAesIE507MessageReplacement)
+        }
       }
+
+      "should insert a document" - {
+
+        "when there is no document in the collection with that submissionId" in {
+          val mongoAesIE507Message: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message]
+              .withSubmissionId(TestData.submissionId)
+              .sample
+              .value
+
+          val updateStatus: SingleUpdateStatus =
+            repository.submit(mongoAesIE507Message).value.futureValue.value
+
+          updateStatus shouldBe SingleUpdateStatus.Upserted("submitUpsert")
+
+          val result: Seq[MongoAesIE507Message] =
+            find(Filters.eq("submissionId", TestData.submissionId.value.toString)).futureValue
+
+          result shouldBe Seq(mongoAesIE507Message)
+        }
+      }
+    }
 
     ".getMessages" - {
 
@@ -248,10 +282,13 @@ class AesIE507RepositoryISpec
         }
 
         "when there is a document in the collection with that id but different eori" in {
-          val mongoAesIE507MessagesDifferentEori: Seq[MongoAesIE507Message] =
-            Seq.fill(1)(arbitrary[MongoAesIE507Message].withSubmissionId(TestData.submissionId).sample).flatten
+          val mongoAesIE507MessageDifferentEori: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message]
+              .withSubmissionId(TestData.submissionId)
+              .sample
+              .value
 
-          repository.collection.insertMany(mongoAesIE507MessagesDifferentEori).head().futureValue
+          repository.collection.insertOne(mongoAesIE507MessageDifferentEori).head().futureValue
 
           val result: MongoError =
             repository.getMessage(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
@@ -298,10 +335,10 @@ class AesIE507RepositoryISpec
 
             repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-            val updateStatus: UpdateStatus =
+            val singleUpdateStatus: SingleUpdateStatus =
               repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.instant).value.futureValue.value
 
-            updateStatus shouldBe UpdateStatus.Updated("cancel", 1, 1)
+            singleUpdateStatus shouldBe SingleUpdateStatus.Updated("cancel")
 
             val result: Seq[MongoAesIE507Message] =
               find(
@@ -334,10 +371,10 @@ class AesIE507RepositoryISpec
 
             repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
-            val updateStatus: UpdateStatus =
+            val singleUpdateStatus: SingleUpdateStatus =
               repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.instant).value.futureValue.value
 
-            updateStatus shouldBe UpdateStatus.AlreadyUpToDate("cancel", 1)
+            singleUpdateStatus shouldBe SingleUpdateStatus.AlreadyUpToDate("cancel")
 
             val result: Seq[MongoAesIE507Message] =
               find(Filters.eq("submissionId", TestData.submissionId.value.toString)).futureValue

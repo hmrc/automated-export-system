@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.mongo
 
-sealed trait SubmissionResult
-
-object SubmissionResult {
-  case object Created extends SubmissionResult
-  case object Updated extends SubmissionResult
-  case object Awaiting extends SubmissionResult
-}
+enum SingleUpdateStatus(
+  val operation:     String,
+  val matchedCount:  Long,
+  val modifiedCount: Long,
+  val isUpsert:      Boolean
+):
+  case Updated(override val operation: String) extends SingleUpdateStatus(operation, 1, 1, false)
+  case AlreadyUpToDate(override val operation: String) extends SingleUpdateStatus(operation, 1, 1, false)
+  case Upserted(override val operation: String) extends SingleUpdateStatus(operation, 0, 0, true)

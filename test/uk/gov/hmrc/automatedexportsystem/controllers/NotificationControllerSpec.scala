@@ -63,7 +63,7 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
         .withXmlBody(validPayload)
 
       val result = controller.notification(request)
-      Helpers.status(result) shouldBe NO_CONTENT
+      Helpers.status(result) shouldBe Helpers.NO_CONTENT
     }
 
     "authorization header is invalid" in new Setup {
@@ -71,14 +71,14 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
         .withHeaders("Authorization" -> "invalid-token")
         .withXmlBody(validPayload)
       val result = controller.notification(request)
-      Helpers.status(result) shouldBe UNAUTHORIZED
+      Helpers.status(result) shouldBe Helpers.UNAUTHORIZED
     }
 
     "authorization header is valid and payload is missing" in new Setup {
       val request = fakeRequest
         .withHeaders("Authorization" -> "some-token")
       val result = controller.notification(request)
-      Helpers.status(result) shouldBe BAD_REQUEST
+      Helpers.status(result) shouldBe Helpers.BAD_REQUEST
     }
 
     "authorization header is valid and payload is invalid" in new Setup {
@@ -86,6 +86,6 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
         .withHeaders("Authorization" -> "some-token")
         .withXmlBody(invalidPayload)
       val result = controller.notification(request)
-      Helpers.status(result) shouldBe BAD_REQUEST
+      Helpers.status(result) shouldBe Helpers.BAD_REQUEST
     }
   }

@@ -21,14 +21,13 @@ import play.api.mvc.Result
 import play.api.mvc.Results.Status
 import uk.gov.hmrc.automatedexportsystem.controllers.writeables
 import uk.gov.hmrc.automatedexportsystem.errors.*
-import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.AesErrorResponseValidationError
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 import uk.gov.hmrc.automatedexportsystem.xml.{RootedXmlWriter, XmlRootTag, XmlWriter}
 
 import scala.xml.*
 
-final case class AesErrorResponse(status: Int, code: String, message: String, errors: Option[NonEmptyList[AesErrorResponseValidationError]]):
+final case class AesErrorResponse(status: Int, code: String, message: String, errors: Option[NonEmptyList[AesErrorResponseError]]):
   private def self: AesErrorResponse = this
 
   def toResult: Result =
@@ -49,24 +48,6 @@ object AesErrorResponse:
 
       XmlWriter.elem(label, children)
 
-  final case class AesErrorResponseValidationError(line: Int, column: Int, message: String)
-
-  object AesErrorResponseValidationError:
-    given aesErrorResponseValidationErrorTag: XmlRootTag[AesErrorResponseValidationError] =
-      XmlRootTag("error")
-
-    given aesErrorResponseValidationErrorXmlWriter: XmlWriter[AesErrorResponseValidationError] =
-      (o, label) =>
-        val children: NodeSeq =
-          o.line.toXml("line")
-            ++ o.column.toXml("column")
-            ++ o.message.toXml("message")
-
-        XmlWriter.elem(label, children)
-
-    def fromXmlSchemaValidationError(error: XmlSchemaValidationError): AesErrorResponseValidationError =
-      AesErrorResponseValidationError(error.line, error.column, error.message)
-
   def fromResponseCode(responseCode: ResponseCode, message: String): AesErrorResponse =
     fromStatusAndCode(responseCode.status, responseCode.code, message)
 
@@ -84,7 +65,57 @@ object AesErrorResponse:
             responseCode.status,
             responseCode.code,
             errorMessage,
-            Some(errors.map(AesErrorResponseValidationError.fromXmlSchemaValidationError))
+            Some(errors.map(AesErrorResponseXmlValidationError.fromXmlSchemaValidationError))
+          )
+        case XmlFailedReadError(errors) =>
+          AesErrorResponse(
+            responseCode.status,
+            responseCode.code,
+            errorMessage,
+            Some(errors.map(AesErrorResponseXmlReadError.fromXmlReaderError))
           )
         case _ => AesErrorResponse(responseCode.status, responseCode.code, errorMessage, None)
 end AesErrorResponse
+
+sealed trait AesErrorResponseError
+
+object AesErrorResponseError:
+  given aesErrorResponseErrorTag: XmlRootTag[AesErrorResponseError] = XmlRootTag("error")
+
+  given aesErrorResponseErrorXmlWriter: XmlWriter[AesErrorResponseError] =
+    (o, label) =>
+      o match
+        case e: AesErrorResponseXmlValidationError =>
+          AesErrorResponseXmlValidationError.aesErrorResponseValidationErrorXmlWriter
+            .write(e, label)
+        case e: AesErrorResponseXmlReadError =>
+          AesErrorResponseXmlReadError.aesErrorResponseXmlReadErrorXmlWriter.write(e, label)
+
+final case class AesErrorResponseXmlValidationError(line: Int, column: Int, message: String) extends AesErrorResponseError
+
+object AesErrorResponseXmlValidationError:
+  given aesErrorResponseValidationErrorXmlWriter: XmlWriter[AesErrorResponseXmlValidationError] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.line.toXml("line")
+          ++ o.column.toXml("column")
+          ++ o.message.toXml("message")
+
+      XmlWriter.elem(label, children)
+
+  def fromXmlSchemaValidationError(error: XmlSchemaValidationError): AesErrorResponseXmlValidationError =
+    AesErrorResponseXmlValidationError(error.line, error.column, error.message)
+
+final case class AesErrorResponseXmlReadError(path: String, message: String) extends AesErrorResponseError
+
+object AesErrorResponseXmlReadError:
+  given aesErrorResponseXmlReadErrorXmlWriter: XmlWriter[AesErrorResponseXmlReadError] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.path.toXml("path")
+          ++ o.message.toXml("message")
+
+      XmlWriter.elem(label, children)
+
+  def fromXmlReaderError(error: XmlReaderError): AesErrorResponseXmlReadError =
+    AesErrorResponseXmlReadError(error.path, error.message)

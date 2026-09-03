@@ -24,7 +24,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
 import play.api.mvc.{AnyContent, Result}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
 
@@ -51,8 +50,8 @@ class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuit
               <xml>valid xml</xml>
 
             val request: FakeRequest[AnyContent] =
-              FakeRequest(HttpVerbs.POST, "/dummy/path")
-                .withHeaders("Content-Type" -> s"${MimeTypes.XML}; charset=utf-8")
+              FakeRequest(Helpers.POST, "/dummy/path")
+                .withHeaders("Content-Type" -> s"${Helpers.XML}; charset=utf-8")
 
             val result: NodeSeq =
               xmlBodyParsers.utf8
@@ -72,7 +71,7 @@ class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuit
               <xml>valid xml</xml>
 
             val request: FakeRequest[AnyContent] =
-              FakeRequest(HttpVerbs.POST, "/dummy/path")
+              FakeRequest(Helpers.POST, "/dummy/path")
 
             val result: Future[Result] = xmlBodyParsers.utf8
               .apply(request)
@@ -89,8 +88,8 @@ class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuit
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.UNSUPPORTED_MEDIA_TYPE
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
 
@@ -99,8 +98,8 @@ class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuit
               <xml>valid xml</xml>
 
             val request: FakeRequest[AnyContent] =
-              FakeRequest(HttpVerbs.POST, "/dummy/path")
-                .withHeaders("Content-Type" -> s"${MimeTypes.XML}; charset=ascii")
+              FakeRequest(Helpers.POST, "/dummy/path")
+                .withHeaders("Content-Type" -> s"${Helpers.XML}; charset=ascii")
 
             val result: Future[Result] = xmlBodyParsers.utf8
               .apply(request)
@@ -117,15 +116,15 @@ class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuit
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.UNSUPPORTED_MEDIA_TYPE
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
 
           "when applied to a Request where the Content-Type is not xml" in {
             val request: FakeRequest[AnyContent] =
-              FakeRequest(HttpVerbs.POST, "/dummy/path")
-                .withHeaders("Content-Type" -> s"${MimeTypes.JSON}; charset=utf-8")
+              FakeRequest(Helpers.POST, "/dummy/path")
+                .withHeaders("Content-Type" -> s"${Helpers.JSON}; charset=utf-8")
 
             val result: Future[Result] = xmlBodyParsers.utf8.apply(request).run().map(_.left.value)
 
@@ -139,8 +138,8 @@ class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuit
             val resultContent: String = Helpers.contentAsString(result)
             val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
 
-            Helpers.status(result)      shouldBe StatusValues.UNSUPPORTED_MEDIA_TYPE
-            Helpers.contentType(result) shouldBe Some(MimeTypes.XML)
+            Helpers.status(result)      shouldBe Helpers.UNSUPPORTED_MEDIA_TYPE
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
             XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(errorResponseXml)
           }
         }

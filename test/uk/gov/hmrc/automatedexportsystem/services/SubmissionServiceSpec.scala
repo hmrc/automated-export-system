@@ -17,6 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.services
 
 import cats.data.{EitherT, NonEmptyList}
+import helpers.EitherTFutureOps.{toEitherTLeft, toEitherTRight}
 import org.mockito.Mockito.when
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
@@ -25,12 +26,13 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.automatedexportsystem.errors.{MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
-import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
-import uk.gov.hmrc.automatedexportsystem.models.mongo.UpdateStatus
+import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 
 import java.time.*
 import java.util.UUID
@@ -45,7 +47,9 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
   val clock: Clock = Clock.fixed(instant, ZoneOffset.UTC)
 
-  val submissionService: SubmissionService = SubmissionServiceImpl(aesIE507Repository, clock)
+  val idGenerator: IdGenerator = mock[IdGenerator]
+
+  val submissionService: SubmissionService = SubmissionServiceImpl(aesIE507Repository, clock, idGenerator)
 
   object TestData:
     val eoriNumber: EoriNumber = EoriNumber("eoriNumber")
@@ -57,12 +61,9 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
     val dateTime: LocalDateTime = LocalDateTime.parse("2026-08-12T00:00:00")
 
-    def mongoAesIE507Message(submissionId: SubmissionId, eoriNumber: EoriNumber): MongoAesIE507Message =
-      MongoAesIE507Message(
-        submissionId = submissionId,
-        eoriNumber = eoriNumber,
-        createdAt = instant,
-        updatedAt = instant,
+    val aesIE507Message: AesIE507Message =
+      AesIE507Message(
+        submissionId = Some(submissionId),
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -75,7 +76,25 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         goodsShipment = None
       )
 
-    def mongoAesIE507MessageSummary(submissionId: SubmissionId): MongoAesIE507MessageSummary =
+    val mongoAesIE507Message: MongoAesIE507Message =
+      MongoAesIE507Message(
+        submissionId = submissionId,
+        eoriNumber = eoriNumber,
+        createdAt = instant,
+        updatedAt = instant,
+        exportOperation = ExportOperation(
+          exportOperationType = ExportOperationType.Awaiting,
+          mrn = Mrn("mrn"),
+          discrepanciesExist = DiscrepanciesExist(true),
+          splitIndicator = SplitIndicator(true)
+        ),
+        customsOfficeOfExitActual = CustomsOfficeOfExitActual(
+          referenceNumber = ReferenceNumber("referenceNumber")
+        ),
+        goodsShipment = None
+      )
+
+    val mongoAesIE507MessageSummary: MongoAesIE507MessageSummary =
       MongoAesIE507MessageSummary(
         submissionId = submissionId,
         exportOperation = ExportOperation(
@@ -91,7 +110,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         updatedAt = instant
       )
 
-    def submissionSummary(submissionId: SubmissionId): SubmissionSummary =
+    val submissionSummary: SubmissionSummary =
       SubmissionSummary(
         submissionId = submissionId,
         mrn = Mrn("mrn"),
@@ -120,10 +139,10 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
         "when there are multiple submissions with the given EORI in the mongodb collection" in {
           val mongoAesIE507MessageSummaries: Seq[MongoAesIE507MessageSummary] =
-            Seq.fill(3)(TestData.mongoAesIE507MessageSummary(TestData.submissionId))
+            Seq.fill(3)(TestData.mongoAesIE507MessageSummary)
 
           val submissionSummaryList: List[SubmissionSummary] =
-            List.fill(3)(TestData.submissionSummary(TestData.submissionId))
+            List.fill(3)(TestData.submissionSummary)
 
           when(aesIE507Repository.getMessages(TestData.eoriNumber))
             .thenReturn(
@@ -170,8 +189,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
       "should return a single submission" - {
 
         "when one submission with the given EORI and submissionId is found in the mongodb collection" in {
-          val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
-            Seq(TestData.mongoAesIE507Message(TestData.submissionId, TestData.eoriNumber))
+          val mongoAesIE507Messages: Seq[MongoAesIE507Message] = Seq(TestData.mongoAesIE507Message)
 
           when(aesIE507Repository.getMessage(TestData.eoriNumber, TestData.submissionId))
             .thenReturn(EitherT(Future.successful(Right(mongoAesIE507Messages.head))))
@@ -219,6 +237,79 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
       }
     }
 
+    ".submitMessage" - {
+
+      "should insert a submission" - {
+
+        "when there is no submission with the given submissionId found in the mongodb collection" in {
+          when(aesIE507Repository.submit(TestData.mongoAesIE507Message))
+            .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
+
+          val result: SingleUpdateStatus =
+            submissionService
+              .submitMessage(
+                TestData.aesIE507Message,
+                ExportOperationType.Awaiting,
+                TestData.eoriNumber
+              )
+              .value
+              .futureValue
+              .value
+
+          result shouldBe SingleUpdateStatus.Upserted("submitUpsert")
+        }
+      }
+
+      "should replace a submission" - {
+
+        "when a submission with the given submissionId is found in the mongodb collection" in {
+          when(aesIE507Repository.submit(TestData.mongoAesIE507Message))
+            .thenReturn(SingleUpdateStatus.Updated("submitUpsert").toEitherTRight[MongoError])
+
+          val result: SingleUpdateStatus =
+            submissionService
+              .submitMessage(
+                TestData.aesIE507Message,
+                ExportOperationType.Awaiting,
+                TestData.eoriNumber
+              )
+              .value
+              .futureValue
+              .value
+
+          result shouldBe SingleUpdateStatus.Updated("submitUpsert")
+        }
+      }
+
+      "should return an error" - {
+
+        "when the upsert operation returns an unexpected error" in {
+          when(aesIE507Repository.submit(TestData.mongoAesIE507Message))
+            .thenReturn(MongoError.UnexpectedError(Exception()).toEitherTLeft[SingleUpdateStatus])
+
+          val error: SubmissionServiceError =
+            SubmissionServiceError.SubmissionOperationFailure(
+              s"Submission update/insert failed. EORI: ${TestData.eoriNumber.value}, " +
+                s"submissionId: ${TestData.submissionId.value.toString}"
+            )
+
+          val result: SubmissionServiceError =
+            submissionService
+              .submitMessage(
+                TestData.aesIE507Message,
+                ExportOperationType.Awaiting,
+                TestData.eoriNumber
+              )
+              .value
+              .futureValue
+              .left
+              .value
+
+          result shouldBe error
+        }
+      }
+    }
+
     ".cancelSubmission" - {
 
       "should cancel a submission" - {
@@ -227,22 +318,22 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
           "and the submission is not cancelled yet" in {
             when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
-              .thenReturn(EitherT(Future.successful(Right(UpdateStatus.Updated("cancel", 1, 1)))))
+              .thenReturn(EitherT(Future.successful(Right(SingleUpdateStatus.Updated("cancel")))))
 
-            val result: UpdateStatus =
+            val result: SingleUpdateStatus =
               submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
 
-            result shouldBe UpdateStatus.Updated("cancel", 1, 1)
+            result shouldBe SingleUpdateStatus.Updated("cancel")
           }
 
           "and the submission is already cancelled" in {
             when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
-              .thenReturn(EitherT(Future.successful(Right(UpdateStatus.AlreadyUpToDate("cancel", 1)))))
+              .thenReturn(EitherT(Future.successful(Right(SingleUpdateStatus.AlreadyUpToDate("cancel")))))
 
-            val result: UpdateStatus =
+            val result: SingleUpdateStatus =
               submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
 
-            result shouldBe UpdateStatus.AlreadyUpToDate("cancel", 1)
+            result shouldBe SingleUpdateStatus.AlreadyUpToDate("cancel")
           }
         }
       }

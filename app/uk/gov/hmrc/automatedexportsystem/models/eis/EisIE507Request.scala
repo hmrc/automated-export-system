@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.requests
+package uk.gov.hmrc.automatedexportsystem.models.eis
 
 import uk.gov.hmrc.automatedexportsystem.models.IE507.eis.EisIE507Message
 

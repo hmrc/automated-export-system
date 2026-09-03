@@ -28,3 +28,4 @@ enum ResponseCode(val status: Int, val code: String):
   case UnsupportedMediaType extends ResponseCode(UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_MEDIA_TYPE")
   case UnprocessableEntity extends ResponseCode(UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY")
   case InternalServerError extends ResponseCode(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")
+  case BadGateway extends ResponseCode(BAD_GATEWAY, "BAD_GATEWAY")

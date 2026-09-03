@@ -57,36 +57,44 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(1)),
                     containerIdentificationNumber = Some(ContainerIdentificationNumber("1")),
-                    numberOfSeals = Some(NumberOfSeals(1))
+                    numberOfSeals = Some(NumberOfSeals(1)),
+                    seal = Some(
+                      NonEmptyList.one(
+                        Seal(
+                          sequenceNumber = Some(SequenceNumber(1)),
+                          sealIdentifier = Some(SealIdentifier("sealIdentifier1"))
+                        )
+                      )
+                    ),
+                    goodsReference = Some(
+                      NonEmptyList.one(
+                        GoodsReference(
+                          sequenceNumber = Some(SequenceNumber(1)),
+                          declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1))
+                        )
+                      )
+                    )
                   ),
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(2)),
                     containerIdentificationNumber = Some(ContainerIdentificationNumber("2")),
-                    numberOfSeals = Some(NumberOfSeals(1))
-                  )
-                )
-              ),
-              seal = Some(
-                NonEmptyList.of(
-                  Seal(
-                    sequenceNumber = Some(SequenceNumber(1)),
-                    sealIdentifier = Some(SealIdentifier("sealIdentifier1"))
-                  ),
-                  Seal(
-                    sequenceNumber = Some(SequenceNumber(2)),
-                    sealIdentifier = Some(SealIdentifier("sealIdentifier2"))
-                  )
-                )
-              ),
-              goodsReference = Some(
-                NonEmptyList.of(
-                  GoodsReference(
-                    sequenceNumber = Some(SequenceNumber(1)),
-                    declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1))
-                  ),
-                  GoodsReference(
-                    sequenceNumber = Some(SequenceNumber(2)),
-                    declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(2))
+                    numberOfSeals = Some(NumberOfSeals(1)),
+                    seal = Some(
+                      NonEmptyList.one(
+                        Seal(
+                          sequenceNumber = Some(SequenceNumber(2)),
+                          sealIdentifier = Some(SealIdentifier("sealIdentifier2"))
+                        )
+                      )
+                    ),
+                    goodsReference = Some(
+                      NonEmptyList.one(
+                        GoodsReference(
+                          sequenceNumber = Some(SequenceNumber(2)),
+                          declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(2))
+                        )
+                      )
+                    )
                   )
                 )
               ),
@@ -124,8 +132,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 GoodsItem(
                   declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1)),
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
                   packaging = Some(
@@ -148,8 +158,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 GoodsItem(
                   declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(2)),
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   referenceNumberUcr = Some(ReferenceNumberUcr("referenceNumberUcr")),
                   packaging = Some(
@@ -200,36 +212,44 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                   TransportEquipment(
                     sequenceNumber = None,
                     containerIdentificationNumber = None,
-                    numberOfSeals = None
+                    numberOfSeals = None,
+                    seal = Some(
+                      NonEmptyList.one(
+                        Seal(
+                          sequenceNumber = None,
+                          sealIdentifier = None
+                        )
+                      )
+                    ),
+                    goodsReference = Some(
+                      NonEmptyList.one(
+                        GoodsReference(
+                          sequenceNumber = None,
+                          declarationGoodsItemNumber = None
+                        )
+                      )
+                    )
                   ),
                   TransportEquipment(
                     sequenceNumber = None,
                     containerIdentificationNumber = None,
-                    numberOfSeals = None
-                  )
-                )
-              ),
-              seal = Some(
-                NonEmptyList.of(
-                  Seal(
-                    sequenceNumber = None,
-                    sealIdentifier = None
-                  ),
-                  Seal(
-                    sequenceNumber = None,
-                    sealIdentifier = None
-                  )
-                )
-              ),
-              goodsReference = Some(
-                NonEmptyList.of(
-                  GoodsReference(
-                    sequenceNumber = None,
-                    declarationGoodsItemNumber = None
-                  ),
-                  GoodsReference(
-                    sequenceNumber = None,
-                    declarationGoodsItemNumber = None
+                    numberOfSeals = None,
+                    seal = Some(
+                      NonEmptyList.one(
+                        Seal(
+                          sequenceNumber = None,
+                          sealIdentifier = None
+                        )
+                      )
+                    ),
+                    goodsReference = Some(
+                      NonEmptyList.one(
+                        GoodsReference(
+                          sequenceNumber = None,
+                          declarationGoodsItemNumber = None
+                        )
+                      )
+                    )
                   )
                 )
               ),
@@ -267,8 +287,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 GoodsItem(
                   declarationGoodsItemNumber = None,
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   referenceNumberUcr = None,
                   packaging = Some(
@@ -291,8 +313,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 GoodsItem(
                   declarationGoodsItemNumber = None,
                   commodity = Commodity(
-                    grossMass = GrossMass(100.55),
-                    netMass = NetMass(80.45)
+                    goodsMeasure = GoodsMeasure(
+                      grossMass = GrossMass(100.55),
+                      netMass = NetMass(80.45)
+                    )
                   ),
                   referenceNumberUcr = None,
                   packaging = Some(
@@ -339,8 +363,6 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
               referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
               parentUcrId = None,
               transportEquipment = None,
-              seal = None,
-              goodsReference = None,
               locationOfGoods = LocationOfGoods(
                 typeOfLocation = TypeOfLocation("typeOfLocation"),
                 qualifierOfIdentification = QualifierOfIdentification("qualifierOfIdentification"),
@@ -401,28 +423,28 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                   <sequenceNumber>1</sequenceNumber>
                   <containerIdentificationNumber>1</containerIdentificationNumber>
                   <numberOfSeals>1</numberOfSeals>
+                  <Seal>
+                    <sequenceNumber>1</sequenceNumber>
+                    <identifier>sealIdentifier1</identifier>
+                  </Seal>
+                  <GoodsReference>
+                    <sequenceNumber>1</sequenceNumber>
+                    <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                  </GoodsReference>
                 </TransportEquipment>
                 <TransportEquipment>
                   <sequenceNumber>2</sequenceNumber>
                   <containerIdentificationNumber>2</containerIdentificationNumber>
                   <numberOfSeals>1</numberOfSeals>
+                  <Seal>
+                    <sequenceNumber>2</sequenceNumber>
+                    <identifier>sealIdentifier2</identifier>
+                  </Seal>
+                  <GoodsReference>
+                    <sequenceNumber>2</sequenceNumber>
+                    <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
+                  </GoodsReference>
                 </TransportEquipment>
-                <Seal>
-                  <sequenceNumber>1</sequenceNumber>
-                  <identifier>sealIdentifier1</identifier>
-                </Seal>
-                <Seal>
-                  <sequenceNumber>2</sequenceNumber>
-                  <identifier>sealIdentifier2</identifier>
-                </Seal>
-                <GoodsReference>
-                  <sequenceNumber>1</sequenceNumber>
-                  <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
-                </GoodsReference>
-                <GoodsReference>
-                  <sequenceNumber>2</sequenceNumber>
-                  <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
-                </GoodsReference>
                 <LocationOfGoods>
                   <typeOfLocation>typeOfLocation</typeOfLocation>
                   <qualifierOfIdentification>qualifierOfIdentification</qualifierOfIdentification>
@@ -450,8 +472,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
                 <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
                 <Commodity>
-                  <grossMass>100.55</grossMass>
-                  <netMass>80.45</netMass>
+                  <GoodsMeasure>
+                    <grossMass>100.55</grossMass>
+                    <netMass>80.45</netMass>
+                  </GoodsMeasure>
                 </Commodity>
                 <Packaging>
                   <sequenceNumber>1</sequenceNumber>
@@ -470,8 +494,10 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
                 <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
                 <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
                 <Commodity>
-                  <grossMass>100.55</grossMass>
-                  <netMass>80.45</netMass>
+                  <GoodsMeasure>
+                    <grossMass>100.55</grossMass>
+                    <netMass>80.45</netMass>
+                  </GoodsMeasure>
                 </Commodity>
                 <Packaging>
                   <sequenceNumber>3</sequenceNumber>
@@ -510,12 +536,14 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             <GoodsShipment>
               <Consignment>
                 <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
-                <TransportEquipment></TransportEquipment>
-                <TransportEquipment></TransportEquipment>
-                <Seal></Seal>
-                <Seal></Seal>
-                <GoodsReference></GoodsReference>
-                <GoodsReference></GoodsReference>
+                <TransportEquipment>
+                  <Seal></Seal>
+                  <GoodsReference></GoodsReference>
+                </TransportEquipment>
+                <TransportEquipment>
+                  <Seal></Seal>
+                  <GoodsReference></GoodsReference>
+                </TransportEquipment>
                 <LocationOfGoods>
                   <typeOfLocation>typeOfLocation</typeOfLocation>
                   <qualifierOfIdentification>qualifierOfIdentification</qualifierOfIdentification>
@@ -526,16 +554,20 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
               </Consignment>
               <GoodsItem>
                 <Commodity>
-                  <grossMass>100.55</grossMass>
-                  <netMass>80.45</netMass>
+                  <GoodsMeasure>
+                    <grossMass>100.55</grossMass>
+                    <netMass>80.45</netMass>
+                  </GoodsMeasure>
                 </Commodity>
                 <Packaging></Packaging>
                 <Packaging></Packaging>
               </GoodsItem>
               <GoodsItem>
                 <Commodity>
-                  <grossMass>100.55</grossMass>
-                  <netMass>80.45</netMass>
+                  <GoodsMeasure>
+                    <grossMass>100.55</grossMass>
+                    <netMass>80.45</netMass>
+                  </GoodsMeasure>
                 </Commodity>
                 <Packaging></Packaging>
                 <Packaging></Packaging>
