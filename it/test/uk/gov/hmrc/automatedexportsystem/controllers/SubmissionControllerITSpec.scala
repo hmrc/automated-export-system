@@ -17,24 +17,31 @@
 package uk.gov.hmrc.automatedexportsystem.controllers
 
 import cats.data.{EitherT, NonEmptyList}
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.MappingBuilder
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import helpers.EitherTFutureOps.toEitherTLeft
 import helpers.XmlOps
 import org.apache.pekko.util.ByteString
+import org.mockito.ArgumentMatchers.any as mAny
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.Filters
+import play.api.inject.Binding
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
 import play.api.{Application, inject}
-import uk.gov.hmrc.automatedexportsystem.errors.MongoError
+import uk.gov.hmrc.automatedexportsystem.connectors.EisConnector
+import uk.gov.hmrc.automatedexportsystem.errors.{ConnectorError, MongoError}
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, EisIE507Request}
+import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.{AesIE507Repository, AesIE507RepositoryImpl}
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.*
 import java.util.UUID
@@ -42,14 +49,21 @@ import scala.concurrent.Future
 import scala.xml.{Elem, NodeSeq}
 
 class SubmissionControllerITSpec extends BaseISpec:
-  val aesIE507Repository: AesIE507RepositoryImpl = app.injector.instanceOf[AesIE507RepositoryImpl]
+  trait Setup:
+    val eori:            String        = "GB123456789000"
+    val id1:             UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val id2:             UUID          = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
+    val instant:         Instant       = Instant.parse("2026-08-03T00:00:00.000Z")
+    val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
+    val correlationId:   String        = "correlationId"
+    val conversationId:  String        = "conversationId"
+    val rfc1123DateTime: String        = "Mon, 3 Aug 2026 00:00:00 GMT"
+    val bearerToken:     String        = "Bearer token"
 
-  override def beforeEach(): Unit =
-    super.beforeEach()
-    await(aesIE507Repository.collection.drop().head())
-
-  trait Setup {
-    val eori: String = "GB123456789000"
+    val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationId)
+    val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
+    val authorizationHeader:  HttpHeader.Authorization  = HttpHeader.Authorization(bearerToken)
+    val dateHeader:           HttpHeader.Date           = HttpHeader.Date(rfc1123DateTime)
 
     val authSuccessPayload: String =
       s"""{
@@ -66,14 +80,6 @@ class SubmissionControllerITSpec extends BaseISpec:
         |    }
         |  ]
         |}""".stripMargin
-
-    val id1: UUID = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
-
-    val id2: UUID = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
-
-    val instant: Instant = Instant.parse("2026-08-03T00:00:00.000Z")
-
-    val dateTime: LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
 
     val mongoAesIE507Message1: MongoAesIE507Message =
       MongoAesIE507Message(
@@ -101,23 +107,23 @@ class SubmissionControllerITSpec extends BaseISpec:
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(1)),
                     containerIdentificationNumber = Some(ContainerIdentificationNumber("1")),
-                    numberOfSeals = Some(NumberOfSeals(1))
-                  )
-                )
-              ),
-              seal = Some(
-                NonEmptyList.one(
-                  Seal(
-                    sequenceNumber = Some(SequenceNumber(1)),
-                    sealIdentifier = Some(SealIdentifier("sealIdentifier"))
-                  )
-                )
-              ),
-              goodsReference = Some(
-                NonEmptyList.one(
-                  GoodsReference(
-                    sequenceNumber = Some(SequenceNumber(1)),
-                    declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1))
+                    numberOfSeals = Some(NumberOfSeals(1)),
+                    seal = Some(
+                      NonEmptyList.one(
+                        Seal(
+                          sequenceNumber = Some(SequenceNumber(1)),
+                          sealIdentifier = Some(SealIdentifier("sealIdentifier"))
+                        )
+                      )
+                    ),
+                    goodsReference = Some(
+                      NonEmptyList.one(
+                        GoodsReference(
+                          sequenceNumber = Some(SequenceNumber(1)),
+                          declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1))
+                        )
+                      )
+                    )
                   )
                 )
               ),
@@ -181,12 +187,12 @@ class SubmissionControllerITSpec extends BaseISpec:
         updatedAt = instant,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Cancel,
-          mrn = Mrn("mrn"),
+          mrn = Mrn("26GB0000X6524786A9"),
           discrepanciesExist = DiscrepanciesExist(false),
           splitIndicator = SplitIndicator(true)
         ),
         customsOfficeOfExitActual = CustomsOfficeOfExitActual(
-          referenceNumber = ReferenceNumber("referenceNumber")
+          referenceNumber = ReferenceNumber("IEARK100")
         ),
         goodsShipment = None
       )
@@ -213,7 +219,295 @@ class SubmissionControllerITSpec extends BaseISpec:
 
     val submissionSummaryList: SubmissionSummaryList =
       SubmissionSummaryList(List(submissionSummary1, submissionSummary2))
-  }
+
+    val aesIE507MessageAllOptionalsXml: Elem =
+      <aes:Submission xmlns:aes="http://ecs.dgtaxud.ec">
+        <submissionId>{id1}</submissionId>
+        <ExportOperation>
+          <type>1</type>
+          <MRN>26GB0000X6524786A9</MRN>
+          <discrepanciesExist>1</discrepanciesExist>
+          <splitIndicator>0</splitIndicator>
+        </ExportOperation>
+        <CustomsOfficeOfExitActual>
+          <referenceNumber>IEARK100</referenceNumber>
+        </CustomsOfficeOfExitActual>
+        <GoodsShipment>
+          <Consignment>
+            <modeOfTransportAtTheBorder>1</modeOfTransportAtTheBorder>
+            <referenceNumberUCR>6GB536187624189-S458</referenceNumberUCR>
+            <parentUCRID>GB/ABC-12345</parentUCRID>
+            <TransportEquipment>
+              <sequenceNumber>1</sequenceNumber>
+              <containerIdentificationNumber>CONT1234567890123</containerIdentificationNumber>
+              <numberOfSeals>2</numberOfSeals>
+              <Seal>
+                <sequenceNumber>1</sequenceNumber>
+                <identifier>SEAL123</identifier>
+              </Seal>
+              <Seal>
+                <sequenceNumber>2</sequenceNumber>
+                <identifier>SEAL124</identifier>
+              </Seal>
+              <GoodsReference>
+                <sequenceNumber>1</sequenceNumber>
+                <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+              </GoodsReference>
+              <GoodsReference>
+                <sequenceNumber>2</sequenceNumber>
+                <declarationGoodsItemNumber>10</declarationGoodsItemNumber>
+              </GoodsReference>
+            </TransportEquipment>
+            <LocationOfGoods>
+              <typeOfLocation>A</typeOfLocation>
+              <qualifierOfIdentification>B</qualifierOfIdentification>
+              <authorisationNumber>AUTH12345</authorisationNumber>
+              <additionalIdentifier>AD01</additionalIdentifier>
+              <UNLocode>UNLOCODE123</UNLocode>
+            </LocationOfGoods>
+            <ActiveBorderTransportMeans>
+              <typeOfIdentification>20</typeOfIdentification>
+              <identificationNumber>IDNUMBER123</identificationNumber>
+              <nationality>GB</nationality>
+            </ActiveBorderTransportMeans>
+            <TransportDocument>
+              <sequenceNumber>1</sequenceNumber>
+              <type>2</type>
+              <referenceNumber>REF123</referenceNumber>
+            </TransportDocument>
+            <TransportDocument>
+              <sequenceNumber>2</sequenceNumber>
+              <type>2</type>
+              <referenceNumber>REF124</referenceNumber>
+            </TransportDocument>
+          </Consignment>
+          <GoodsItem>
+            <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
+            <referenceNumberUCR>4AA09AZ(-//)</referenceNumberUCR>
+            <Commodity>
+              <GoodsMeasure>
+                <grossMass>1000.500000</grossMass>
+                <netMass>900.500000</netMass>
+              </GoodsMeasure>
+            </Commodity>
+            <Packaging>
+              <sequenceNumber>1</sequenceNumber>
+              <typeOfPackages>PA</typeOfPackages>
+              <numberOfPackages>10</numberOfPackages>
+              <shippingMarks>MARKS123</shippingMarks>
+            </Packaging>
+            <Packaging>
+              <sequenceNumber>2</sequenceNumber>
+              <typeOfPackages>PA</typeOfPackages>
+              <numberOfPackages>10</numberOfPackages>
+              <shippingMarks>MARKS1234</shippingMarks>
+            </Packaging>
+          </GoodsItem>
+          <GoodsItem>
+            <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+            <Commodity>
+              <GoodsMeasure>
+                <grossMass>1000.500000</grossMass>
+                <netMass>900.500000</netMass>
+              </GoodsMeasure>
+            </Commodity>
+            <Packaging>
+              <sequenceNumber>1</sequenceNumber>
+              <typeOfPackages>PA</typeOfPackages>
+              <numberOfPackages>10</numberOfPackages>
+              <shippingMarks>MARKS123</shippingMarks>
+            </Packaging>
+            <Packaging>
+              <sequenceNumber>2</sequenceNumber>
+              <typeOfPackages>PA</typeOfPackages>
+              <numberOfPackages>10</numberOfPackages>
+              <shippingMarks>MARKS1234</shippingMarks>
+            </Packaging>
+          </GoodsItem>
+        </GoodsShipment>
+      </aes:Submission>
+    end aesIE507MessageAllOptionalsXml
+
+    val eisIE507MessageAllOptionalsXml: Elem =
+      <n:CC507C xmlns:n="http://ecs.dgtaxud.ec">
+        <Header>
+          <messageSender>{eori}</messageSender>
+          <messageRecipient>NECA.XI</messageRecipient>
+          <preparationDateAndTime>2026-08-03T00:00:00</preparationDateAndTime>
+          <messageIdentification>{correlationId}</messageIdentification>
+          <messageType>CC507C</messageType>
+        </Header>
+        <Body>
+          <ExportOperation>
+            <type>1</type>
+            <MRN>26GB0000X6524786A9</MRN>
+            <discrepanciesExist>1</discrepanciesExist>
+            <splitIndicator>0</splitIndicator>
+          </ExportOperation>
+          <CustomsOfficeOfExitActual>
+            <referenceNumber>IEARK100</referenceNumber>
+          </CustomsOfficeOfExitActual>
+          <GoodsShipment>
+            <Consignment>
+              <modeOfTransportAtTheBorder>1</modeOfTransportAtTheBorder>
+              <referenceNumberUCR>6GB536187624189-S458</referenceNumberUCR>
+              <parentUCRID>GB/ABC-12345</parentUCRID>
+              <TransportEquipment>
+                <sequenceNumber>1</sequenceNumber>
+                <containerIdentificationNumber>CONT1234567890123</containerIdentificationNumber>
+                <numberOfSeals>2</numberOfSeals>
+                <Seal>
+                  <sequenceNumber>1</sequenceNumber>
+                  <identifier>SEAL123</identifier>
+                </Seal>
+                <Seal>
+                  <sequenceNumber>2</sequenceNumber>
+                  <identifier>SEAL124</identifier>
+                </Seal>
+                <GoodsReference>
+                  <sequenceNumber>1</sequenceNumber>
+                  <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                </GoodsReference>
+                <GoodsReference>
+                  <sequenceNumber>2</sequenceNumber>
+                  <declarationGoodsItemNumber>10</declarationGoodsItemNumber>
+                </GoodsReference>
+              </TransportEquipment>
+              <LocationOfGoods>
+                <typeOfLocation>A</typeOfLocation>
+                <qualifierOfIdentification>B</qualifierOfIdentification>
+                <authorisationNumber>AUTH12345</authorisationNumber>
+                <additionalIdentifier>AD01</additionalIdentifier>
+                <UNLocode>UNLOCODE123</UNLocode>
+              </LocationOfGoods>
+              <ActiveBorderTransportMeans>
+                <typeOfIdentification>20</typeOfIdentification>
+                <identificationNumber>IDNUMBER123</identificationNumber>
+                <nationality>GB</nationality>
+              </ActiveBorderTransportMeans>
+              <TransportDocument>
+                <sequenceNumber>1</sequenceNumber>
+                <type>2</type>
+                <referenceNumber>REF123</referenceNumber>
+              </TransportDocument>
+              <TransportDocument>
+                <sequenceNumber>2</sequenceNumber>
+                <type>2</type>
+                <referenceNumber>REF124</referenceNumber>
+              </TransportDocument>
+            </Consignment>
+            <GoodsItem>
+              <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
+              <referenceNumberUCR>4AA09AZ(-//)</referenceNumberUCR>
+              <Commodity>
+                <GoodsMeasure>
+                  <grossMass>1000.500000</grossMass>
+                  <netMass>900.500000</netMass>
+                </GoodsMeasure>
+              </Commodity>
+              <Packaging>
+                <sequenceNumber>1</sequenceNumber>
+                <typeOfPackages>PA</typeOfPackages>
+                <numberOfPackages>10</numberOfPackages>
+                <shippingMarks>MARKS123</shippingMarks>
+              </Packaging>
+              <Packaging>
+                <sequenceNumber>2</sequenceNumber>
+                <typeOfPackages>PA</typeOfPackages>
+                <numberOfPackages>10</numberOfPackages>
+                <shippingMarks>MARKS1234</shippingMarks>
+              </Packaging>
+            </GoodsItem>
+            <GoodsItem>
+              <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+              <Commodity>
+                <GoodsMeasure>
+                  <grossMass>1000.500000</grossMass>
+                  <netMass>900.500000</netMass>
+                </GoodsMeasure>
+              </Commodity>
+              <Packaging>
+                <sequenceNumber>1</sequenceNumber>
+                <typeOfPackages>PA</typeOfPackages>
+                <numberOfPackages>10</numberOfPackages>
+                <shippingMarks>MARKS123</shippingMarks>
+              </Packaging>
+              <Packaging>
+                <sequenceNumber>2</sequenceNumber>
+                <typeOfPackages>PA</typeOfPackages>
+                <numberOfPackages>10</numberOfPackages>
+                <shippingMarks>MARKS1234</shippingMarks>
+              </Packaging>
+            </GoodsItem>
+          </GoodsShipment>
+        </Body>
+      </n:CC507C>
+    end eisIE507MessageAllOptionalsXml
+
+    val aesIE507MessageNoOptionalsXml: Elem =
+      <aes:Submission xmlns:aes="http://ecs.dgtaxud.ec">
+        <submissionId>{id2}</submissionId>
+        <ExportOperation>
+          <type>3</type>
+          <MRN>26GB0000X6524786A9</MRN>
+          <discrepanciesExist>0</discrepanciesExist>
+          <splitIndicator>1</splitIndicator>
+        </ExportOperation>
+        <CustomsOfficeOfExitActual>
+          <referenceNumber>IEARK100</referenceNumber>
+        </CustomsOfficeOfExitActual>
+      </aes:Submission>
+
+    val eisIE507MessageNoOptionalsXml: Elem =
+      <n:CC507C xmlns:n="http://ecs.dgtaxud.ec">
+        <Header>
+          <messageSender>{eori}</messageSender>
+          <messageRecipient>NECA.XI</messageRecipient>
+          <preparationDateAndTime>2026-08-03T00:00:00</preparationDateAndTime>
+          <messageIdentification>{correlationId}</messageIdentification>
+          <messageType>CC507C</messageType>
+        </Header>
+        <Body>
+          <ExportOperation>
+            <type>3</type>
+            <MRN>26GB0000X6524786A9</MRN>
+            <discrepanciesExist>0</discrepanciesExist>
+            <splitIndicator>1</splitIndicator>
+          </ExportOperation>
+          <CustomsOfficeOfExitActual>
+            <referenceNumber>IEARK100</referenceNumber>
+          </CustomsOfficeOfExitActual>
+        </Body>
+      </n:CC507C>
+
+    def eisPostRequestMappingBuilder(eisIE507MessageXml: Elem): MappingBuilder =
+      post(urlEqualTo("/cds/aesIE507Request/v1"))
+        .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId))
+        .withHeader(CustomHeaderNames.X_CONVERSATION_ID, equalTo(conversationId))
+        .withHeader(Helpers.X_FORWARDED_HOST, equalTo("automated-export-system"))
+        .withHeader(CustomHeaderNames.X_MESSAGE_TYPE, equalTo("aesIE507Request"))
+        .withHeader(Helpers.CONTENT_TYPE, equalTo(Helpers.XML))
+        .withHeader(Helpers.ACCEPT, equalTo(Helpers.XML))
+        .withHeader(Helpers.AUTHORIZATION, equalTo(bearerToken))
+        .withHeader(Helpers.DATE, equalTo(rfc1123DateTime))
+        .withRequestBody(equalToXml(eisIE507MessageXml.toString))
+  end Setup
+
+  object Setup extends Setup
+
+  override def config: Map[String, Any] =
+    super.config ++ Map("microservice.services.eis.bearerToken" -> Setup.bearerToken)
+
+  override def bindingOverrides: Seq[Binding[_]] =
+    super.bindingOverrides ++ Seq(
+      inject.bind[Clock].toInstance(Clock.fixed(Setup.instant, ZoneOffset.UTC))
+    )
+
+  val aesIE507Repository: AesIE507RepositoryImpl = app.injector.instanceOf[AesIE507RepositoryImpl]
+
+  override def beforeEach(): Unit =
+    super.beforeEach()
+    await(aesIE507Repository.collection.drop().head())
 
   "SubmissionController" - {
 
@@ -221,59 +515,205 @@ class SubmissionControllerITSpec extends BaseISpec:
 
       "and return a 202 response" - {
 
-        "when the request contains a valid AES IE507 XML body with all optional elements" in new Setup {
-          val requestXml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestValid.xml").value
+        "when the request contains a valid AES IE507 XML body with all optional elements" - {
 
-          stubFor(
-            post(urlEqualTo("/auth/authorise"))
-              .willReturn(
-                aResponse()
-                  .withStatus(200)
-                  .withHeader("Content-Type", "application/json")
-                  .withBody(authSuccessPayload)
-              )
-          )
+          "and the submission is successfully submitted to EIS" in new Setup {
+            val requestXml: Elem = aesIE507MessageAllOptionalsXml
 
-          val request: FakeRequest[NodeSeq] = FakeRequest(Helpers.POST, "/automated-export-system/message")
-            .withHeaders(
-              Helpers.AUTHORIZATION -> "Bearer valid-token-123",
-              "X-Session-ID"        -> "some-session-id"
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
             )
-            .withBody(requestXml)
 
-          val result: Future[Result] = Helpers.route(app, request).value
+            stubFor(
+              eisPostRequestMappingBuilder(eisIE507MessageAllOptionalsXml)
+                .willReturn(
+                  aResponse()
+                    .withStatus(Helpers.NO_CONTENT)
+                )
+            )
 
-          Helpers.status(result)         shouldBe Helpers.ACCEPTED
-          Helpers.contentType(result)    shouldBe None
-          Helpers.contentAsBytes(result) shouldBe ByteString.empty
+            val request: FakeRequest[NodeSeq] =
+              FakeRequest(Helpers.POST, "/automated-export-system/message")
+                .withHeaders(
+                  Helpers.AUTHORIZATION               -> "Bearer valid-token-123",
+                  CustomHeaderNames.X_CORRELATION_ID  -> correlationId,
+                  CustomHeaderNames.X_CONVERSATION_ID -> conversationId
+                )
+                .withBody(requestXml)
+
+            val result: Future[Result] = Helpers.route(app, request).value
+
+            Helpers.status(result)         shouldBe Helpers.ACCEPTED
+            Helpers.contentType(result)    shouldBe None
+            Helpers.contentAsBytes(result) shouldBe ByteString.empty
+          }
         }
 
-        "when the request contains an valid AES IE507 XML body without optional elements" in new Setup {
-          val requestXml: Elem = XmlOps.loadXmlFromPath("/testdata/aesIE507RequestValidNoOptionals.xml").value
+        "when the request contains an valid AES IE507 XML body without optional elements" - {
 
-          stubFor(
-            post(urlEqualTo("/auth/authorise"))
-              .willReturn(
-                aResponse()
-                  .withStatus(200)
-                  .withHeader("Content-Type", "application/json")
-                  .withBody(authSuccessPayload)
-              )
-          )
+          "and the submission is successfully submitted to EIS" in new Setup {
+            val requestXml: Elem = aesIE507MessageNoOptionalsXml
 
-          val request: FakeRequest[NodeSeq] = FakeRequest(Helpers.POST, "/automated-export-system/message")
-            .withHeaders(
-              Helpers.AUTHORIZATION -> "Bearer valid-token-123",
-              "X-Session-ID"        -> "some-session-id"
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
             )
-            .withBody(requestXml)
 
-          val result: Future[Result] = Helpers.route(app, request).value
+            stubFor(
+              eisPostRequestMappingBuilder(eisIE507MessageNoOptionalsXml)
+                .willReturn(
+                  aResponse()
+                    .withStatus(Helpers.NO_CONTENT)
+                )
+            )
 
-          Helpers.status(result)         shouldBe Helpers.ACCEPTED
-          Helpers.contentType(result)    shouldBe None
-          Helpers.contentAsBytes(result) shouldBe ByteString.empty
+            val request: FakeRequest[NodeSeq] =
+              FakeRequest(Helpers.POST, "/automated-export-system/message")
+                .withHeaders(
+                  Helpers.AUTHORIZATION               -> "Bearer valid-token-123",
+                  CustomHeaderNames.X_CORRELATION_ID  -> correlationId,
+                  CustomHeaderNames.X_CONVERSATION_ID -> conversationId
+                )
+                .withBody(requestXml)
+
+            val result: Future[Result] = Helpers.route(app, request).value
+
+            Helpers.status(result)         shouldBe Helpers.ACCEPTED
+            Helpers.contentType(result)    shouldBe None
+            Helpers.contentAsBytes(result) shouldBe ByteString.empty
+          }
         }
+      }
+
+      "and return a response with a status code specific to the EisErrorResponse received" - {
+
+        "when the request contains a valid AES IE507 XML body" - {
+
+          "and EIS returns a EisErrorResponse" - {
+
+            "with a 400 errorCode" in new Setup {
+              val requestXml: Elem = aesIE507MessageAllOptionalsXml
+
+              stubFor(
+                post(urlEqualTo("/auth/authorise"))
+                  .willReturn(
+                    aResponse()
+                      .withStatus(200)
+                      .withHeader("Content-Type", "application/json")
+                      .withBody(authSuccessPayload)
+                  )
+              )
+
+              val eisErrorResponseXml: Elem =
+                <errorDetail xmlns="http://www.hmrc.gsi.gov.uk/eis">
+                  <timestamp>{instant}</timestamp>
+                  <correlationId>{correlationId}</correlationId>
+                  <errorCode>{Helpers.BAD_REQUEST}</errorCode>
+                  <errorMessage>errorMessage</errorMessage>
+                  <source>source</source>
+                  <sourceFaultDetail>
+                    <detail>detail1</detail>
+                    <detail>detail2</detail>
+                    <detail>detail3</detail>
+                  </sourceFaultDetail>
+                </errorDetail>
+
+              stubFor(
+                eisPostRequestMappingBuilder(eisIE507MessageAllOptionalsXml)
+                  .willReturn(
+                    aResponse()
+                      .withStatus(Helpers.BAD_REQUEST)
+                      .withBody(eisErrorResponseXml.toString)
+                  )
+              )
+
+              val request: FakeRequest[NodeSeq] =
+                FakeRequest(Helpers.POST, "/automated-export-system/message")
+                  .withHeaders(
+                    Helpers.AUTHORIZATION               -> "Bearer valid-token-123",
+                    CustomHeaderNames.X_CORRELATION_ID  -> correlationId,
+                    CustomHeaderNames.X_CONVERSATION_ID -> conversationId
+                  )
+                  .withBody(requestXml)
+
+              val result: Future[Result] = Helpers.route(app, request).value
+
+              val resultContent: String = Helpers.contentAsString(result)
+              val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+              Helpers.contentType(result) shouldBe Some(Helpers.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(eisErrorResponseXml)
+            }
+
+            "with a 500 errorCode" in new Setup {
+              val requestXml: Elem = aesIE507MessageAllOptionalsXml
+
+              stubFor(
+                post(urlEqualTo("/auth/authorise"))
+                  .willReturn(
+                    aResponse()
+                      .withStatus(200)
+                      .withHeader("Content-Type", "application/json")
+                      .withBody(authSuccessPayload)
+                  )
+              )
+
+              val eisErrorResponseXml: Elem =
+                <errorDetail xmlns="http://www.hmrc.gsi.gov.uk/eis">
+                  <timestamp>{instant}</timestamp>
+                  <correlationId>{correlationId}</correlationId>
+                  <errorCode>{Helpers.INTERNAL_SERVER_ERROR}</errorCode>
+                  <errorMessage>errorMessage</errorMessage>
+                  <source>source</source>
+                  <sourceFaultDetail>
+                    <detail>detail1</detail>
+                    <detail>detail2</detail>
+                    <detail>detail3</detail>
+                  </sourceFaultDetail>
+                </errorDetail>
+
+              stubFor(
+                eisPostRequestMappingBuilder(eisIE507MessageAllOptionalsXml)
+                  .willReturn(
+                    aResponse()
+                      .withStatus(Helpers.INTERNAL_SERVER_ERROR)
+                      .withBody(eisErrorResponseXml.toString)
+                  )
+              )
+
+              val request: FakeRequest[NodeSeq] =
+                FakeRequest(Helpers.POST, "/automated-export-system/message")
+                  .withHeaders(
+                    Helpers.AUTHORIZATION               -> "Bearer valid-token-123",
+                    CustomHeaderNames.X_CORRELATION_ID  -> correlationId,
+                    CustomHeaderNames.X_CONVERSATION_ID -> conversationId
+                  )
+                  .withBody(requestXml)
+
+              val result: Future[Result] = Helpers.route(app, request).value
+
+              val resultContent: String = Helpers.contentAsString(result)
+              val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(Helpers.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(eisErrorResponseXml)
+            }
+          }
+        }
+
       }
 
       "and return a 400 response" - {
@@ -436,6 +876,138 @@ class SubmissionControllerITSpec extends BaseISpec:
           }
         }
       }
+
+      "and return a 500 response" - {
+
+        "when the request contains a valid XML body that passes AES IE507 request schema validation" - {
+
+          "due to an unexpected error encountered when upserting the submission" in new Setup {
+            val requestXml: Elem = aesIE507MessageNoOptionalsXml
+
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
+            )
+
+            val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
+
+            when(
+              aesIE507Repository.submit(
+                mongoAesIE507Message2.copy(exportOperation =
+                  mongoAesIE507Message2.exportOperation.copy(exportOperationType = ExportOperationType.Awaiting)
+                )
+              )
+            )
+              .thenReturn(
+                MongoError
+                  .UnexpectedError(
+                    Exception("Unexpected error")
+                  )
+                  .toEitherTLeft[SingleUpdateStatus]
+              )
+
+            val errorMessage: String =
+              s"Submission update/insert failed. EORI: $eori, submissionId: $id2"
+
+            val app: Application =
+              guiceApplicationBuilder
+                .overrides(inject.bind[AesIE507Repository].toInstance(aesIE507Repository))
+                .build()
+
+            val submissionEisSubmitFailureXml: Elem =
+              <errorResponse>
+                <status>500</status>
+                <code>INTERNAL_SERVER_ERROR</code>
+                <message>{errorMessage}</message>
+              </errorResponse>
+
+            val request: FakeRequest[NodeSeq] =
+              FakeRequest(Helpers.POST, "/automated-export-system/message")
+                .withHeaders(
+                  Helpers.AUTHORIZATION               -> "Bearer valid-token-123",
+                  CustomHeaderNames.X_CORRELATION_ID  -> correlationId,
+                  CustomHeaderNames.X_CONVERSATION_ID -> conversationId
+                )
+                .withBody(requestXml)
+
+            Helpers.running(app) {
+              val result:        Future[Result] = Helpers.route(app, request).value
+              val resultContent: String         = Helpers.contentAsString(result)
+              val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(Helpers.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionEisSubmitFailureXml)
+            }
+          }
+
+          "due to an unexpected error encountered when submitting the message to EIS" in new Setup {
+            val requestXml: Elem = aesIE507MessageNoOptionalsXml
+
+            stubFor(
+              post(urlEqualTo("/auth/authorise"))
+                .willReturn(
+                  aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(authSuccessPayload)
+                )
+            )
+
+            val eisConnector: EisConnector = mock[EisConnector]
+
+            when(eisConnector.submitMessage(mAny[EisIE507Request])(using mAny[HeaderCarrier]))
+              .thenReturn(
+                ConnectorError
+                  .UnexpectedError(
+                    Helpers.POST,
+                    "http://localhost:6001/cds/aesIE507Request/v1",
+                    Exception("Unexpected error")
+                  )
+                  .toEitherTLeft[Either[EisErrorResponse, Unit]]
+              )
+
+            val errorMessage: String =
+              s"Failed to submit IE507 message to EIS. EORI: $eori, submissionId: $id2"
+
+            val app: Application =
+              guiceApplicationBuilder
+                .overrides(inject.bind[EisConnector].toInstance(eisConnector))
+                .build()
+
+            val submissionEisSubmitFailureXml: Elem =
+              <errorResponse>
+                <status>500</status>
+                <code>INTERNAL_SERVER_ERROR</code>
+                <message>{errorMessage}</message>
+              </errorResponse>
+
+            val request: FakeRequest[NodeSeq] =
+              FakeRequest(Helpers.POST, "/automated-export-system/message")
+                .withHeaders(
+                  Helpers.AUTHORIZATION               -> "Bearer valid-token-123",
+                  CustomHeaderNames.X_CORRELATION_ID  -> correlationId,
+                  CustomHeaderNames.X_CONVERSATION_ID -> conversationId
+                )
+                .withBody(requestXml)
+
+            Helpers.running(app) {
+              val result:        Future[Result] = Helpers.route(app, request).value
+              val resultContent: String         = Helpers.contentAsString(result)
+              val resultXml:     Elem           = XmlOps.loadXmlFromString(resultContent).value
+
+              Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+              Helpers.contentType(result) shouldBe Some(Helpers.XML)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionEisSubmitFailureXml)
+            }
+          }
+        }
+      }
     }
 
     "should handle an incoming GET request to the /submissions endpoint" - {
@@ -467,9 +1039,7 @@ class SubmissionControllerITSpec extends BaseISpec:
             val submissionSummaryListXml: Elem =
               <Submissions>
                 <Submission>
-                  <submissionId>
-                    {id1}
-                  </submissionId>
+                  <submissionId>6fb33641-6dc7-4a4f-adef-06238c13a317</submissionId>
                   <mrn>mrn</mrn>
                   <ducr>referenceNumberUcr</ducr>
                   <officeOfExitCode>referenceNumber</officeOfExitCode>
@@ -477,11 +1047,9 @@ class SubmissionControllerITSpec extends BaseISpec:
                   <status>1</status>
                 </Submission>
                 <Submission>
-                  <submissionId>
-                    {id2}
-                  </submissionId>
-                  <mrn>mrn</mrn>
-                  <officeOfExitCode>referenceNumber</officeOfExitCode>
+                  <submissionId>4b10d823-4585-4f1e-bea5-d4bbe4605d6e</submissionId>
+                  <mrn>26GB0000X6524786A9</mrn>
+                  <officeOfExitCode>IEARK100</officeOfExitCode>
                   <updatedAt>2026-08-03T00:00:00</updatedAt>
                   <status>3</status>
                 </Submission>
@@ -627,15 +1195,15 @@ class SubmissionControllerITSpec extends BaseISpec:
                       <sequenceNumber>1</sequenceNumber>
                       <containerIdentificationNumber>1</containerIdentificationNumber>
                       <numberOfSeals>1</numberOfSeals>
+                      <Seal>
+                        <sequenceNumber>1</sequenceNumber>
+                        <identifier>sealIdentifier</identifier>
+                      </Seal>
+                      <GoodsReference>
+                        <sequenceNumber>1</sequenceNumber>
+                        <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                      </GoodsReference>
                     </TransportEquipment>
-                    <Seal>
-                      <sequenceNumber>1</sequenceNumber>
-                      <identifier>sealIdentifier</identifier>
-                    </Seal>
-                    <GoodsReference>
-                      <sequenceNumber>1</sequenceNumber>
-                      <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
-                    </GoodsReference>
                     <LocationOfGoods>
                       <typeOfLocation>typeOfLocation</typeOfLocation>
                       <qualifierOfIdentification>qualifierOfIdentification</qualifierOfIdentification>
@@ -821,8 +1389,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                     .head()
                 )
 
-              cancelledMessage.exportOperation.exportOperationType                shouldBe ExportOperationType.Cancel
-              cancelledMessage.updatedAt.isAfter(mongoAesIE507Message1.updatedAt) shouldBe true
+              cancelledMessage.exportOperation.exportOperationType shouldBe ExportOperationType.Cancel
             }
 
             "and the submission is already cancelled" in new Setup {
@@ -920,8 +1487,7 @@ class SubmissionControllerITSpec extends BaseISpec:
 
             val app: Application = guiceApplicationBuilder
               .overrides(
-                inject.bind[AesIE507Repository].toInstance(aesIE507Repository),
-                inject.bind[Clock].toInstance(Clock.fixed(instant, ZoneOffset.UTC))
+                inject.bind[AesIE507Repository].toInstance(aesIE507Repository)
               )
               .build()
 

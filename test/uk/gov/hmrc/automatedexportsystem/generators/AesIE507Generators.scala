@@ -106,15 +106,6 @@ trait AesIE507Generators extends BaseGenerators:
       arbitrary[Int].map(NumberOfSeals.apply)
     }
 
-  given transportEquipmentArb: Arbitrary[TransportEquipment] =
-    Arbitrary {
-      for
-        sequenceNumber                <- arbitrary[Option[SequenceNumber]]
-        containerIdentificationNumber <- arbitrary[Option[ContainerIdentificationNumber]]
-        numberOfSeals                 <- arbitrary[Option[NumberOfSeals]]
-      yield TransportEquipment(sequenceNumber, containerIdentificationNumber, numberOfSeals)
-    }
-
   given sealIdentifierArb: Arbitrary[SealIdentifier] =
     Arbitrary {
       Gen.asciiStr.map(SealIdentifier.apply)
@@ -139,6 +130,23 @@ trait AesIE507Generators extends BaseGenerators:
         sequenceNumber             <- arbitrary[Option[SequenceNumber]]
         declarationGoodsItemNumber <- arbitrary[Option[DeclarationGoodsItemNumber]]
       yield GoodsReference(sequenceNumber, declarationGoodsItemNumber)
+    }
+
+  given transportEquipmentArb: Arbitrary[TransportEquipment] =
+    Arbitrary {
+      for
+        sequenceNumber                <- arbitrary[Option[SequenceNumber]]
+        containerIdentificationNumber <- arbitrary[Option[ContainerIdentificationNumber]]
+        numberOfSeals                 <- arbitrary[Option[NumberOfSeals]]
+        seal                          <- arbitrary[Option[NonEmptyList[Seal]]]
+        goodsReference                <- arbitrary[Option[NonEmptyList[GoodsReference]]]
+      yield TransportEquipment(
+        sequenceNumber,
+        containerIdentificationNumber,
+        numberOfSeals,
+        seal,
+        goodsReference
+      )
     }
 
   given typeOfLocationArb: Arbitrary[TypeOfLocation] =
@@ -222,8 +230,6 @@ trait AesIE507Generators extends BaseGenerators:
         referenceNumberUCR         <- arbitrary[ReferenceNumberUcr]
         parentUcrId                <- arbitrary[Option[ParentUcrId]]
         transportEquipment         <- arbitrary[Option[NonEmptyList[TransportEquipment]]]
-        seal                       <- arbitrary[Option[NonEmptyList[Seal]]]
-        goodsReference             <- arbitrary[Option[NonEmptyList[GoodsReference]]]
         locationOfGoods            <- arbitrary[LocationOfGoods]
         activeBorderTransportMeans <- arbitrary[Option[ActiveBorderTransportMeans]]
         transportDocument          <- arbitrary[Option[NonEmptyList[TransportDocument]]]
@@ -232,8 +238,6 @@ trait AesIE507Generators extends BaseGenerators:
         referenceNumberUCR,
         parentUcrId,
         transportEquipment,
-        seal,
-        goodsReference,
         locationOfGoods,
         activeBorderTransportMeans,
         transportDocument

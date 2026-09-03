@@ -20,9 +20,8 @@ import cats.data.{EitherT, NonEmptyList}
 import helpers.EitherTFutureOps.{toEitherTLeft, toEitherTRight}
 import helpers.XmlOps
 import org.apache.pekko.util.ByteString
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
-import org.scalatest.EitherValues
 import play.api.mvc.*
 import play.api.test.Helpers.writeableOf_AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
@@ -34,17 +33,20 @@ import uk.gov.hmrc.automatedexportsystem.errors.*
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, SourceFaultDetail}
+import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
-import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, SubmissionService}
+import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
+import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.LocalDateTime
+import java.time.{Instant, LocalDateTime}
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
 
-class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
+class SubmissionControllerSpec extends BaseSpec, AllMocks:
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents(executionContext = ec)
 
   val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
@@ -71,6 +73,8 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
   val submissionService: SubmissionService = mock[SubmissionService]
 
+  val eisService: EisService = mock[EisService]
+
   val submissionController: SubmissionController =
     SubmissionController(
       controllerComponents,
@@ -80,17 +84,21 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
       xmlValidationActionRefiner,
       aesIE507ActionRefiner,
       xmlBodyParsers,
-      submissionService
+      submissionService,
+      eisService
     )
 
   object TestData:
-    val id: UUID = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val instant:        Instant       = Instant.parse("2026-08-03T00:00:00Z")
+    val id:             UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val submissionId:   SubmissionId  = SubmissionId(id)
+    val eoriNumber:     EoriNumber    = EoriNumber("GB123456789000")
+    val dateTime:       LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
+    val correlationId:  String        = "correlationId"
+    val conversationId: String        = "conversationId"
 
-    val submissionId: SubmissionId = SubmissionId(id)
-
-    val eoriNumber: EoriNumber = EoriNumber("GB123456789000")
-
-    val dateTime: LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
+    val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationId)
+    val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
 
     val submissionSummary1: SubmissionSummary =
       SubmissionSummary(
@@ -171,6 +179,18 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
           <splitIndicator>-1</splitIndicator>
         </ExportOperation>
       </aes:Submission>
+
+    def eisErrorResponse(status: Int): EisErrorResponse =
+      EisErrorResponse(
+        timestamp = instant,
+        correlationId = correlationId,
+        errorCode = status,
+        errorMessage = "errorMessage",
+        source = "source",
+        sourceFaultDetail = SourceFaultDetail(
+          details = Seq("detail1", "detail2", "detail3")
+        )
+      )
   end TestData
 
   "SubmissionController" - {
@@ -181,28 +201,155 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
 
         "that returns a 202 Result" - {
 
-          "when applied with a Request containing a valid XML body that passes IE507 request schema validation" in {
-            val request: FakeRequest[NodeSeq] =
-              FakeRequest()
-                .withBody(TestData.aesIE507MessageValidXml)
+          "when applied with a Request containing a valid XML body that passes IE507 request schema validation" - {
 
-            when(xmlValidationService.validate(TestData.aesIE507MessageValidXml))
-              .thenReturn(EitherT(Future.successful(Right(()))))
+            "and the submission is successfully submitted to EIS" in {
+              val request: FakeRequest[NodeSeq] =
+                FakeRequest()
+                  .withBody(TestData.aesIE507MessageValidXml)
 
-            when(
-              submissionService.submitMessage(
-                TestData.aesIE507Message,
-                ExportOperationType.Awaiting,
-                TestData.eoriNumber
+              when(xmlValidationService.validate(TestData.aesIE507MessageValidXml))
+                .thenReturn(EitherT(Future.successful(Right(()))))
+
+              when(
+                submissionService.submitMessage(
+                  TestData.aesIE507Message,
+                  ExportOperationType.Awaiting,
+                  TestData.eoriNumber
+                )
               )
-            )
-              .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
+                .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
 
-            val result: Future[Result] = Helpers.call(submissionController.message, request)
+              when(
+                eisService.submitMessage(
+                  eqTo(TestData.aesIE507Message),
+                  EoriNumber(eqTo(TestData.eoriNumber.value)),
+                  eqTo(None),
+                  eqTo(None)
+                )(using any())
+              ).thenReturn(Right(()).toEitherTRight[EisServiceError])
 
-            Helpers.status(result)         shouldBe Helpers.ACCEPTED
-            Helpers.contentType(result)    shouldBe None
-            Helpers.contentAsBytes(result) shouldBe ByteString.empty
+              val result: Future[Result] = Helpers.call(submissionController.message, request)
+
+              Helpers.status(result)         shouldBe Helpers.ACCEPTED
+              Helpers.contentType(result)    shouldBe None
+              Helpers.contentAsBytes(result) shouldBe ByteString.empty
+            }
+          }
+        }
+
+        "that returns a Result with a status code specific to the EisErrorResponse received" - {
+
+          "when applied with a Request containing a valid XML body that passes IE507 request schema validation" - {
+
+            "and EIS returns a EisErrorResponse" - {
+
+              "with a 500 errorCode" in {
+                val request: FakeRequest[NodeSeq] =
+                  FakeRequest()
+                    .withBody(TestData.aesIE507MessageValidXml)
+
+                when(xmlValidationService.validate(TestData.aesIE507MessageValidXml))
+                  .thenReturn(EitherT(Future.successful(Right(()))))
+
+                when(
+                  submissionService.submitMessage(
+                    TestData.aesIE507Message,
+                    ExportOperationType.Awaiting,
+                    TestData.eoriNumber
+                  )
+                )
+                  .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
+
+                when(
+                  eisService.submitMessage(
+                    eqTo(TestData.aesIE507Message),
+                    EoriNumber(eqTo(TestData.eoriNumber.value)),
+                    eqTo(None),
+                    eqTo(None)
+                  )(using any())
+                ).thenReturn(
+                  Left(TestData.eisErrorResponse(Helpers.INTERNAL_SERVER_ERROR))
+                    .toEitherTRight[EisService]
+                )
+
+                val result: Future[Result] = Helpers.call(submissionController.message, request)
+
+                val eisErrorResponseXml: Elem =
+                  <errorDetail xmlns="http://www.hmrc.gsi.gov.uk/eis">
+                    <timestamp>{TestData.instant}</timestamp>
+                    <correlationId>{TestData.correlationId}</correlationId>
+                    <errorCode>{Helpers.INTERNAL_SERVER_ERROR}</errorCode>
+                    <errorMessage>errorMessage</errorMessage>
+                    <source>source</source>
+                    <sourceFaultDetail>
+                      <detail>detail1</detail>
+                      <detail>detail2</detail>
+                      <detail>detail3</detail>
+                    </sourceFaultDetail>
+                  </errorDetail>
+
+                val resultContent: String = Helpers.contentAsString(result)
+                val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+                Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+                Helpers.contentType(result) shouldBe Some(Helpers.XML)
+                XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(eisErrorResponseXml)
+              }
+
+              "with a 400 errorCode" in {
+                val request: FakeRequest[NodeSeq] =
+                  FakeRequest()
+                    .withBody(TestData.aesIE507MessageValidXml)
+
+                when(xmlValidationService.validate(TestData.aesIE507MessageValidXml))
+                  .thenReturn(EitherT(Future.successful(Right(()))))
+
+                when(
+                  submissionService.submitMessage(
+                    TestData.aesIE507Message,
+                    ExportOperationType.Awaiting,
+                    TestData.eoriNumber
+                  )
+                )
+                  .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
+
+                when(
+                  eisService.submitMessage(
+                    eqTo(TestData.aesIE507Message),
+                    EoriNumber(eqTo(TestData.eoriNumber.value)),
+                    eqTo(None),
+                    eqTo(None)
+                  )(using any())
+                ).thenReturn(
+                  Left(TestData.eisErrorResponse(Helpers.BAD_REQUEST))
+                    .toEitherTRight[EisService]
+                )
+
+                val result: Future[Result] = Helpers.call(submissionController.message, request)
+
+                val eisErrorResponseXml: Elem =
+                  <errorDetail xmlns="http://www.hmrc.gsi.gov.uk/eis">
+                    <timestamp>{TestData.instant}</timestamp>
+                    <correlationId>{TestData.correlationId}</correlationId>
+                    <errorCode>{Helpers.BAD_REQUEST}</errorCode>
+                    <errorMessage>errorMessage</errorMessage>
+                    <source>source</source>
+                    <sourceFaultDetail>
+                      <detail>detail1</detail>
+                      <detail>detail2</detail>
+                      <detail>detail3</detail>
+                    </sourceFaultDetail>
+                  </errorDetail>
+
+                val resultContent: String = Helpers.contentAsString(result)
+                val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+                Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+                Helpers.contentType(result) shouldBe Some(Helpers.XML)
+                XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(eisErrorResponseXml)
+              }
+            }
           }
         }
 
@@ -279,6 +426,56 @@ class SubmissionControllerSpec extends BaseSpec, EitherValues, AllMocks:
               Helpers.contentType(result) shouldBe Some(Helpers.XML)
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionInsertFailureXml)
             }
+          }
+
+          "due to an unexpected error encountered when submitting the message to EIS" in {
+            val request: FakeRequest[NodeSeq] =
+              FakeRequest()
+                .withBody(TestData.aesIE507MessageValidXml)
+
+            when(xmlValidationService.validate(TestData.aesIE507MessageValidXml))
+              .thenReturn(EitherT(Future.successful(Right(()))))
+
+            when(
+              submissionService.submitMessage(
+                TestData.aesIE507Message,
+                ExportOperationType.Awaiting,
+                TestData.eoriNumber
+              )
+            )
+              .thenReturn(
+                SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[SubmissionServiceError]
+              )
+
+            val error: EisServiceError = EisServiceError.SubmissionFailedError(
+              s"Failed to submit IE507 message to EIS. EORI: ${TestData.eoriNumber.value}, " +
+                s"submissionId: ${TestData.submissionId.value.toString}"
+            )
+
+            when(
+              eisService.submitMessage(
+                eqTo(TestData.aesIE507Message),
+                EoriNumber(eqTo(TestData.eoriNumber.value)),
+                eqTo(None),
+                eqTo(None)
+              )(using any[HeaderCarrier])
+            ).thenReturn(error.toEitherTLeft[Either[EisErrorResponse, Unit]])
+
+            val result: Future[Result] = Helpers.call(submissionController.message, request)
+
+            val submissionEisSubmitFailureXml: Elem =
+              <errorResponse>
+                <status>500</status>
+                <code>INTERNAL_SERVER_ERROR</code>
+                <message>{error.message}</message>
+              </errorResponse>
+
+            val resultContent: String = Helpers.contentAsString(result)
+            val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+            Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+            Helpers.contentType(result) shouldBe Some(Helpers.XML)
+            XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionEisSubmitFailureXml)
           }
         }
 

@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
-import cats.implicits.catsSyntaxTuple3Semigroupal
+import cats.data.NonEmptyList
+import cats.implicits.catsSyntaxTuple5Semigroupal
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
 
@@ -26,10 +28,14 @@ import scala.xml.NodeSeq
 final case class TransportEquipment(
   sequenceNumber:                Option[SequenceNumber],
   containerIdentificationNumber: Option[ContainerIdentificationNumber],
-  numberOfSeals:                 Option[NumberOfSeals]
+  numberOfSeals:                 Option[NumberOfSeals],
+  seal:                          Option[NonEmptyList[Seal]],
+  goodsReference:                Option[NonEmptyList[GoodsReference]]
 )
 
 object TransportEquipment:
+  import uk.gov.hmrc.automatedexportsystem.models.formats.NonEmptyListFormat.nonEmptyListFormat
+
   given mongoFormat: Format[TransportEquipment] = Json.format[TransportEquipment]
 
   given transportEquipmentTag: XmlRootTag[TransportEquipment] = XmlRootTag("TransportEquipment")
@@ -40,6 +46,8 @@ object TransportEquipment:
         o.sequenceNumber.toXml("sequenceNumber")
           ++ o.containerIdentificationNumber.toXml("containerIdentificationNumber")
           ++ o.numberOfSeals.toXml("numberOfSeals")
+          ++ o.seal.toXmlRoot
+          ++ o.goodsReference.toXmlRoot
 
       XmlWriter.elem(label, children)
 
@@ -48,6 +56,8 @@ object TransportEquipment:
       (
         (XmlPath \ "sequenceNumber").read[Option[SequenceNumber]](xml, path),
         (XmlPath \ "containerIdentificationNumber").read[Option[ContainerIdentificationNumber]](xml, path),
-        (XmlPath \ "numberOfSeals").read[Option[NumberOfSeals]](xml, path)
+        (XmlPath \ "numberOfSeals").read[Option[NumberOfSeals]](xml, path),
+        XmlPath.readRoot[Option[NonEmptyList[Seal]]](xml, path),
+        XmlPath.readRoot[Option[NonEmptyList[GoodsReference]]](xml, path)
       ).mapN(TransportEquipment.apply)
     }

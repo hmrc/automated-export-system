@@ -58,28 +58,28 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
                 <sequenceNumber>1</sequenceNumber>
                 <containerIdentificationNumber>1</containerIdentificationNumber>
                 <numberOfSeals>1</numberOfSeals>
+                <Seal>
+                  <sequenceNumber>1</sequenceNumber>
+                  <identifier>sealIdentifier1</identifier>
+                </Seal>
+                <GoodsReference>
+                  <sequenceNumber>1</sequenceNumber>
+                  <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                </GoodsReference>
               </TransportEquipment>
               <TransportEquipment>
                 <sequenceNumber>2</sequenceNumber>
                 <containerIdentificationNumber>2</containerIdentificationNumber>
                 <numberOfSeals>1</numberOfSeals>
+                <Seal>
+                  <sequenceNumber>2</sequenceNumber>
+                  <identifier>sealIdentifier2</identifier>
+                </Seal>
+                <GoodsReference>
+                  <sequenceNumber>2</sequenceNumber>
+                  <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
+                </GoodsReference>
               </TransportEquipment>
-              <Seal>
-                <sequenceNumber>1</sequenceNumber>
-                <identifier>sealIdentifier1</identifier>
-              </Seal>
-              <Seal>
-                <sequenceNumber>2</sequenceNumber>
-                <identifier>sealIdentifier2</identifier>
-              </Seal>
-              <GoodsReference>
-                <sequenceNumber>1</sequenceNumber>
-                <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
-              </GoodsReference>
-              <GoodsReference>
-                <sequenceNumber>2</sequenceNumber>
-                <declarationGoodsItemNumber>2</declarationGoodsItemNumber>
-              </GoodsReference>
               <LocationOfGoods>
                 <typeOfLocation>typeOfLocation</typeOfLocation>
                 <qualifierOfIdentification>qualifierOfIdentification</qualifierOfIdentification>
@@ -165,12 +165,14 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
           <GoodsShipment>
             <Consignment>
               <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
-              <TransportEquipment></TransportEquipment>
-              <TransportEquipment></TransportEquipment>
-              <Seal></Seal>
-              <Seal></Seal>
-              <GoodsReference></GoodsReference>
-              <GoodsReference></GoodsReference>
+              <TransportEquipment>
+                <Seal></Seal>
+                <GoodsReference></GoodsReference>
+              </TransportEquipment>
+              <TransportEquipment>
+                <Seal></Seal>
+                <GoodsReference></GoodsReference>
+              </TransportEquipment>
               <LocationOfGoods>
                 <typeOfLocation>typeOfLocation</typeOfLocation>
                 <qualifierOfIdentification>qualifierOfIdentification</qualifierOfIdentification>
@@ -296,28 +298,28 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
                 <sequenceNumber>one</sequenceNumber>
                 <containerIdentificationNumber>one</containerIdentificationNumber>
                 <numberOfSeals>one</numberOfSeals>
+                <Seal>
+                  <sequenceNumber>two</sequenceNumber>
+                  <identifier>sealIdentifier1</identifier>
+                </Seal>
+                <GoodsReference>
+                  <sequenceNumber>one</sequenceNumber>
+                  <declarationGoodsItemNumber>one</declarationGoodsItemNumber>
+                </GoodsReference>
               </TransportEquipment>
               <TransportEquipment>
                 <sequenceNumber>two</sequenceNumber>
                 <containerIdentificationNumber>two</containerIdentificationNumber>
                 <numberOfSeals>one</numberOfSeals>
+                <Seal>
+                  <sequenceNumber>two</sequenceNumber>
+                  <identifier>sealIdentifier2</identifier>
+                </Seal>
+                <GoodsReference>
+                  <sequenceNumber>two</sequenceNumber>
+                  <declarationGoodsItemNumber>two</declarationGoodsItemNumber>
+                </GoodsReference>
               </TransportEquipment>
-              <Seal>
-                <sequenceNumber>two</sequenceNumber>
-                <identifier>sealIdentifier1</identifier>
-              </Seal>
-              <Seal>
-                <sequenceNumber>two</sequenceNumber>
-                <identifier>sealIdentifier2</identifier>
-              </Seal>
-              <GoodsReference>
-                <sequenceNumber>one</sequenceNumber>
-                <declarationGoodsItemNumber>one</declarationGoodsItemNumber>
-              </GoodsReference>
-              <GoodsReference>
-                <sequenceNumber>two</sequenceNumber>
-                <declarationGoodsItemNumber>two</declarationGoodsItemNumber>
-              </GoodsReference>
               <LocationOfGoods>
                 <typeOfLocation>typeOfLocation</typeOfLocation>
                 <qualifierOfIdentification>qualifierOfIdentification</qualifierOfIdentification>
@@ -419,36 +421,44 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
                       TransportEquipment(
                         sequenceNumber = Some(SequenceNumber(1)),
                         containerIdentificationNumber = Some(ContainerIdentificationNumber("1")),
-                        numberOfSeals = Some(NumberOfSeals(1))
+                        numberOfSeals = Some(NumberOfSeals(1)),
+                        seal = Some(
+                          NonEmptyList.one(
+                            Seal(
+                              sequenceNumber = Some(SequenceNumber(1)),
+                              sealIdentifier = Some(SealIdentifier("sealIdentifier1"))
+                            )
+                          )
+                        ),
+                        goodsReference = Some(
+                          NonEmptyList.one(
+                            GoodsReference(
+                              sequenceNumber = Some(SequenceNumber(1)),
+                              declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1))
+                            )
+                          )
+                        )
                       ),
                       TransportEquipment(
                         sequenceNumber = Some(SequenceNumber(2)),
                         containerIdentificationNumber = Some(ContainerIdentificationNumber("2")),
-                        numberOfSeals = Some(NumberOfSeals(1))
-                      )
-                    )
-                  ),
-                  seal = Some(
-                    NonEmptyList.of(
-                      Seal(
-                        sequenceNumber = Some(SequenceNumber(1)),
-                        sealIdentifier = Some(SealIdentifier("sealIdentifier1"))
-                      ),
-                      Seal(
-                        sequenceNumber = Some(SequenceNumber(2)),
-                        sealIdentifier = Some(SealIdentifier("sealIdentifier2"))
-                      )
-                    )
-                  ),
-                  goodsReference = Some(
-                    NonEmptyList.of(
-                      GoodsReference(
-                        sequenceNumber = Some(SequenceNumber(1)),
-                        declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1))
-                      ),
-                      GoodsReference(
-                        sequenceNumber = Some(SequenceNumber(2)),
-                        declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(2))
+                        numberOfSeals = Some(NumberOfSeals(1)),
+                        seal = Some(
+                          NonEmptyList.one(
+                            Seal(
+                              sequenceNumber = Some(SequenceNumber(2)),
+                              sealIdentifier = Some(SealIdentifier("sealIdentifier2"))
+                            )
+                          )
+                        ),
+                        goodsReference = Some(
+                          NonEmptyList.one(
+                            GoodsReference(
+                              sequenceNumber = Some(SequenceNumber(2)),
+                              declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(2))
+                            )
+                          )
+                        )
                       )
                     )
                   ),
@@ -569,36 +579,44 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
                       TransportEquipment(
                         sequenceNumber = None,
                         containerIdentificationNumber = None,
-                        numberOfSeals = None
+                        numberOfSeals = None,
+                        seal = Some(
+                          NonEmptyList.one(
+                            Seal(
+                              sequenceNumber = None,
+                              sealIdentifier = None
+                            )
+                          )
+                        ),
+                        goodsReference = Some(
+                          NonEmptyList.one(
+                            GoodsReference(
+                              sequenceNumber = None,
+                              declarationGoodsItemNumber = None
+                            )
+                          )
+                        )
                       ),
                       TransportEquipment(
                         sequenceNumber = None,
                         containerIdentificationNumber = None,
-                        numberOfSeals = None
-                      )
-                    )
-                  ),
-                  seal = Some(
-                    NonEmptyList.of(
-                      Seal(
-                        sequenceNumber = None,
-                        sealIdentifier = None
-                      ),
-                      Seal(
-                        sequenceNumber = None,
-                        sealIdentifier = None
-                      )
-                    )
-                  ),
-                  goodsReference = Some(
-                    NonEmptyList.of(
-                      GoodsReference(
-                        sequenceNumber = None,
-                        declarationGoodsItemNumber = None
-                      ),
-                      GoodsReference(
-                        sequenceNumber = None,
-                        declarationGoodsItemNumber = None
+                        numberOfSeals = None,
+                        seal = Some(
+                          NonEmptyList.one(
+                            Seal(
+                              sequenceNumber = None,
+                              sealIdentifier = None
+                            )
+                          )
+                        ),
+                        goodsReference = Some(
+                          NonEmptyList.one(
+                            GoodsReference(
+                              sequenceNumber = None,
+                              declarationGoodsItemNumber = None
+                            )
+                          )
+                        )
                       )
                     )
                   ),
@@ -718,8 +736,6 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
                   referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
                   parentUcrId = None,
                   transportEquipment = None,
-                  seal = None,
-                  goodsReference = None,
                   locationOfGoods = LocationOfGoods(
                     typeOfLocation = TypeOfLocation("typeOfLocation"),
                     qualifierOfIdentification = QualifierOfIdentification("qualifierOfIdentification"),
@@ -831,14 +847,22 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
             XmlReaderError.ParseError("/GoodsShipment/Consignment/modeOfTransportAtTheBorder", "Failed to parse 'two' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportEquipment/[0]/sequenceNumber", "Failed to parse 'one' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportEquipment/[0]/numberOfSeals", "Failed to parse 'one' to Int"),
+            XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportEquipment/[0]/Seal/[0]/sequenceNumber", "Failed to parse 'two' to Int"),
+            XmlReaderError
+              .ParseError("/GoodsShipment/Consignment/TransportEquipment/[0]/GoodsReference/[0]/sequenceNumber", "Failed to parse 'one' to Int"),
+            XmlReaderError.ParseError(
+              "/GoodsShipment/Consignment/TransportEquipment/[0]/GoodsReference/[0]/declarationGoodsItemNumber",
+              "Failed to parse 'one' to Int"
+            ),
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportEquipment/[1]/sequenceNumber", "Failed to parse 'two' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportEquipment/[1]/numberOfSeals", "Failed to parse 'one' to Int"),
-            XmlReaderError.ParseError("/GoodsShipment/Consignment/Seal/[0]/sequenceNumber", "Failed to parse 'two' to Int"),
-            XmlReaderError.ParseError("/GoodsShipment/Consignment/Seal/[1]/sequenceNumber", "Failed to parse 'two' to Int"),
-            XmlReaderError.ParseError("/GoodsShipment/Consignment/GoodsReference/[0]/sequenceNumber", "Failed to parse 'one' to Int"),
-            XmlReaderError.ParseError("/GoodsShipment/Consignment/GoodsReference/[0]/declarationGoodsItemNumber", "Failed to parse 'one' to Int"),
-            XmlReaderError.ParseError("/GoodsShipment/Consignment/GoodsReference/[1]/sequenceNumber", "Failed to parse 'two' to Int"),
-            XmlReaderError.ParseError("/GoodsShipment/Consignment/GoodsReference/[1]/declarationGoodsItemNumber", "Failed to parse 'two' to Int"),
+            XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportEquipment/[1]/Seal/[0]/sequenceNumber", "Failed to parse 'two' to Int"),
+            XmlReaderError
+              .ParseError("/GoodsShipment/Consignment/TransportEquipment/[1]/GoodsReference/[0]/sequenceNumber", "Failed to parse 'two' to Int"),
+            XmlReaderError.ParseError(
+              "/GoodsShipment/Consignment/TransportEquipment/[1]/GoodsReference/[0]/declarationGoodsItemNumber",
+              "Failed to parse 'two' to Int"
+            ),
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportDocument/[0]/sequenceNumber", "Failed to parse 'one' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportDocument/[0]/type", "Failed to parse 'one' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportDocument/[1]/sequenceNumber", "Failed to parse 'two' to Int"),

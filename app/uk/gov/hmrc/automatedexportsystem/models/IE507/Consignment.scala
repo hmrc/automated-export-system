@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507
 
 import cats.data.NonEmptyList
-import cats.implicits.catsSyntaxTuple9Semigroupal
+import cats.implicits.catsSyntaxTuple7Semigroupal
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
@@ -30,8 +30,6 @@ final case class Consignment(
   referenceNumberUCR:         ReferenceNumberUcr,
   parentUcrId:                Option[ParentUcrId],
   transportEquipment:         Option[NonEmptyList[TransportEquipment]],
-  seal:                       Option[NonEmptyList[Seal]],
-  goodsReference:             Option[NonEmptyList[GoodsReference]],
   locationOfGoods:            LocationOfGoods,
   activeBorderTransportMeans: Option[ActiveBorderTransportMeans],
   transportDocument:          Option[NonEmptyList[TransportDocument]]
@@ -51,8 +49,6 @@ object Consignment:
           ++ o.referenceNumberUCR.toXml("referenceNumberUCR")
           ++ o.parentUcrId.toXml("parentUCRID")
           ++ o.transportEquipment.toXmlRoot
-          ++ o.seal.toXmlRoot
-          ++ o.goodsReference.toXmlRoot
           ++ o.locationOfGoods.toXmlRoot
           ++ o.activeBorderTransportMeans.toXmlRoot
           ++ o.transportDocument.toXmlRoot
@@ -66,8 +62,6 @@ object Consignment:
         (XmlPath \ "referenceNumberUCR").read[ReferenceNumberUcr](xml, path),
         (XmlPath \ "parentUCRID").read[Option[ParentUcrId]](xml, path),
         XmlPath.readRoot[Option[NonEmptyList[TransportEquipment]]](xml, path),
-        XmlPath.readRoot[Option[NonEmptyList[Seal]]](xml, path),
-        XmlPath.readRoot[Option[NonEmptyList[GoodsReference]]](xml, path),
         XmlPath.readRoot[LocationOfGoods](xml, path),
         XmlPath.readRoot[Option[ActiveBorderTransportMeans]](xml, path),
         XmlPath.readRoot[Option[NonEmptyList[TransportDocument]]](xml, path)

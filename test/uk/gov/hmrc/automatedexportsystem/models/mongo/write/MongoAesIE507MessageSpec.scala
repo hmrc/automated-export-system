@@ -61,23 +61,23 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
                   TransportEquipment(
                     sequenceNumber = Some(SequenceNumber(1)),
                     containerIdentificationNumber = Some(ContainerIdentificationNumber("some-number")),
-                    numberOfSeals = Some(NumberOfSeals(1))
-                  )
-                )
-              ),
-              seal = Some(
-                NonEmptyList.one(
-                  Seal(
-                    sequenceNumber = Some(SequenceNumber(1)),
-                    sealIdentifier = Some(SealIdentifier("sealIdentifier"))
-                  )
-                )
-              ),
-              goodsReference = Some(
-                NonEmptyList.one(
-                  GoodsReference(
-                    sequenceNumber = Some(SequenceNumber(1)),
-                    declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1))
+                    numberOfSeals = Some(NumberOfSeals(1)),
+                    seal = Some(
+                      NonEmptyList.one(
+                        Seal(
+                          sequenceNumber = Some(SequenceNumber(1)),
+                          sealIdentifier = Some(SealIdentifier("sealIdentifier"))
+                        )
+                      )
+                    ),
+                    goodsReference = Some(
+                      NonEmptyList.one(
+                        GoodsReference(
+                          sequenceNumber = Some(SequenceNumber(1)),
+                          declarationGoodsItemNumber = Some(DeclarationGoodsItemNumber(1))
+                        )
+                      )
+                    )
                   )
                 )
               ),
@@ -165,15 +165,15 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |      "transportEquipment" : [ {
           |        "sequenceNumber" : 1,
           |        "containerIdentificationNumber" : "some-number",
-          |        "numberOfSeals" : 1
-          |      } ],
-          |      "seal" : [ {
-          |        "sequenceNumber" : 1,
-          |        "sealIdentifier" : "sealIdentifier"
-          |      } ],
-          |      "goodsReference" : [ {
-          |        "sequenceNumber" : 1,
-          |        "declarationGoodsItemNumber" : 1
+          |        "numberOfSeals" : 1,
+          |        "seal" : [ {
+          |          "sequenceNumber" : 1,
+          |          "sealIdentifier" : "sealIdentifier"
+          |        } ],
+          |        "goodsReference" : [ {
+          |          "sequenceNumber" : 1,
+          |          "declarationGoodsItemNumber" : 1
+          |        } ]
           |      } ],
           |      "locationOfGoods" : {
           |        "typeOfLocation" : "typeOfLocation",
@@ -283,23 +283,23 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
                   TransportEquipment(
                     sequenceNumber = None,
                     containerIdentificationNumber = None,
-                    numberOfSeals = None
-                  )
-                )
-              ),
-              seal = Some(
-                NonEmptyList.one(
-                  Seal(
-                    sequenceNumber = None,
-                    sealIdentifier = None
-                  )
-                )
-              ),
-              goodsReference = Some(
-                NonEmptyList.one(
-                  GoodsReference(
-                    sequenceNumber = None,
-                    declarationGoodsItemNumber = None
+                    numberOfSeals = None,
+                    seal = Some(
+                      NonEmptyList.one(
+                        Seal(
+                          sequenceNumber = None,
+                          sealIdentifier = None
+                        )
+                      )
+                    ),
+                    goodsReference = Some(
+                      NonEmptyList.one(
+                        GoodsReference(
+                          sequenceNumber = None,
+                          declarationGoodsItemNumber = None
+                        )
+                      )
+                    )
                   )
                 )
               ),
@@ -382,9 +382,10 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |  "goodsShipment" : {
           |    "consignment" : {
           |      "referenceNumberUCR" : "referenceNumberUcr",
-          |      "transportEquipment" : [ { } ],
-          |      "seal" : [ { } ],
-          |      "goodsReference" : [ { } ],
+          |      "transportEquipment" : [ {
+          |        "seal" : [ { } ],
+          |        "goodsReference" : [ { } ]
+          |      } ],
           |      "locationOfGoods" : {
           |        "typeOfLocation" : "typeOfLocation",
           |        "qualifierOfIdentification" : "qualifierIdentification"
@@ -427,8 +428,6 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
               referenceNumberUCR = ReferenceNumberUcr("referenceNumberUcr"),
               parentUcrId = Some(ParentUcrId("parentUcrId")),
               transportEquipment = None,
-              seal = None,
-              goodsReference = None,
               locationOfGoods = LocationOfGoods(
                 typeOfLocation = TypeOfLocation("typeOfLocation"),
                 qualifierOfIdentification = QualifierOfIdentification("qualifierIdentification"),

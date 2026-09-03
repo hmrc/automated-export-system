@@ -48,6 +48,7 @@ object EisErrorResponse:
           ++ o.correlationId.toXml("correlationId")
           ++ o.errorCode.toXml("errorCode")
           ++ o.errorMessage.toXml("errorMessage")
+          ++ o.source.toXml("source")
           ++ o.sourceFaultDetail.toXml("sourceFaultDetail")
 
       XmlWriter.elemWithScope(label, eisErrorResponseScope, children)
