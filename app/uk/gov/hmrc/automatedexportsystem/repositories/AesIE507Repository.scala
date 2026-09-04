@@ -46,8 +46,8 @@ import scala.util.control.NonFatal
 
 @ImplementedBy(classOf[AesIE507RepositoryImpl])
 trait AesIE507Repository:
-  def collection: MongoCollection[MongoAesIE507Message]
-  def ensureIndexes(): Future[Seq[String]]
+  def collection:                    MongoCollection[MongoAesIE507Message]
+  def ensureIndexes():               Future[Seq[String]]
   def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageSummary]]
 
   def getMessage(eori: EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message]
