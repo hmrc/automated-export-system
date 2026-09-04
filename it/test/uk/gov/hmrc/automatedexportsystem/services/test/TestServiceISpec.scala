@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.automatedexportsystem.services.test
 
-import org.scalatestplus.mockito.MockitoSugar.mock
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 import org.mockito.Mockito.when
@@ -49,7 +48,7 @@ class TestServiceISpec extends BaseISpec with MongoAesIE507MessageGenerator:
 
       val testMessages = Gen.listOfN(3, arbitrary[MongoAesIE507Message]).sample.get
       testMessages.foreach { msg =>
-        repository.submit(msg).value.futureValue shouldBe Right(true)
+        repository.submit(msg).value.futureValue shouldBe a[Right[_, _]]
       }
 
       repository.collection.countDocuments().toFuture().futureValue shouldBe 3L

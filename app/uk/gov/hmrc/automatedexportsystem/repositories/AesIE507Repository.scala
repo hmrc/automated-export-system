@@ -26,7 +26,7 @@ import org.bson.codecs.Codec
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
 import org.mongodb.scala.result.UpdateResult
-import org.mongodb.scala.{Document, MongoException, bson}
+import org.mongodb.scala.{Document, MongoCollection, MongoException, bson}
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError

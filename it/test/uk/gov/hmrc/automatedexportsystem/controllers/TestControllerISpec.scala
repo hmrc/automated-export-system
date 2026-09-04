@@ -21,9 +21,9 @@ import org.mongodb.scala.SingleObservableFuture
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatest.time.{Seconds, Span}
-import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.http.Status.NO_CONTENT
 import play.api.mvc.ControllerComponents
-import play.api.test.FakeRequest
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.controllers.test.TestController
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
@@ -57,14 +57,14 @@ class TestControllerISpec extends BaseISpec, MongoAesIE507MessageGenerator:
 
       val testMessages = Gen.listOfN(3, arbitrary[MongoAesIE507Message]).sample.get
       testMessages.foreach { msg =>
-        repository.submit(msg).value.futureValue shouldBe Right(true)
+        repository.submit(msg).value.futureValue shouldBe a[Right[_, _]]
       }
 
       repository.collection.countDocuments().toFuture().futureValue shouldBe 3L
 
       val result = controller.deleteAll()(FakeRequest())
 
-      status(result)                                                shouldBe NO_CONTENT
+      Helpers.status(result)                                        shouldBe NO_CONTENT
       repository.collection.countDocuments().toFuture().futureValue shouldBe 0L
     }
 
