@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers.test
 
+import play.api.http.MimeTypes
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.services.test.TestService
@@ -36,6 +37,6 @@ class TestController @Inject() (val controllerComponents: ControllerComponents, 
           <error>
             <message>{e.message}</message>
           </error>
-        ).as("application/xml")
+        ).as(MimeTypes.XML)
     }
   }

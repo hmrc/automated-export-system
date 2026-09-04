@@ -25,11 +25,12 @@ import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerato
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.time.{Seconds, Span}
 
 import scala.concurrent.ExecutionContext
 
-class TestServiceISpec extends BaseISpec with MongoAesIE507MessageGenerator:
+class TestServiceISpec extends BaseISpec with MongoAesIE507MessageGenerator with IntegrationPatience:
 
   given ec:      ExecutionContext = ExecutionContext.global
   val appConfig: AppConfig        = mock[AppConfig]

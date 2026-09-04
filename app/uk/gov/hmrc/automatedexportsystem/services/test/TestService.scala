@@ -23,7 +23,7 @@ import org.mongodb.scala.SingleObservableFuture
 import org.mongodb.scala.model.Filters
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.mdc.Mdc
-
+import scala.util.control.NonFatal
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
