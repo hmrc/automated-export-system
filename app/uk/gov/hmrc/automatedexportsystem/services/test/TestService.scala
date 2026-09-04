@@ -38,5 +38,5 @@ class TestService @Inject() (aesIE507Repo: AesIE507Repository)(implicit ec: Exec
         .flatMap { _ =>
           Mdc.preservingMdc(aesIE507Repo.ensureIndexes()).map(_ => Right(()))
         }
-        .recover { case e => Left(MongoError.UnexpectedError(e)) }
+        .recover { case NonFatal(e) => Left(MongoError.UnexpectedError(e)) }
     )
