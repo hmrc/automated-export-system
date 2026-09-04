@@ -1,3 +1,19 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.automatedexportsystem.services.test
 
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -16,8 +32,8 @@ import scala.concurrent.ExecutionContext
 
 class TestServiceISpec extends BaseISpec with MongoAesIE507MessageGenerator:
 
-  given ec: ExecutionContext = ExecutionContext.global
-  val appConfig: AppConfig = mock[AppConfig]
+  given ec:      ExecutionContext = ExecutionContext.global
+  val appConfig: AppConfig        = mock[AppConfig]
   when(appConfig.replaceIndexes).thenReturn(true)
   implicit val patience: PatienceConfig = PatienceConfig(timeout = scaled(Span(10, Seconds)))
 
@@ -29,7 +45,7 @@ class TestServiceISpec extends BaseISpec with MongoAesIE507MessageGenerator:
     "delete all records and recreate indexes" in {
 
       val repository = app.injector.instanceOf[AesIE507Repository]
-     // val service = new TestService(repository)
+      val service    = new TestService(repository)
 
       val testMessages = Gen.listOfN(3, arbitrary[MongoAesIE507Message]).sample.get
       testMessages.foreach { msg =>
@@ -37,7 +53,7 @@ class TestServiceISpec extends BaseISpec with MongoAesIE507MessageGenerator:
       }
 
       repository.collection.countDocuments().toFuture().futureValue shouldBe 3L
-     // service.deleteAll.value.futureValue shouldBe Right(())
+      service.deleteAll.value.futureValue                           shouldBe Right(())
 
       repository.collection.countDocuments().toFuture().futureValue shouldBe 0L
 

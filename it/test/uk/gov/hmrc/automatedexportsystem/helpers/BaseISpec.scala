@@ -22,6 +22,7 @@ import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.Application
 import play.api.http.{Status, *}
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -52,6 +53,7 @@ trait BaseISpec
     with HttpVerbs
     with ResultExtractors
     with WireMockSupport
+    with ScalaCheckDrivenPropertyChecks
     with Eventually {
 
   lazy val guiceApplicationBuilder: GuiceApplicationBuilder =

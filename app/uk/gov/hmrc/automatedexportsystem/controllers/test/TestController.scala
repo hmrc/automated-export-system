@@ -21,12 +21,11 @@ import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.services.test.TestService
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class TestController @Inject() ( val controllerComponents: ControllerComponents,
-                                 service: TestService)
-                               (implicit ec: ExecutionContext) extends BaseController:
+class TestController @Inject() (val controllerComponents: ControllerComponents, service: TestService)(implicit ec: ExecutionContext)
+    extends BaseController:
 
   def deleteAll: Action[AnyContent] = Action.async { implicit request =>
     service.deleteAll.value.map {
