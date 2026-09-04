@@ -24,7 +24,7 @@ import org.apache.pekko.pattern.RetrySupport
 import org.bson.codecs.Codec
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
-import org.mongodb.scala.{Document, MongoException, bson}
+import org.mongodb.scala.{Document, MongoCollection, MongoException, bson}
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
@@ -44,6 +44,8 @@ import scala.util.control.NonFatal
 
 @ImplementedBy(classOf[AesIE507RepositoryImpl])
 trait AesIE507Repository:
+  def collection: MongoCollection[MongoAesIE507Message]
+  def ensureIndexes(): Future[Seq[String]]
   def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageSummary]]
 
   def getMessage(eori: EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message]

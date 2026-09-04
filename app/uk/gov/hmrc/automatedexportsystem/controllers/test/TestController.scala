@@ -16,4 +16,19 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers.test
 
-class DeleteController {}
+import play.api.mvc.{Action, AnyContent}
+
+import javax.inject.{Inject, Singleton}
+
+@Singleton
+class TestController  @Inject():
+   def deleteAll: Action[AnyContent] = ???
+   /*
+   defaultActionBuilder.async {
+    withRecover {
+      logger.warn("clear all data called")
+      testService.clearAllData.map(_ => Ok)
+    }
+  }
+    */
+
