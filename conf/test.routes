@@ -1,0 +1,1 @@
+GET      /delete-all          uk.gov.hmrc.automatedexportsystem.controllers.test.TestController.deleteAll
