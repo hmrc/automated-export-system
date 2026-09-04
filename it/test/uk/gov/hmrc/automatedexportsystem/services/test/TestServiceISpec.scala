@@ -26,7 +26,6 @@ import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.IntegrationPatience
-import org.scalatest.time.{Seconds, Span}
 
 import scala.concurrent.ExecutionContext
 
@@ -35,7 +34,6 @@ class TestServiceISpec extends BaseISpec with MongoAesIE507MessageGenerator with
   given ec:      ExecutionContext = ExecutionContext.global
   val appConfig: AppConfig        = mock[AppConfig]
   when(appConfig.replaceIndexes).thenReturn(true)
-  implicit val patience: PatienceConfig = PatienceConfig(timeout = scaled(Span(10, Seconds)))
 
   extension (mongoAesIE507MessageGen: Gen[MongoAesIE507Message])
     def getMessage: Gen[MongoAesIE507Message] =
