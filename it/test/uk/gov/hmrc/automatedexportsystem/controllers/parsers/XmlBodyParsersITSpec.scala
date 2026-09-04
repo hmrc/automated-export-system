@@ -20,18 +20,16 @@ import helpers.XmlOps
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.util.ByteString
 import org.scalatest.EitherValues
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.freespec.AnyFreeSpecLike
-import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatest.EitherValues.{convertEitherToValuable, convertLeftProjectionToValuable}
 import play.api.http.{HttpVerbs, MimeTypes, Status as StatusValues}
 import play.api.mvc.{AnyContent, Result}
-import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
+import play.api.test.{FakeRequest, Helpers}
+import uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
 
-class XmlBodyParsersITSpec extends AnyFreeSpecLike, Matchers, GuiceOneAppPerSuite, EitherValues, DefaultAwaitTimeout, ScalaFutures:
+class XmlBodyParsersITSpec extends BaseISpec:
   given ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   val xmlBodyParsers: XmlBodyParsers = app.injector.instanceOf[XmlBodyParsers]

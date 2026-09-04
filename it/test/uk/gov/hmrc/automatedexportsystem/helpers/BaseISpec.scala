@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package test.uk.gov.hmrc.automatedexportsystem.helpers
+package uk.gov.hmrc.automatedexportsystem.helpers
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import org.scalatest.*
