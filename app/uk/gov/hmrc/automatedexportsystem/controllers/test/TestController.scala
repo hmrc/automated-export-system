@@ -16,19 +16,27 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers.test
 
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
+import uk.gov.hmrc.automatedexportsystem.errors.MongoError
+import uk.gov.hmrc.automatedexportsystem.services.test.TestService
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext}
 
 @Singleton
-class TestController  @Inject():
-   def deleteAll: Action[AnyContent] = ???
-   /*
-   defaultActionBuilder.async {
-    withRecover {
-      logger.warn("clear all data called")
-      testService.clearAllData.map(_ => Ok)
+class TestController @Inject() ( val controllerComponents: ControllerComponents,
+                                 service: TestService)
+                               (implicit ec: ExecutionContext) extends BaseController:
+
+  def deleteAll: Action[AnyContent] = Action.async { implicit request =>
+    service.deleteAll.value.map {
+      case Right(_) =>
+        NoContent
+      case Left(e: MongoError) =>
+        InternalServerError(
+          <error>
+            <message>{e.message}</message>
+          </error>
+        ).as("application/xml")
     }
   }
-    */
-
