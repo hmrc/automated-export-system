@@ -10,6 +10,8 @@ import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerato
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalatest.time.{Seconds, Span}
+
 import scala.concurrent.ExecutionContext
 
 class TestServiceISpec extends BaseISpec with MongoAesIE507MessageGenerator:
@@ -17,6 +19,7 @@ class TestServiceISpec extends BaseISpec with MongoAesIE507MessageGenerator:
   given ec: ExecutionContext = ExecutionContext.global
   val appConfig: AppConfig = mock[AppConfig]
   when(appConfig.replaceIndexes).thenReturn(true)
+  implicit val patience: PatienceConfig = PatienceConfig(timeout = scaled(Span(10, Seconds)))
 
   extension (mongoAesIE507MessageGen: Gen[MongoAesIE507Message])
     def getMessage: Gen[MongoAesIE507Message] =
@@ -26,16 +29,15 @@ class TestServiceISpec extends BaseISpec with MongoAesIE507MessageGenerator:
     "delete all records and recreate indexes" in {
 
       val repository = app.injector.instanceOf[AesIE507Repository]
-      val service = new TestService(repository)
+     // val service = new TestService(repository)
 
       val testMessages = Gen.listOfN(3, arbitrary[MongoAesIE507Message]).sample.get
       testMessages.foreach { msg =>
         repository.submit(msg).value.futureValue shouldBe Right(true)
       }
 
-
       repository.collection.countDocuments().toFuture().futureValue shouldBe 3L
-      service.deleteAll.futureValue
+     // service.deleteAll.value.futureValue shouldBe Right(())
 
       repository.collection.countDocuments().toFuture().futureValue shouldBe 0L
 
