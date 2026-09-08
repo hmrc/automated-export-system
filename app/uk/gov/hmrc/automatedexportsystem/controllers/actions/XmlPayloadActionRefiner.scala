@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 
-import play.api.mvc.{ActionRefiner, AnyContentAsXml, Result}
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{AesAuthRequest, XmlPayloadRequest}
+import play.api.mvc.{ActionRefiner, AnyContentAsXml, Result, WrappedRequest}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{AesAuthRequest, AesXmlPayloadRequest, NotificationXmlPayloadRequest, XmlRequest}
 import uk.gov.hmrc.automatedexportsystem.errors.RequestError
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
@@ -26,20 +26,40 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.NodeSeq
 
-@Singleton
-class XmlPayloadActionRefiner @Inject() ()(using protected val executionContext: ExecutionContext)
-    extends ActionRefiner[AesAuthRequest, XmlPayloadRequest]:
+// TODO (not urgent) - change to mapper injection based implementation
+sealed trait XmlPayloadActionRefiner[
+  T[_] <: WrappedRequest[_],
+  U[_] <: WrappedRequest[_] & XmlRequest
+](using protected val executionContext: ExecutionContext)
+    extends ActionRefiner[T, U]:
 
-  protected def refine[A](authRequest: AesAuthRequest[A]): Future[Either[Result, XmlPayloadRequest[A]]] =
+  override protected def refine[A](request: T[A]): Future[Either[Result, U[A]]] =
     Future.successful(
-      authRequest.body match
+      request.body match
         case xml: NodeSeq =>
-          Right(XmlPayloadRequest(xml, authRequest.request, authRequest.eori))
+          Right(createXmlRequest(request, xml))
         case anyContentAsXml: AnyContentAsXml =>
-          Right(XmlPayloadRequest(anyContentAsXml.xml, authRequest.request, authRequest.eori))
+          Right(createXmlRequest(request, anyContentAsXml.xml))
         case _ =>
           val error:         RequestError     = RequestError.ExpectedXmlBodyError
           val errorResponse: AesErrorResponse = error.toErrorResponse
 
           Left(errorResponse.toResult)
     )
+
+  protected def createXmlRequest[A](request: T[A], xml: NodeSeq): U[A]
+
+@Singleton
+class AesXmlPayloadActionRefiner @Inject() ()(using protected val ec: ExecutionContext)
+    extends XmlPayloadActionRefiner[AesAuthRequest, AesXmlPayloadRequest]:
+  protected def createXmlRequest[A](request: AesAuthRequest[A], xml: NodeSeq): AesXmlPayloadRequest[A] =
+    AesXmlPayloadRequest(xml, request.request, request.eori)
+
+@Singleton
+class NotificationXmlPayloadActionRefiner @Inject() ()(using protected val ec: ExecutionContext)
+    extends XmlPayloadActionRefiner[ValidatedNotificationRequest, NotificationXmlPayloadRequest]:
+  protected def createXmlRequest[A](
+    request: ValidatedNotificationRequest[A],
+    xml:     NodeSeq
+  ): NotificationXmlPayloadRequest[A] =
+    NotificationXmlPayloadRequest(xml, request.request)

@@ -16,9 +16,25 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.notification
 
-case class NotificationError(
+import cats.implicits.catsSyntaxTuple4Semigroupal
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag}
+
+final case class NotificationError(
   code:          String,
   description:   String,
   path:          Option[String],
   originalValue: Option[String]
 )
+
+object NotificationError:
+  given notificationErrorTag: XmlRootTag[NotificationError] = XmlRootTag("error")
+
+  given notificationErrorXmlReader: XmlReader[NotificationError] =
+    XmlReader.nonEmptyReader { (xml, path) =>
+      (
+        (XmlPath \ "code").read[String](xml, path),
+        (XmlPath \ "description").read[String](xml, path),
+        (XmlPath \ "path").read[Option[String]](xml, path),
+        (XmlPath \ "originalValue").read[Option[String]](xml, path)
+      ).mapN(NotificationError.apply)
+    }

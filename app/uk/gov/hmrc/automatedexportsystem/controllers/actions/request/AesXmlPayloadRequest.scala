@@ -21,7 +21,7 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
 
 import scala.xml.NodeSeq
 
-final case class ValidatedXmlRequest[T](
+final case class AesXmlPayloadRequest[T](
   xml:     NodeSeq,
   request: Request[T],
   eori:    EoriNumber

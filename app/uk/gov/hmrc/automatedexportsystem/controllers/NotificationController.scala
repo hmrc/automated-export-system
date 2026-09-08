@@ -18,21 +18,24 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 
 import play.api.Logging
 import play.api.mvc.*
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.{ValidatedNotificationRequestAction, XmlNotificationPayloadActionRefiner}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.{NotificationActionRefiner, NotificationXmlPayloadActionRefiner, ValidatedNotificationRequestAction}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton()
 class NotificationController @Inject() (
-  cc:                                  ControllerComponents,
-  validatedRequestAction:              ValidatedNotificationRequestAction,
-  xmlNotificationPayloadActionRefiner: XmlNotificationPayloadActionRefiner
+  cc:                        ControllerComponents,
+  validatedRequestAction:    ValidatedNotificationRequestAction,
+  xmlPayloadActionRefiner:   NotificationXmlPayloadActionRefiner,
+  notificationActionRefiner: NotificationActionRefiner
 ) extends AbstractController(cc)
     with Logging:
 
   def notification: Action[AnyContent] =
-    (validatedRequestAction andThen xmlNotificationPayloadActionRefiner).async { implicit req =>
+    (validatedRequestAction
+      andThen xmlPayloadActionRefiner
+      andThen notificationActionRefiner).async { implicit req =>
       val notification = req.notification // Parsed AESDigitalNotification object
       logger.info(s"Received notification for MRN: ${notification.mrn}")
       Future.successful(NoContent)

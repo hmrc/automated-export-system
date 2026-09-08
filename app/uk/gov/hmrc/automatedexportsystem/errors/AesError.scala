@@ -55,6 +55,8 @@ enum RequestError(val message: String, val responseCode: ResponseCode) extends A
   case ExpectedXmlBodyError extends RequestError("The body of the request is not valid XML", UnsupportedMediaType)
   case MissingContentTypeHeader extends RequestError("Request Content-Type header is missing", UnsupportedMediaType)
   case ContentTypeNotUtf8Error extends RequestError("Request Content-Type charset is not UTF-8", UnsupportedMediaType)
+  case MissingAuthorizationHeader extends RequestError("Request Authorization header is missing", Unauthorized)
+  case InvalidAuthorizationToken extends RequestError("Authorization Bearer token is invalid", Unauthorized)
 
 enum XmlReaderError(val path: String, val message: String):
   case Missing(override val path: String) extends XmlReaderError(path, "Element is missing")

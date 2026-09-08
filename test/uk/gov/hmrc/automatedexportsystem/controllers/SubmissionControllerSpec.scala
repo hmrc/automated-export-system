@@ -49,7 +49,7 @@ import scala.xml.{Elem, NodeSeq}
 class SubmissionControllerSpec extends BaseSpec, AllMocks:
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents(executionContext = ec)
 
-  val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
+  val aesXmlPayloadActionRefiner: AesXmlPayloadActionRefiner = AesXmlPayloadActionRefiner()
 
   val xmlValidationService: AesIE507XmlValidationService = mock[AesIE507XmlValidationService]
 
@@ -80,7 +80,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
       controllerComponents,
       aesAuthAction,
       aesAuthRequestRefiner,
-      xmlPayloadActionRefiner,
+      aesXmlPayloadActionRefiner,
       xmlValidationActionRefiner,
       aesIE507ActionRefiner,
       xmlBodyParsers,

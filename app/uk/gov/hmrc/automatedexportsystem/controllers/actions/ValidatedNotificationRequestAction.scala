@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 
+import cats.syntax.either.catsSyntaxEither
 import play.api.Logging
-import play.api.mvc.{ActionBuilder, ActionRefiner, AnyContent, BodyParser, BodyParsers, Request, Result, Results, WrappedRequest}
+import play.api.mvc.*
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
+import uk.gov.hmrc.automatedexportsystem.errors.RequestError
+import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
-import scala.xml.{NodeSeq, XML}
-
 case class ValidatedNotificationRequest[A](request: Request[A]) extends WrappedRequest[A](request)
 
 @Singleton
@@ -36,62 +36,36 @@ class ValidatedNotificationRequestAction @Inject() (
     with ActionRefiner[Request, ValidatedNotificationRequest]
     with Logging:
 
-  private val expectedNotificationHeader: String = appConfig.notificationToken
+  override def parser: BodyParser[AnyContent] = bodyParsers
 
-  override def parser:                     BodyParser[AnyContent] = bodyParsers
-  override protected def executionContext: ExecutionContext       = ec
+  override protected def executionContext: ExecutionContext = ec
 
   override def refine[A](
     request: Request[A]
-  ): Future[Either[Result, ValidatedNotificationRequest[A]]] = {
-    val maybeAuth = request.headers.get("Authorization")
+  ): Future[Either[Result, ValidatedNotificationRequest[A]]] =
+    Future.successful(
+      request.headers
+        .get("Authorization")
+        .toRight {
+          logUnauthorizedError("Authorization header is missing")
 
-    if (maybeAuth.forall(_ != expectedNotificationHeader)) {
-      logger.warn(s"Unauthorized request. Authorization header present: ${maybeAuth.isDefined}")
-      Future.successful(Left(unauthorised("Invalid Authorization header")))
-    } else {
-      val maybeXmlString = extractBodyAsString(request.body)
+          RequestError.MissingAuthorizationHeader
+        }
+        .flatMap(token =>
+          val notificationBearerToken: String = appConfig.notificationToken
 
-      maybeXmlString match {
-        case Some(xmlString) if Try(XML.loadString(xmlString)).isSuccess =>
-          Future.successful(Right(ValidatedNotificationRequest(request)))
+          if token != notificationBearerToken then
+            logUnauthorizedError(s"Authorization Bearer token is invalid: $token")
 
-        case Some(_) =>
-          logger.error("Invalid XML payload received")
-          Future.successful(Left(badRequest("Invalid XML payload")))
+            Left(RequestError.InvalidAuthorizationToken)
+          else Right(ValidatedNotificationRequest(request))
+        )
+        .leftMap(_.toErrorResponse.toResult)
+    )
 
-        case None =>
-          logger.error("Missing request body")
-          Future.successful(Left(badRequest("Request body is required")))
-      }
-    }
-  }
+  private def logUnauthorizedError(context: String): Unit =
+    val ctx: String =
+      if context.trim.isEmpty then ""
+      else s" ${context.trim}"
 
-  private def extractBodyAsString(any: Any): Option[String] =
-    any match {
-      case c: AnyContent =>
-        c.asXml.map(_.toString).orElse(c.asText)
-      case nodeSeq: NodeSeq =>
-        Some(nodeSeq.toString)
-      case _ => None
-    }
-
-  private def badRequest(message: String): Result =
-    Results
-      .BadRequest(
-        <error>
-              <code>BAD_REQUEST</code>
-              <message>{message}</message>
-            </error>
-      )
-      .as("application/xml")
-
-  private def unauthorised(message: String): Result =
-    Results
-      .Unauthorized(
-        <error>
-              <code>UNAUTHORIZED</code>
-              <message>{message}</message>
-            </error>
-      )
-      .as("application/xml")
+    logger.warn(s"Unauthorized request:$ctx")

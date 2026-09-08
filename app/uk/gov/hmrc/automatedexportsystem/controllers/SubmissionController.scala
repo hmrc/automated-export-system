@@ -43,7 +43,7 @@ class SubmissionController @Inject() (
   cc:                         ControllerComponents,
   aesAuthEssentialAction:     AesAuthAction,
   aesAuthRequestRefiner:      AesAuthRequestRefiner,
-  xmlPayloadActionRefiner:    XmlPayloadActionRefiner,
+  xmlPayloadActionRefiner:    AesXmlPayloadActionRefiner,
   xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService],
   aesIE507ActionRefiner:      AesIE507ActionRefiner,
   xmlBodyParsers:             XmlBodyParsers,

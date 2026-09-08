@@ -20,7 +20,7 @@ import org.mockito.Mockito.when
 import play.api.mvc.*
 import play.api.test.Helpers.POST
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.{ValidatedNotificationRequestAction, XmlNotificationPayloadActionRefiner}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 
 import scala.xml.Elem
@@ -33,14 +33,24 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
     val parser: BodyParsers.Default = new BodyParsers.Default(playBodyParsers)
 
     when(mockAppConfig.notificationToken).thenReturn("some-token")
+
     val notificationAction = new ValidatedNotificationRequestAction(
       parser,
       mockAppConfig
     )
-    val xmlNotificationPayloadActionRefiner = new XmlNotificationPayloadActionRefiner()
 
-    val controller =
-      new NotificationController(controllerComponents, notificationAction, xmlNotificationPayloadActionRefiner)
+    val notificationXmlPaylodActionRefiner: NotificationXmlPayloadActionRefiner =
+      NotificationXmlPayloadActionRefiner()
+
+    val notificationActionRefiner = new NotificationActionRefiner()
+
+    val controller: NotificationController =
+      new NotificationController(
+        controllerComponents,
+        notificationAction,
+        notificationXmlPaylodActionRefiner,
+        notificationActionRefiner
+      )
 
     val fakeRequest = FakeRequest(POST, "notification")
 
@@ -49,7 +59,7 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
         <correlationId>8f3c2a19-7d2b-4b74-a9f0-123456789012</correlationId>
         <eori>GB123456789000</eori>
         <mrn>25GB1234567890ABCDE</mrn>
-        <dateCreated>2026-08-12T10:15:30Z</dateCreated>
+        <dateCreated>2026-08-12T10:15:30</dateCreated>
         <status>1</status>
       </notification>
 
@@ -57,12 +67,14 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
     <someXml>data</someXml>
 
   "notification" - {
+
     "authorization header is valid and payload is valid" in new Setup {
       val request = fakeRequest
         .withHeaders("Authorization" -> "some-token")
         .withXmlBody(validPayload)
 
       val result = controller.notification(request)
+      println(Helpers.contentAsString(result))
       Helpers.status(result) shouldBe Helpers.NO_CONTENT
     }
 
@@ -78,7 +90,7 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
       val request = fakeRequest
         .withHeaders("Authorization" -> "some-token")
       val result = controller.notification(request)
-      Helpers.status(result) shouldBe Helpers.BAD_REQUEST
+      Helpers.status(result) shouldBe Helpers.UNSUPPORTED_MEDIA_TYPE
     }
 
     "authorization header is valid and payload is invalid" in new Setup {
@@ -86,6 +98,6 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
         .withHeaders("Authorization" -> "some-token")
         .withXmlBody(invalidPayload)
       val result = controller.notification(request)
-      Helpers.status(result) shouldBe Helpers.BAD_REQUEST
+      Helpers.status(result) shouldBe Helpers.UNPROCESSABLE_ENTITY
     }
   }

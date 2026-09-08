@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.notification
+package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
-sealed trait NotificationStatus { def value: Int }
+import play.api.mvc.WrappedRequest
 
-object NotificationStatus {
-  case object Accepted extends NotificationStatus { val value = 1 }
-  case object Diversion extends NotificationStatus { val value = 2 }
-  case object Rejected extends NotificationStatus { val value = 3 }
-}
+import scala.xml.NodeSeq
+
+trait XmlRequest:
+  this: WrappedRequest[_] =>
+
+  def xml: NodeSeq
