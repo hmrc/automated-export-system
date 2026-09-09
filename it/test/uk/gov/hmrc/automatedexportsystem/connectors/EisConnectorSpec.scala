@@ -351,7 +351,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
                 Helpers.POST,
                 "http://localhost:6001/cds/aesIE507Request/v1",
                 NonEmptyList.of(
-                  XmlReaderError.ParseError("/timestamp", "Failed to parse 'instant' to iso date"),
+                  XmlReaderError.ParseError("/timestamp", "Failed to parse 'instant' to ISO date using ISO_INSTANT format"),
                   XmlReaderError.ParseError("/errorCode", "Failed to parse 'status' to Int"),
                   XmlReaderError.Missing("/source")
                 )

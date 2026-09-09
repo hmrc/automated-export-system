@@ -74,7 +74,6 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
         .withXmlBody(validPayload)
 
       val result = controller.notification(request)
-      println(Helpers.contentAsString(result))
       Helpers.status(result) shouldBe Helpers.NO_CONTENT
     }
 

@@ -23,9 +23,8 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents, EssentialAction}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.{AesError, ResponseCode}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
-import uk.gov.hmrc.automatedexportsystem.models.IE507.ExportOperationType.Awaiting
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.eis.EisErrorResponse
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
@@ -57,7 +56,7 @@ class SubmissionController @Inject() (
 
   given ec: ExecutionContext = cc.executionContext
 
-  private lazy val messageXmlValidatedAction: Action[NodeSeq] = {
+  private lazy val messageXmlValidatedAction: Action[NodeSeq] =
     val composed = Action(xmlBodyParsers.utf8)
       .andThen(aesAuthRequestRefiner)
       .andThen(xmlPayloadActionRefiner)
@@ -68,15 +67,20 @@ class SubmissionController @Inject() (
       val aesIE507Message: AesIE507Message = request.message
       val eoriNumber:      EoriNumber      = request.eori
 
+      val maybeCorrelationIdHeader: Option[HttpHeader.CorrelationId] =
+        request.headers
+          .get(CustomHeaderNames.X_CORRELATION_ID)
+          .map(HttpHeader.CorrelationId.apply)
+
       val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] =
         submissionService
-          .submitMessage(aesIE507Message, Awaiting, eoriNumber)
+          .submitMessage(
+            aesIE507Message,
+            ExportOperationType.Standard,
+            eoriNumber,
+            maybeCorrelationIdHeader
+          )
           .flatMap(_ =>
-            val maybeCorrelationIdHeader: Option[HttpHeader.CorrelationId] =
-              request.headers
-                .get(CustomHeaderNames.X_CORRELATION_ID)
-                .map(HttpHeader.CorrelationId.apply)
-
             val maybeConversationIdHeader: Option[HttpHeader.ConversationId] =
               request.headers
                 .get(CustomHeaderNames.X_CONVERSATION_ID)
@@ -99,7 +103,7 @@ class SubmissionController @Inject() (
         )
       )
     }
-  }
+  end messageXmlValidatedAction
 
   def message: EssentialAction =
     aesAuthEssentialAction(messageXmlValidatedAction)

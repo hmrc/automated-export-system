@@ -38,7 +38,7 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, EisIE507Request}
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.{AesIE507Repository, AesIE507RepositoryImpl}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -176,6 +176,16 @@ class SubmissionControllerITSpec extends BaseISpec:
               )
             )
           )
+        ),
+        metadata = NonEmptyList.one(
+          NotificationEvent(
+            correlationId = correlationId,
+            dateCreated = instant,
+            dateUpdated = None,
+            isPending = false,
+            status = NotificationEventStatus.Awaiting,
+            errors = None
+          )
         )
       )
 
@@ -194,7 +204,17 @@ class SubmissionControllerITSpec extends BaseISpec:
         customsOfficeOfExitActual = CustomsOfficeOfExitActual(
           referenceNumber = ReferenceNumber("IEARK100")
         ),
-        goodsShipment = None
+        goodsShipment = None,
+        metadata = NonEmptyList.one(
+          NotificationEvent(
+            correlationId = correlationId,
+            dateCreated = instant,
+            dateUpdated = None,
+            isPending = false,
+            status = NotificationEventStatus.Awaiting,
+            errors = None
+          )
+        )
       )
 
     val submissionSummary1: SubmissionSummary =
@@ -899,7 +919,7 @@ class SubmissionControllerITSpec extends BaseISpec:
             when(
               aesIE507Repository.submit(
                 mongoAesIE507Message2.copy(exportOperation =
-                  mongoAesIE507Message2.exportOperation.copy(exportOperationType = ExportOperationType.Awaiting)
+                  mongoAesIE507Message2.exportOperation.copy(exportOperationType = ExportOperationType.Standard)
                 )
               )
             )

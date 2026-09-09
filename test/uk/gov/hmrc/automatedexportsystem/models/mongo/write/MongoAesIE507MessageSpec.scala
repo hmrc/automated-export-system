@@ -25,6 +25,7 @@ import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
 
 import java.time.Instant
 import java.util.UUID
@@ -130,6 +131,25 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
               )
             )
           )
+        ),
+        metadata = NonEmptyList.one(
+          NotificationEvent(
+            correlationId = "correlationId",
+            dateCreated = Instant.ofEpochMilli(instant),
+            dateUpdated = Some(Instant.ofEpochMilli(instant)),
+            isPending = false,
+            status = NotificationEventStatus.Awaiting,
+            errors = Some(
+              NonEmptyList.one(
+                NotificationError(
+                  code = "code",
+                  description = "description",
+                  path = Some("path"),
+                  originalValue = Some("originalValue")
+                )
+              )
+            )
+          )
         )
       )
 
@@ -208,7 +228,28 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |        "shippingMarks" : "shippingMarks"
           |      } ]
           |    } ]
-          |  }
+          |  },
+          |  "metadata" : [ {
+          |    "correlationId" : "correlationId",
+          |    "dateCreated" : {
+          |      "$$date" : {
+          |        "$$numberLong" : "$instant"
+          |      }
+          |    },
+          |    "dateUpdated" : {
+          |      "$$date" : {
+          |        "$$numberLong" : "$instant"
+          |      }
+          |    },
+          |    "isPending" : false,
+          |    "status" : 0,
+          |    "errors" : [ {
+          |      "code" : "code",
+          |      "description" : "description",
+          |      "path" : "path",
+          |      "originalValue": "originalValue"
+          |    } ]
+          |  } ]
           |}
           |""".stripMargin)
 
@@ -227,7 +268,26 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         customsOfficeOfExitActual = CustomsOfficeOfExitActual(
           referenceNumber = ReferenceNumber("referenceNumber")
         ),
-        goodsShipment = None
+        goodsShipment = None,
+        metadata = NonEmptyList.one(
+          NotificationEvent(
+            correlationId = "correlationId",
+            dateCreated = Instant.ofEpochMilli(instant),
+            dateUpdated = Some(Instant.ofEpochMilli(instant)),
+            isPending = false,
+            status = NotificationEventStatus.Awaiting,
+            errors = Some(
+              NonEmptyList.one(
+                NotificationError(
+                  code = "code",
+                  description = "description",
+                  path = Some("path"),
+                  originalValue = Some("originalValue")
+                )
+              )
+            )
+          )
+        )
       )
 
     val mongoAesIE507MessageNoOptionalGoodsShipmentJson: JsValue =
@@ -253,7 +313,28 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |  },
           |  "customsOfficeOfExitActual" : {
           |    "referenceNumber" : "referenceNumber"
-          |  }
+          |  },
+          |  "metadata" : [ {
+          |    "correlationId" : "correlationId",
+          |    "dateCreated" : {
+          |      "$$date" : {
+          |        "$$numberLong" : "$instant"
+          |      }
+          |    },
+          |    "dateUpdated" : {
+          |      "$$date" : {
+          |        "$$numberLong" : "$instant"
+          |      }
+          |    },
+          |    "isPending" : false,
+          |    "status" : 0,
+          |    "errors" : [ {
+          |      "code" : "code",
+          |      "description" : "description",
+          |      "path" : "path",
+          |      "originalValue": "originalValue"
+          |    } ]
+          |  } ]
           |}
           |""".stripMargin)
 
@@ -352,6 +433,25 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
               )
             )
           )
+        ),
+        metadata = NonEmptyList.one(
+          NotificationEvent(
+            correlationId = "correlationId",
+            dateCreated = Instant.ofEpochMilli(instant),
+            dateUpdated = Some(Instant.ofEpochMilli(instant)),
+            isPending = false,
+            status = NotificationEventStatus.Awaiting,
+            errors = Some(
+              NonEmptyList.one(
+                NotificationError(
+                  code = "code",
+                  description = "description",
+                  path = Some("path"),
+                  originalValue = Some("originalValue")
+                )
+              )
+            )
+          )
         )
       )
 
@@ -402,7 +502,28 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |      },
           |      "packaging" : [ { } ]
           |    } ]
-          |  }
+          |  },
+          |  "metadata" : [ {
+          |    "correlationId" : "correlationId",
+          |    "dateCreated" : {
+          |      "$$date" : {
+          |        "$$numberLong" : "$instant"
+          |      }
+          |    },
+          |    "dateUpdated" : {
+          |      "$$date" : {
+          |        "$$numberLong" : "$instant"
+          |      }
+          |    },
+          |    "isPending" : false,
+          |    "status" : 0,
+          |    "errors" : [ {
+          |      "code" : "code",
+          |      "description" : "description",
+          |      "path" : "path",
+          |      "originalValue": "originalValue"
+          |    } ]
+          |  } ]
           |}
           |""".stripMargin)
 
@@ -445,6 +566,16 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
               transportDocument = None
             ),
             goodsItem = None
+          )
+        ),
+        metadata = NonEmptyList.one(
+          NotificationEvent(
+            correlationId = "correlationId",
+            dateCreated = Instant.ofEpochMilli(instant),
+            dateUpdated = Some(Instant.ofEpochMilli(instant)),
+            isPending = false,
+            status = NotificationEventStatus.Awaiting,
+            errors = None
           )
         )
       )
@@ -491,7 +622,22 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |        "nationality" : "nationality"
           |      }
           |    }
-          |  }
+          |  },
+          |  "metadata" : [ {
+          |    "correlationId" : "correlationId",
+          |    "dateCreated" : {
+          |      "$$date" : {
+          |        "$$numberLong" : "$instant"
+          |      }
+          |    },
+          |    "dateUpdated" : {
+          |      "$$date" : {
+          |        "$$numberLong" : "$instant"
+          |      }
+          |    },
+          |    "isPending" : false,
+          |    "status" : 0
+          |  } ]
           |}
           |""".stripMargin)
 

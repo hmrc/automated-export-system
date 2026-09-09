@@ -26,6 +26,7 @@ import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1, TableFor2}
 import uk.gov.hmrc.automatedexportsystem.errors.XmlReaderError
 import uk.gov.hmrc.automatedexportsystem.xml.XmlReader.{as, nonEmptyReader}
 
+import java.time.{Instant, LocalDateTime}
 import scala.xml.{Elem, NodeSeq}
 class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDrivenPropertyChecks:
   object TestData:
@@ -131,7 +132,7 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
         val booleanReader: XmlReader[Boolean] = implicitly
 
         "successfully" in {
-          val intTable: TableFor2[Elem, Boolean] = Table(
+          val booleanTable: TableFor2[Elem, Boolean] = Table(
             ("xml", "bool"),
             (<xml>true</xml>, true),
             (<xml>false</xml>, false),
@@ -139,7 +140,7 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
             (<xml>0 </xml>, false)
           )
 
-          forAll(intTable) { (xml, bool) =>
+          forAll(booleanTable) { (xml, bool) =>
             booleanReader.read(xml, XmlPath).toEither.value shouldBe bool
           }
         }
@@ -731,6 +732,159 @@ class XmlReaderSpec extends AnyFreeSpecLike, Matchers, EitherValues, TableDriven
 
             forAll(complexModelTable) { (xml, errors) =>
               xml.as[TestData.ComplexModel].toEither.left.value shouldBe errors
+            }
+          }
+        }
+      }
+    }
+  }
+
+  "TemporalXmlReader" - {
+
+    ".instantDefaultReader" - {
+      val instantReader: XmlReader[Instant] = implicitly
+
+      "should read an element" - {
+
+        "successfully" - {
+
+          "when the element is a date string in ISO_INSTANT format" in {
+            val dateTable: TableFor2[Elem, Instant] =
+              Table(
+                ("xml", "instant"),
+                (<xml>2026-09-09T00:00:00Z</xml>, Instant.parse("2026-09-09T00:00:00Z")),
+                (<xml>1999-04-01T00:00:00Z</xml>, Instant.parse("1999-04-01T00:00:00Z")),
+                (<xml>1900-01-01T00:00:00Z</xml>, Instant.parse("1900-01-01T00:00:00Z"))
+              )
+
+            forAll(dateTable) { (xml, instant) =>
+              instantReader.read(xml, XmlPath).toEither.value shouldBe instant
+            }
+          }
+
+          "when the element represents milliseconds since EPOCH" in {
+            val epochMillis: Long = Instant.EPOCH.toEpochMilli
+
+            val dateTable: TableFor2[Elem, Instant] =
+              Table(
+                ("xml", "instant"),
+                (<xml>{epochMillis}</xml>, Instant.parse("1970-01-01T00:00:00Z")),
+                (<xml>922924800000</xml>, Instant.parse("1999-04-01T00:00:00Z")),
+                (<xml>-2208988800000</xml>, Instant.parse("1900-01-01T00:00:00Z"))
+              )
+
+            forAll(dateTable) { (xml, instant) =>
+              instantReader.read(xml, XmlPath).toEither.value shouldBe instant
+            }
+          }
+        }
+
+        "unsuccessfully" - {
+
+          "when the element is not a date string in ISO_INSTANT format or milliseconds since EPOCH" in {
+            val dateTable: TableFor2[Elem, XmlReaderError] =
+              Table(
+                ("xml", "error"),
+                (
+                  <xml>date</xml>,
+                  XmlReaderError.ParseError(
+                    "/",
+                    s"Failed to parse 'date' to ISO date using ISO_INSTANT format"
+                  )
+                ),
+                (
+                  <xml></xml>,
+                  XmlReaderError.ParseError(
+                    "/",
+                    s"Failed to parse '' to ISO date using ISO_INSTANT format"
+                  )
+                ),
+                (
+                  <xml>2026-09-09T00:00:00</xml>,
+                  XmlReaderError.ParseError(
+                    "/",
+                    s"Failed to parse '2026-09-09T00:00:00' to ISO date using ISO_INSTANT format"
+                  )
+                )
+              )
+
+            forAll(dateTable) { (xml, error) =>
+              instantReader.read(xml, XmlPath).toEither.left.value shouldBe NonEmptyList.one(error)
+            }
+          }
+        }
+      }
+    }
+
+    ".localDateTimeDefaultReader" - {
+      val localDateTimeReader: XmlReader[LocalDateTime] = implicitly
+
+      "should read an element" - {
+
+        "successfully" - {
+
+          "when the element is a date string in ISO_LOCAL_DATE_TIME format" in {
+            val dateTable: TableFor2[Elem, LocalDateTime] =
+              Table(
+                ("xml", "instant"),
+                (<xml>2026-09-09T00:00:00</xml>, LocalDateTime.parse("2026-09-09T00:00:00")),
+                (<xml>1999-04-01T00:00:00</xml>, LocalDateTime.parse("1999-04-01T00:00:00")),
+                (<xml>1900-01-01T00:00:00</xml>, LocalDateTime.parse("1900-01-01T00:00:00"))
+              )
+
+            forAll(dateTable) { (xml, localDateTime) =>
+              localDateTimeReader.read(xml, XmlPath).toEither.value shouldBe localDateTime
+            }
+          }
+
+          "when the element represents milliseconds since EPOCH" in {
+            val epochMillis: Long = Instant.EPOCH.toEpochMilli
+
+            val dateTable: TableFor2[Elem, LocalDateTime] =
+              Table(
+                ("xml", "instant"),
+                (<xml>{epochMillis}</xml>, LocalDateTime.parse("1970-01-01T00:00:00")),
+                (<xml>922924800000</xml>, LocalDateTime.parse("1999-04-01T00:00:00")),
+                (<xml>-2208988800000</xml>, LocalDateTime.parse("1900-01-01T00:00:00"))
+              )
+
+            forAll(dateTable) { (xml, localDateTime) =>
+              localDateTimeReader.read(xml, XmlPath).toEither.value shouldBe localDateTime
+            }
+          }
+        }
+
+        "unsuccessfully" - {
+
+          "when the element is not a date string in ISO_LOCAL_DATE_TIME format or milliseconds since EPOCH" in {
+            val dateTable: TableFor2[Elem, XmlReaderError] =
+              Table(
+                ("xml", "error"),
+                (
+                  <xml>date</xml>,
+                  XmlReaderError.ParseError(
+                    "/",
+                    s"Failed to parse 'date' to ISO date using ISO_LOCAL_DATE_TIME format"
+                  )
+                ),
+                (
+                  <xml></xml>,
+                  XmlReaderError.ParseError(
+                    "/",
+                    s"Failed to parse '' to ISO date using ISO_LOCAL_DATE_TIME format"
+                  )
+                ),
+                (
+                  <xml>2026-09-09T00:00:00Z</xml>,
+                  XmlReaderError.ParseError(
+                    "/",
+                    s"Failed to parse '2026-09-09T00:00:00Z' to ISO date using ISO_LOCAL_DATE_TIME format"
+                  )
+                )
+              )
+
+            forAll(dateTable) { (xml, error) =>
+              localDateTimeReader.read(xml, XmlPath).toEither.left.value shouldBe NonEmptyList.one(error)
             }
           }
         }

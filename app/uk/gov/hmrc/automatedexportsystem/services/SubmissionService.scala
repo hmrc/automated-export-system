@@ -20,10 +20,11 @@ import cats.data.EitherT
 import uk.gov.hmrc.automatedexportsystem.errors.{AesErrorMapper, MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
+import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
-import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
@@ -33,7 +34,8 @@ trait SubmissionService:
   def submitMessage(
     message:             AesIE507Message,
     exportOperationType: ExportOperationType,
-    eoriNumber:          EoriNumber
+    eoriNumber:          EoriNumber,
+    maybeCorrelationId:  Option[HttpHeader.CorrelationId]
   ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus]
 
   def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList]
@@ -45,8 +47,8 @@ trait SubmissionService:
 @Singleton
 class SubmissionServiceImpl @Inject() (
   aesIE507Repository: AesIE507Repository,
-  clock:              Clock,
-  idGenerator:        IdGenerator
+  aesIE507Factory:    AesIE507Factory,
+  clock:              Clock
 )(using ExecutionContext)
     extends SubmissionService:
   def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList] =
@@ -102,10 +104,14 @@ class SubmissionServiceImpl @Inject() (
   def submitMessage(
     message:             AesIE507Message,
     exportOperationType: ExportOperationType,
-    eoriNumber:          EoriNumber
+    eoriNumber:          EoriNumber,
+    maybeCorrelationId:  Option[HttpHeader.CorrelationId]
   ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
+    val mongoMessage: MongoAesIE507Message =
+      aesIE507Factory.mongoMessage(message, eoriNumber, exportOperationType, maybeCorrelationId)
+
     aesIE507Repository
-      .submit(message.toMongoMessage(exportOperationType, eoriNumber, Instant.now(clock), idGenerator.generate))
+      .submit(mongoMessage)
       .leftMap(me =>
         val context: String =
           Seq(

@@ -31,7 +31,7 @@ import scala.xml.NodeSeq
 class NotificationActionRefiner @Inject() ()(using override protected val executionContext: ExecutionContext)
     extends ActionRefiner[NotificationXmlPayloadRequest, NotificationRequest]:
 
-  override protected def refine[A](request: NotificationXmlPayloadRequest[A]): Future[Either[Result, NotificationRequest[A]]] = {
+  override protected def refine[A](request: NotificationXmlPayloadRequest[A]): Future[Either[Result, NotificationRequest[A]]] =
     val xml: NodeSeq = request.xml
 
     Future.successful(
@@ -43,4 +43,3 @@ class NotificationActionRefiner @Inject() ()(using override protected val execut
         )
         .toEither
     )
-  }

@@ -27,9 +27,10 @@ import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.automatedexportsystem.errors.{MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
+import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
@@ -43,23 +44,25 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
   val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
 
+  val aesIE507Factory: AesIE507Factory = mock[AesIE507Factory]
+
   val instant: Instant = Instant.parse("2026-08-12T00:00:00.000Z")
 
   val clock: Clock = Clock.fixed(instant, ZoneOffset.UTC)
 
   val idGenerator: IdGenerator = mock[IdGenerator]
 
-  val submissionService: SubmissionService = SubmissionServiceImpl(aesIE507Repository, clock, idGenerator)
+  val submissionService: SubmissionService = SubmissionServiceImpl(aesIE507Repository, aesIE507Factory, clock)
 
   object TestData:
-    val eoriNumber: EoriNumber = EoriNumber("eoriNumber")
-
+    val eoriNumber:   EoriNumber   = EoriNumber("eoriNumber")
     val submissionId: SubmissionId =
       SubmissionId(UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317"))
+    val correlationId: String        = "correlationId"
+    val instant:       Instant       = Instant.parse("2026-08-12T00:00:00.000Z")
+    val dateTime:      LocalDateTime = LocalDateTime.parse("2026-08-12T00:00:00")
 
-    val instant: Instant = Instant.parse("2026-08-12T00:00:00.000Z")
-
-    val dateTime: LocalDateTime = LocalDateTime.parse("2026-08-12T00:00:00")
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId)
 
     val aesIE507Message: AesIE507Message =
       AesIE507Message(
@@ -83,7 +86,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         createdAt = instant,
         updatedAt = instant,
         exportOperation = ExportOperation(
-          exportOperationType = ExportOperationType.Awaiting,
+          exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
           discrepanciesExist = DiscrepanciesExist(true),
           splitIndicator = SplitIndicator(true)
@@ -91,7 +94,17 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         customsOfficeOfExitActual = CustomsOfficeOfExitActual(
           referenceNumber = ReferenceNumber("referenceNumber")
         ),
-        goodsShipment = None
+        goodsShipment = None,
+        metadata = NonEmptyList.one(
+          NotificationEvent(
+            correlationId = correlationId,
+            dateCreated = instant,
+            dateUpdated = None,
+            isPending = false,
+            status = NotificationEventStatus.Awaiting,
+            errors = None
+          )
+        )
       )
 
     val mongoAesIE507MessageSummary: MongoAesIE507MessageSummary =
@@ -242,6 +255,16 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
       "should insert a submission" - {
 
         "when there is no submission with the given submissionId found in the mongodb collection" in {
+          when(
+            aesIE507Factory.mongoMessage(
+              TestData.aesIE507Message,
+              TestData.eoriNumber,
+              ExportOperationType.Standard,
+              Some(TestData.correlationIdHeader)
+            )
+          )
+            .thenReturn(TestData.mongoAesIE507Message)
+
           when(aesIE507Repository.submit(TestData.mongoAesIE507Message))
             .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
 
@@ -249,8 +272,9 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             submissionService
               .submitMessage(
                 TestData.aesIE507Message,
-                ExportOperationType.Awaiting,
-                TestData.eoriNumber
+                ExportOperationType.Standard,
+                TestData.eoriNumber,
+                Some(TestData.correlationIdHeader)
               )
               .value
               .futureValue
@@ -263,6 +287,16 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
       "should replace a submission" - {
 
         "when a submission with the given submissionId is found in the mongodb collection" in {
+          when(
+            aesIE507Factory.mongoMessage(
+              TestData.aesIE507Message,
+              TestData.eoriNumber,
+              ExportOperationType.Standard,
+              Some(TestData.correlationIdHeader)
+            )
+          )
+            .thenReturn(TestData.mongoAesIE507Message)
+
           when(aesIE507Repository.submit(TestData.mongoAesIE507Message))
             .thenReturn(SingleUpdateStatus.Updated("submitUpsert").toEitherTRight[MongoError])
 
@@ -270,8 +304,9 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             submissionService
               .submitMessage(
                 TestData.aesIE507Message,
-                ExportOperationType.Awaiting,
-                TestData.eoriNumber
+                ExportOperationType.Standard,
+                TestData.eoriNumber,
+                Some(TestData.correlationIdHeader)
               )
               .value
               .futureValue
@@ -284,6 +319,16 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
       "should return an error" - {
 
         "when the upsert operation returns an unexpected error" in {
+          when(
+            aesIE507Factory.mongoMessage(
+              TestData.aesIE507Message,
+              TestData.eoriNumber,
+              ExportOperationType.Standard,
+              Some(TestData.correlationIdHeader)
+            )
+          )
+            .thenReturn(TestData.mongoAesIE507Message)
+
           when(aesIE507Repository.submit(TestData.mongoAesIE507Message))
             .thenReturn(MongoError.UnexpectedError(Exception()).toEitherTLeft[SingleUpdateStatus])
 
@@ -297,8 +342,9 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             submissionService
               .submitMessage(
                 TestData.aesIE507Message,
-                ExportOperationType.Awaiting,
-                TestData.eoriNumber
+                ExportOperationType.Standard,
+                TestData.eoriNumber,
+                Some(TestData.correlationIdHeader)
               )
               .value
               .futureValue

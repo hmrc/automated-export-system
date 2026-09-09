@@ -23,5 +23,5 @@ enum SingleUpdateStatus(
   val isUpsert:      Boolean
 ):
   case Updated(override val operation: String) extends SingleUpdateStatus(operation, 1, 1, false)
-  case AlreadyUpToDate(override val operation: String) extends SingleUpdateStatus(operation, 1, 1, false)
+  case AlreadyUpToDate(override val operation: String) extends SingleUpdateStatus(operation, 1, 0, false)
   case Upserted(override val operation: String) extends SingleUpdateStatus(operation, 0, 0, true)

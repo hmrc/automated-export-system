@@ -26,7 +26,7 @@ class BaseGeneratorsSpec extends AnyFreeSpecLike, Matchers, ScalaCheckDrivenProp
     ".chronologicalInstantsArb" - {
 
       "should generate a tuple of 2 Instants where the second is not before the first" in
-        forAll(chronologicalInstantsArb.arbitrary) { case (instant1, instant2) =>
+        forAll(chronologicalInstantsArb().arbitrary) { case (instant1, instant2) =>
           !instant2.isBefore(instant1) shouldBe true
         }
     }

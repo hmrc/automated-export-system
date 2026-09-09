@@ -26,7 +26,6 @@ enum ExportOperationType(val status: Int):
   case Standard extends ExportOperationType(1)
   case Amend extends ExportOperationType(2)
   case Cancel extends ExportOperationType(3)
-  case Awaiting extends ExportOperationType(4)
 
 object ExportOperationType:
   given mongoFormat: Format[ExportOperationType] = Format(

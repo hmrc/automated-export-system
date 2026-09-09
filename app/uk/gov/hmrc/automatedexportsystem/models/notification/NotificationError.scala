@@ -17,6 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.models.notification
 
 import cats.implicits.catsSyntaxTuple4Semigroupal
+import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag}
 
 final case class NotificationError(
@@ -27,6 +28,8 @@ final case class NotificationError(
 )
 
 object NotificationError:
+  given mongoFormat: Format[NotificationError] = Json.format[NotificationError]
+
   given notificationErrorTag: XmlRootTag[NotificationError] = XmlRootTag("error")
 
   given notificationErrorXmlReader: XmlReader[NotificationError] =
