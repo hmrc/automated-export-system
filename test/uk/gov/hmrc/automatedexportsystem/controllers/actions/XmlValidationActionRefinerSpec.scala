@@ -28,7 +28,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.Results.Status
 import play.api.mvc.{AnyContent, Request, Result}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.XmlPayloadRequest
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesXmlPayloadRequest
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
 import uk.gov.hmrc.automatedexportsystem.services.XmlValidationService
@@ -62,11 +62,11 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
           val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
-          val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
+          val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori)
 
           when(xmlValidationService.validate(xml)).thenReturn(EitherT(Future.successful(Right(()))))
 
-          val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
+          val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(aesXmlPayloadRequest, successfulBlock)
 
           Helpers.status(result)         shouldBe Helpers.OK
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
@@ -80,13 +80,13 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
-            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
+            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori)
 
             val schemaError: SchemaError = SchemaError.SchemaNotFoundError("/schemas/dummy.xsd")
 
             when(xmlValidationService.validate(xml)).thenReturn(EitherT(Future.successful(Left(schemaError))))
 
-            val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
+            val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(aesXmlPayloadRequest, successfulBlock)
 
             val schemaNotFoundErrorResponseXml: Elem =
               <errorResponse>
@@ -109,13 +109,13 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
-            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
+            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori)
 
             val schemaError: SchemaError = SchemaError.SchemaParseError(SchemaError.XsdStructureError(1, 1, "Bad parse error"))
 
             when(xmlValidationService.validate(xml)).thenReturn(EitherT(Future.successful(Left(schemaError))))
 
-            val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
+            val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(aesXmlPayloadRequest, successfulBlock)
 
             val schemaParseErrorResponseXml: Elem =
               <errorResponse>
@@ -138,7 +138,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
-            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
+            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori)
 
             val xmlFailedValidationError: XmlFailedValidationError =
               XmlFailedValidationError(
@@ -151,7 +151,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
               EitherT(Future.successful(Left(xmlFailedValidationError)))
             )
 
-            val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
+            val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(aesXmlPayloadRequest, successfulBlock)
 
             val xmlFailedValidationErrorResponseXml: Elem =
               <errorResponse>
@@ -181,7 +181,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
-            val xmlPayloadRequest: XmlPayloadRequest[AnyContent] = XmlPayloadRequest(xml, request, eori)
+            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori)
 
             val xmlFailedValidationError: XmlFailedValidationError =
               XmlFailedValidationError(
@@ -198,7 +198,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
               EitherT(Future.successful(Left(xmlFailedValidationError)))
             )
 
-            val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(xmlPayloadRequest, successfulBlock)
+            val result: Future[Result] = xmlValidationActionRefiner.invokeBlock(aesXmlPayloadRequest, successfulBlock)
 
             val xmlFailedValidationErrorResponseXml: Elem =
               <errorResponse>

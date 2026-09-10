@@ -22,12 +22,11 @@ import org.scalacheck.{Arbitrary, Gen}
 import java.time.Instant
 
 trait BaseGenerators:
-  given chronologicalInstantsArb: Arbitrary[(Instant, Instant)] =
+  def chronologicalInstantsArb(minSeconds: Long = Instant.EPOCH.getEpochSecond): Arbitrary[(Instant, Instant)] =
     val minOffset: Long = 0L
     // realistic ~10 years offset
     val maxOffset: Long = 315360000L
 
-    val minSeconds: Long = Instant.EPOCH.getEpochSecond
     val maxSeconds: Long = minSeconds + maxOffset * 10
 
     Arbitrary {

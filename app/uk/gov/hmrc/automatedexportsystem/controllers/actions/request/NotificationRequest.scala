@@ -17,8 +17,9 @@
 package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
 import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.notification.AesDigitalNotification
 
-import scala.xml.NodeSeq
-
-final case class XmlPayloadRequest[T](xml: NodeSeq, request: Request[T], eori: EoriNumber) extends WrappedRequest(request)
+case class NotificationRequest[A](
+  notification: AesDigitalNotification,
+  request:      Request[A]
+) extends WrappedRequest[A](request)

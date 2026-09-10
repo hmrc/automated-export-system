@@ -16,10 +16,24 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.notification
 
-sealed trait NotificationStatus { def value: Int }
+import cats.implicits.catsSyntaxOption
+import uk.gov.hmrc.automatedexportsystem.errors.XmlReaderError
+import uk.gov.hmrc.automatedexportsystem.xml.XmlReader
 
-object NotificationStatus {
-  case object Accepted extends NotificationStatus { val value = 1 }
-  case object Diversion extends NotificationStatus { val value = 5 }
-  case object Rejected extends NotificationStatus { val value = 2 }
-}
+enum NotificationStatus(val status: Int):
+  case Accepted extends NotificationStatus(1)
+  case Rejected extends NotificationStatus(2)
+  case Diversion extends NotificationStatus(5)
+
+object NotificationStatus:
+  given notificationStatusXmlReader: XmlReader[NotificationStatus] =
+    XmlReader.intReader.flatMapResult { (value, path) =>
+      NotificationStatus.values
+        .find(_.status == value)
+        .toValidNel(
+          XmlReaderError.ParseError(
+            path.toString,
+            s"Failed to parse '$value' to NotificationStatus"
+          )
+        )
+    }

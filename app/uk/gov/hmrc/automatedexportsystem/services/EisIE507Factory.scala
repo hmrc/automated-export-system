@@ -65,3 +65,5 @@ class EisIE507Factory @Inject() (clock: Clock, idGenerator: IdGenerator):
     val message: EisIE507Message = EisIE507Message(messageHeader, messageBody)
 
     EisIE507Request(headers, message)
+  end request
+end EisIE507Factory

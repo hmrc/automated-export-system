@@ -23,6 +23,7 @@ enum ResponseCode(val status: Int, val code: String):
   case Accepted extends ResponseCode(ACCEPTED, "ACCEPTED")
   case NoContent extends ResponseCode(NO_CONTENT, "NO_CONTENT")
   case BadRequest extends ResponseCode(BAD_REQUEST, "BAD_REQUEST")
+  case Unauthorized extends ResponseCode(UNAUTHORIZED, "UNAUTHORIZED")
   case Forbidden extends ResponseCode(FORBIDDEN, "FORBIDDEN")
   case NotFound extends ResponseCode(NOT_FOUND, "NOT_FOUND")
   case UnsupportedMediaType extends ResponseCode(UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_MEDIA_TYPE")

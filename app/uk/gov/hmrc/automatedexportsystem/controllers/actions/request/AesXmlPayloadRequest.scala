@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.mongo
+package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
-enum SingleUpdateStatus(
-  val operation:     String,
-  val matchedCount:  Long,
-  val modifiedCount: Long,
-  val isUpsert:      Boolean
-):
-  case Updated(override val operation: String) extends SingleUpdateStatus(operation, 1, 1, false)
-  case AlreadyUpToDate(override val operation: String) extends SingleUpdateStatus(operation, 1, 0, false)
-  case Upserted(override val operation: String) extends SingleUpdateStatus(operation, 0, 0, true)
+import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+
+import scala.xml.NodeSeq
+
+final case class AesXmlPayloadRequest[T](
+  xml:     NodeSeq,
+  request: Request[T],
+  eori:    EoriNumber
+) extends WrappedRequest(request)
+    with XmlRequest

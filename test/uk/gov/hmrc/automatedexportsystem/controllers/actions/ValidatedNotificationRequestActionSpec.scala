@@ -21,8 +21,6 @@ import play.api.test.Helpers.await
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 
-import scala.xml.Elem
-
 class ValidatedNotificationRequestActionSpec extends BaseSpec with AllMocks:
   trait Setup:
     when(mockAppConfig.notificationToken).thenReturn("some-token")
@@ -36,36 +34,15 @@ class ValidatedNotificationRequestActionSpec extends BaseSpec with AllMocks:
     )
 
   "ValidatedNotificationRequestAction.refine" - {
-    "return success when a valid notification token and xml body is provided" in new Setup {
-      val payload: Elem                     = <xml>some xml</xml>
-      val request: Request[AnyContentAsXml] =
+
+    "return success when a valid notification token is provided" in new Setup {
+      val request: FakeRequest[AnyContentAsEmpty.type] =
         FakeRequest(Helpers.POST, "/")
           .withHeaders("Authorization" -> "some-token")
-          .withXmlBody(payload)
 
       val result = await(action.refine(request))
 
       result shouldBe Right(ValidatedNotificationRequest(request))
-    }
-
-    "return 400 when a valid notification token but invalid xml payload provided" in new Setup {
-      val request: Request[AnyContentAsText] =
-        FakeRequest(Helpers.POST, "/")
-          .withHeaders("Authorization" -> "some-token")
-          .withBody(AnyContentAsText("<xmlx>not xml</xml>"))
-
-      val result = await(action.refine(request))
-      result.left.toOption.value.header.status shouldBe Helpers.BAD_REQUEST
-    }
-
-    "return 400 when a valid notification token is provided with no xml body" in new Setup {
-      val request: Request[AnyContentAsEmpty.type] =
-        FakeRequest(Helpers.POST, "/")
-          .withHeaders("Authorization" -> "some-token")
-
-      val result = await(action.refine(request))
-
-      result.left.toOption.value.header.status shouldBe Helpers.BAD_REQUEST
     }
 
     "return 401 when an invalid notification token" in new Setup {

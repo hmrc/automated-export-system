@@ -28,7 +28,7 @@ import uk.gov.hmrc.automatedexportsystem.xml.{RootedXmlWriter, XmlRootTag, XmlWr
 import scala.xml.*
 
 final case class AesErrorResponse(status: Int, code: String, message: String, errors: Option[NonEmptyList[AesErrorResponseError]]):
-  private def self: AesErrorResponse = this
+  self =>
 
   def toResult: Result =
     import writeables.NodeSeqFormattedWriteables.writeableOfFormattedNodeSeq

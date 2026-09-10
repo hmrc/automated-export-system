@@ -21,8 +21,10 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEvent, NotificationEventStatus}
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
 
+import java.time.Instant
 import java.util.UUID
 
 trait AesIE507Generators extends BaseGenerators:
@@ -33,7 +35,7 @@ trait AesIE507Generators extends BaseGenerators:
 
   given eoriNumberArb: Arbitrary[EoriNumber] =
     Arbitrary {
-      Gen.asciiStr.map(EoriNumber.apply)
+      Gen.asciiPrintableStr.map(EoriNumber.apply)
     }
 
   given exportOperationTypeArb: Arbitrary[ExportOperationType] =
@@ -43,7 +45,7 @@ trait AesIE507Generators extends BaseGenerators:
 
   given mrnArb: Arbitrary[Mrn] =
     Arbitrary {
-      Gen.asciiStr.map(Mrn.apply)
+      Gen.asciiPrintableStr.map(Mrn.apply)
     }
 
   given discrepanciesExistArb: Arbitrary[DiscrepanciesExist] =
@@ -68,7 +70,7 @@ trait AesIE507Generators extends BaseGenerators:
 
   given referenceNumberArb: Arbitrary[ReferenceNumber] =
     Arbitrary {
-      Gen.asciiStr.map(ReferenceNumber.apply)
+      Gen.asciiPrintableStr.map(ReferenceNumber.apply)
     }
 
   given customsOfficeOfExitActualArb: Arbitrary[CustomsOfficeOfExitActual] =
@@ -83,12 +85,12 @@ trait AesIE507Generators extends BaseGenerators:
 
   given referenceNumberUcrArb: Arbitrary[ReferenceNumberUcr] =
     Arbitrary {
-      Gen.asciiStr.map(ReferenceNumberUcr.apply)
+      Gen.asciiPrintableStr.map(ReferenceNumberUcr.apply)
     }
 
   given parentUcrIdArb: Arbitrary[ParentUcrId] =
     Arbitrary {
-      Gen.asciiStr.map(ParentUcrId.apply)
+      Gen.asciiPrintableStr.map(ParentUcrId.apply)
     }
 
   given sequenceNumberArb: Arbitrary[SequenceNumber] =
@@ -108,7 +110,7 @@ trait AesIE507Generators extends BaseGenerators:
 
   given sealIdentifierArb: Arbitrary[SealIdentifier] =
     Arbitrary {
-      Gen.asciiStr.map(SealIdentifier.apply)
+      Gen.asciiPrintableStr.map(SealIdentifier.apply)
     }
 
   given sealArb: Arbitrary[Seal] =
@@ -151,27 +153,27 @@ trait AesIE507Generators extends BaseGenerators:
 
   given typeOfLocationArb: Arbitrary[TypeOfLocation] =
     Arbitrary {
-      Gen.asciiStr.map(TypeOfLocation.apply)
+      Gen.asciiPrintableStr.map(TypeOfLocation.apply)
     }
 
   given qualifierOfIdentificationArb: Arbitrary[QualifierOfIdentification] =
     Arbitrary {
-      Gen.asciiStr.map(QualifierOfIdentification.apply)
+      Gen.asciiPrintableStr.map(QualifierOfIdentification.apply)
     }
 
   given authorisationNumberArb: Arbitrary[AuthorisationNumber] =
     Arbitrary {
-      Gen.asciiStr.map(AuthorisationNumber.apply)
+      Gen.asciiPrintableStr.map(AuthorisationNumber.apply)
     }
 
   given additionalIdentifierArb: Arbitrary[AdditionalIdentifier] =
     Arbitrary {
-      Gen.asciiStr.map(AdditionalIdentifier.apply)
+      Gen.asciiPrintableStr.map(AdditionalIdentifier.apply)
     }
 
   given unLocodeArb: Arbitrary[UnLocode] =
     Arbitrary {
-      Gen.asciiStr.map(UnLocode.apply)
+      Gen.asciiPrintableStr.map(UnLocode.apply)
     }
 
   given locationOfGoodsArb: Arbitrary[LocationOfGoods] =
@@ -187,17 +189,17 @@ trait AesIE507Generators extends BaseGenerators:
 
   given typeOfIdentificationArb: Arbitrary[TypeOfIdentification] =
     Arbitrary {
-      Gen.asciiStr.map(TypeOfIdentification.apply)
+      Gen.asciiPrintableStr.map(TypeOfIdentification.apply)
     }
 
   given identificationNumberArb: Arbitrary[IdentificationNumber] =
     Arbitrary {
-      Gen.asciiStr.map(IdentificationNumber.apply)
+      Gen.asciiPrintableStr.map(IdentificationNumber.apply)
     }
 
   given nationalityArb: Arbitrary[Nationality] =
     Arbitrary {
-      Gen.asciiStr.map(Nationality.apply)
+      Gen.asciiPrintableStr.map(Nationality.apply)
     }
 
   given activeBorderTransportMeansArb: Arbitrary[ActiveBorderTransportMeans] =
@@ -269,7 +271,7 @@ trait AesIE507Generators extends BaseGenerators:
 
   given typeOfPackagesArb: Arbitrary[TypeOfPackages] =
     Arbitrary {
-      Gen.asciiStr.map(TypeOfPackages.apply)
+      Gen.asciiPrintableStr.map(TypeOfPackages.apply)
     }
 
   given numberOfPackagesArb: Arbitrary[NumberOfPackages] =
@@ -279,7 +281,7 @@ trait AesIE507Generators extends BaseGenerators:
 
   given shippingMarksArb: Arbitrary[ShippingMarks] =
     Arbitrary {
-      Gen.asciiStr.map(ShippingMarks.apply)
+      Gen.asciiPrintableStr.map(ShippingMarks.apply)
     }
 
   given packagingArb: Arbitrary[Packaging] =
@@ -311,14 +313,51 @@ trait AesIE507Generators extends BaseGenerators:
     }
 
 trait MongoAesIE507MessageGenerator extends AesIE507Generators:
+  given notificationEventStatusArb: Arbitrary[NotificationEventStatus] =
+    Arbitrary {
+      Gen.oneOf(NotificationEventStatus.values.toSeq)
+    }
+
+  given notificationErrorArb: Arbitrary[NotificationError] =
+    Arbitrary {
+      for
+        code          <- Gen.asciiPrintableStr
+        description   <- Gen.asciiPrintableStr
+        path          <- Gen.option(Gen.asciiPrintableStr)
+        originalValue <- Gen.option(Gen.asciiPrintableStr)
+      yield NotificationError(code, description, path, originalValue)
+    }
+
+  def notificationEventArb(after: Instant = Instant.EPOCH): Arbitrary[NotificationEvent] =
+    Arbitrary {
+      for
+        correlationId              <- Gen.alphaNumStr
+        (dateCreated, dateUpdated) <- chronologicalInstantsArb(after.getEpochSecond).arbitrary
+        dateUpdated                <- Gen.option(Gen.const(dateUpdated))
+        isPending                  <- arbitrary[Boolean]
+        status                     <- arbitrary[NotificationEventStatus]
+        errors                     <- arbitrary[Option[NonEmptyList[NotificationError]]]
+      yield NotificationEvent(correlationId, dateCreated, dateUpdated, isPending, status, errors)
+    }
+
   given mongoAesIE507Arb: Arbitrary[MongoAesIE507Message] =
     Arbitrary {
       for
-        _id                       <- arbitrary[SubmissionId]
+        submissionId              <- arbitrary[SubmissionId]
         eoriNumber                <- arbitrary[EoriNumber]
-        (createdAt, updatedAt)    <- chronologicalInstantsArb.arbitrary
+        (createdAt, updatedAt)    <- chronologicalInstantsArb().arbitrary
         exportOperation           <- arbitrary[ExportOperation]
         customsOfficeOfExitActual <- arbitrary[CustomsOfficeOfExitActual]
         goodsShipment             <- arbitrary[Option[GoodsShipment]]
-      yield MongoAesIE507Message(_id, eoriNumber, createdAt, updatedAt, exportOperation, customsOfficeOfExitActual, goodsShipment)
+        metadata                  <- nonEmptyListArb(using notificationEventArb(createdAt)).arbitrary
+      yield MongoAesIE507Message(
+        submissionId,
+        eoriNumber,
+        createdAt,
+        updatedAt,
+        exportOperation,
+        customsOfficeOfExitActual,
+        goodsShipment,
+        metadata
+      )
     }

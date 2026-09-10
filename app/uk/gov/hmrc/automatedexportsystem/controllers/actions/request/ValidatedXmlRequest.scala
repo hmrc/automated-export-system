@@ -21,4 +21,9 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
 
 import scala.xml.NodeSeq
 
-final case class ValidatedXmlRequest[T](validatedXml: NodeSeq, request: Request[T], eori: EoriNumber) extends WrappedRequest(request)
+final case class ValidatedXmlRequest[T](
+  xml:     NodeSeq,
+  request: Request[T],
+  eori:    EoriNumber
+) extends WrappedRequest(request)
+    with XmlRequest

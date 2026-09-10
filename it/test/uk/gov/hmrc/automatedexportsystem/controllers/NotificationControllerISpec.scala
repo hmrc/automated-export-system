@@ -30,7 +30,7 @@ class NotificationControllerISpec extends BaseISpec:
       <correlationId>8f3c2a19-7d2b-4b74-a9f0-123456789012</correlationId>
       <eori>GB123456789000</eori>
       <mrn>25GB1234567890ABCDE</mrn>
-      <dateCreated>2026-08-12T10:15:30Z</dateCreated>
+      <dateCreated>2026-08-12T10:15:30</dateCreated>
       <status>1</status>
     </notification>
 
@@ -39,9 +39,9 @@ class NotificationControllerISpec extends BaseISpec:
                          |    </notification>""".stripMargin
 
   val invalidXmlPayload =
-    """<notification>
-      |      <status>1</status>
-      |    </notification>""".stripMargin
+    <notification>
+      <status>1</status>
+    </notification>
 
   "POST /notification" - {
 
@@ -66,37 +66,38 @@ class NotificationControllerISpec extends BaseISpec:
       (resultXml \ "code").text.trim shouldBe "UNAUTHORIZED"
     }
 
-    "return 400 when authorization header is valid and payload is missing" in {
+    "return 415 when authorization header is valid and payload is missing" in {
       val request = FakeRequest(Helpers.POST, endpoint)
         .withHeaders("Authorization" -> "some-token")
 
       val result = Helpers.route(app, request).value
-      Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+      Helpers.status(result)      shouldBe Helpers.UNSUPPORTED_MEDIA_TYPE
       Helpers.contentType(result) shouldBe Some("application/xml")
       val resultXml = Xml.loadString(Helpers.contentAsString(result))
-      (resultXml \ "code").text shouldBe "BAD_REQUEST"
+      (resultXml \ "code").text shouldBe "UNSUPPORTED_MEDIA_TYPE"
     }
-    "return 400 when authorization header is valid and payload is invalid" in {
+
+    "return 422 when authorization header is valid and payload is invalid" in {
       val request = FakeRequest(Helpers.POST, endpoint)
         .withHeaders("Authorization" -> "some-token")
         .withBody(invalidPayload)
 
       val result = Helpers.route(app, request).value
-      Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+      Helpers.status(result)      shouldBe Helpers.UNSUPPORTED_MEDIA_TYPE
       Helpers.contentType(result) shouldBe Some("application/xml")
       val resultXml = Xml.loadString(Helpers.contentAsString(result))
-      (resultXml \ "code").text shouldBe "BAD_REQUEST"
+      (resultXml \ "code").text shouldBe "UNSUPPORTED_MEDIA_TYPE"
     }
 
-    "return 400 when authorization header is valid and payload is invalid xml" in {
+    "return 422 when authorization header is valid and payload is invalid xml" in {
       val request = FakeRequest(Helpers.POST, endpoint)
         .withHeaders("Authorization" -> "some-token")
         .withBody(invalidXmlPayload)
 
       val result = Helpers.route(app, request).value
-      Helpers.status(result)      shouldBe Helpers.BAD_REQUEST
+      Helpers.status(result)      shouldBe Helpers.UNPROCESSABLE_ENTITY
       Helpers.contentType(result) shouldBe Some("application/xml")
       val resultXml = Xml.loadString(Helpers.contentAsString(result))
-      (resultXml \ "code").text shouldBe "INVALID_NOTIFICATION"
+      (resultXml \ "code").text shouldBe "UNPROCESSABLE_ENTITY"
     }
   }

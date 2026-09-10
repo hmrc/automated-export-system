@@ -34,7 +34,7 @@ import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, SourceFaultDetail}
-import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
+import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
@@ -47,47 +47,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
 
 class SubmissionControllerSpec extends BaseSpec, AllMocks:
-  val controllerComponents: ControllerComponents = Helpers.stubControllerComponents(executionContext = ec)
-
-  val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
-
-  val xmlValidationService: AesIE507XmlValidationService = mock[AesIE507XmlValidationService]
-
-  val xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService] =
-    XmlValidationActionRefiner(xmlValidationService)
-
-  val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner()
-
-  val idGenerator: IdGenerator = mock[IdGenerator]
-
-  val aesAuthAction: AesAuthAction =
-    new AesAuthAction(mockAuthConnector, idGenerator)(ec, materializer):
-      override def apply[T](next: Action[T]): EssentialAction =
-        EssentialAction { rh =>
-          next(rh.addAttr(AesAuthAttr.Eori, "GB123456789000"))
-        }
-
-  val aesAuthRequestRefiner: AesAuthRequestRefiner = new AesAuthRequestRefiner
-
-  val xmlBodyParsers: XmlBodyParsers = XmlBodyParsers(controllerComponents.parsers)
-
-  val submissionService: SubmissionService = mock[SubmissionService]
-
-  val eisService: EisService = mock[EisService]
-
-  val submissionController: SubmissionController =
-    SubmissionController(
-      controllerComponents,
-      aesAuthAction,
-      aesAuthRequestRefiner,
-      xmlPayloadActionRefiner,
-      xmlValidationActionRefiner,
-      aesIE507ActionRefiner,
-      xmlBodyParsers,
-      submissionService,
-      eisService
-    )
-
   object TestData:
     val instant:        Instant       = Instant.parse("2026-08-03T00:00:00Z")
     val id:             UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
@@ -192,6 +151,49 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
       )
   end TestData
 
+  trait Setup:
+    val controllerComponents: ControllerComponents = Helpers.stubControllerComponents(executionContext = ec)
+
+    val aesXmlPayloadActionRefiner: AesXmlPayloadActionRefiner = AesXmlPayloadActionRefiner()
+
+    val xmlValidationService: AesIE507XmlValidationService = mock[AesIE507XmlValidationService]
+
+    val xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService] =
+      XmlValidationActionRefiner(xmlValidationService)
+
+    val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner()
+
+    val idGenerator: IdGenerator = mock[IdGenerator]
+
+    val aesAuthAction: AesAuthAction =
+      new AesAuthAction(mockAuthConnector, idGenerator)(ec, materializer):
+        override def apply[T](next: Action[T]): EssentialAction =
+          EssentialAction { rh =>
+            next(rh.addAttr(AesAuthAttr.Eori, "GB123456789000"))
+          }
+
+    val aesAuthRequestRefiner: AesAuthRequestRefiner = new AesAuthRequestRefiner
+
+    val xmlBodyParsers: XmlBodyParsers = XmlBodyParsers(controllerComponents.parsers)
+
+    val submissionService: SubmissionService = mock[SubmissionService]
+
+    val eisService: EisService = mock[EisService]
+
+    val submissionController: SubmissionController =
+      SubmissionController(
+        controllerComponents,
+        aesAuthAction,
+        aesAuthRequestRefiner,
+        aesXmlPayloadActionRefiner,
+        xmlValidationActionRefiner,
+        aesIE507ActionRefiner,
+        xmlBodyParsers,
+        submissionService,
+        eisService
+      )
+  end Setup
+
   "SubmissionController" - {
 
     ".message" - {
@@ -202,9 +204,10 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
           "when applied with a Request containing a valid XML body that passes IE507 request schema validation" - {
 
-            "and the submission is successfully submitted to EIS" in {
+            "and the submission is successfully submitted to EIS" in new Setup {
               val request: FakeRequest[NodeSeq] =
                 FakeRequest()
+                  .withHeaders(CustomHeaderNames.X_CORRELATION_ID -> TestData.correlationId)
                   .withBody(TestData.aesIE507MessageValidXml)
 
               when(xmlValidationService.validate(TestData.aesIE507MessageValidXml))
@@ -213,8 +216,9 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               when(
                 submissionService.submitMessage(
                   TestData.aesIE507Message,
-                  ExportOperationType.Awaiting,
-                  TestData.eoriNumber
+                  ExportOperationType.Standard,
+                  TestData.eoriNumber,
+                  Some(TestData.correlationIdHeader)
                 )
               )
                 .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
@@ -223,7 +227,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 eisService.submitMessage(
                   eqTo(TestData.aesIE507Message),
                   EoriNumber(eqTo(TestData.eoriNumber.value)),
-                  eqTo(None),
+                  eqTo(Some(TestData.correlationIdHeader)),
                   eqTo(None)
                 )(using any())
               ).thenReturn(Right(()).toEitherTRight[EisServiceError])
@@ -243,7 +247,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
             "and EIS returns a EisErrorResponse" - {
 
-              "with a 500 errorCode" in {
+              "with a 500 errorCode" in new Setup {
                 val request: FakeRequest[NodeSeq] =
                   FakeRequest()
                     .withBody(TestData.aesIE507MessageValidXml)
@@ -254,8 +258,9 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 when(
                   submissionService.submitMessage(
                     TestData.aesIE507Message,
-                    ExportOperationType.Awaiting,
-                    TestData.eoriNumber
+                    ExportOperationType.Standard,
+                    TestData.eoriNumber,
+                    None
                   )
                 )
                   .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
@@ -296,7 +301,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(eisErrorResponseXml)
               }
 
-              "with a 400 errorCode" in {
+              "with a 400 errorCode" in new Setup {
                 val request: FakeRequest[NodeSeq] =
                   FakeRequest()
                     .withBody(TestData.aesIE507MessageValidXml)
@@ -307,8 +312,9 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 when(
                   submissionService.submitMessage(
                     TestData.aesIE507Message,
-                    ExportOperationType.Awaiting,
-                    TestData.eoriNumber
+                    ExportOperationType.Standard,
+                    TestData.eoriNumber,
+                    None
                   )
                 )
                   .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
@@ -354,7 +360,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
         "that returns a 500 Result" - {
 
-          "when applied with a Request containing a valid XML body but XSD schema cannot be found" in {
+          "when applied with a Request containing a valid XML body but XSD schema cannot be found" in new Setup {
             val requestXml: Elem =
               <element>I'm valid XML</element>
 
@@ -387,7 +393,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
           "when applied with a Request containing a valid XML body that passes IE507 request schema validation" - {
 
-            "due to an unexpected error encountered when upserting the submission" in {
+            "due to an unexpected error encountered when upserting the submission" in new Setup {
               val request: FakeRequest[NodeSeq] =
                 FakeRequest()
                   .withBody(TestData.aesIE507MessageValidXml)
@@ -403,8 +409,9 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               when(
                 submissionService.submitMessage(
                   TestData.aesIE507Message,
-                  ExportOperationType.Awaiting,
-                  TestData.eoriNumber
+                  ExportOperationType.Standard,
+                  TestData.eoriNumber,
+                  None
                 )
               )
                 .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
@@ -427,7 +434,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
             }
           }
 
-          "due to an unexpected error encountered when submitting the message to EIS" in {
+          "due to an unexpected error encountered when submitting the message to EIS" in new Setup {
             val request: FakeRequest[NodeSeq] =
               FakeRequest()
                 .withBody(TestData.aesIE507MessageValidXml)
@@ -438,8 +445,9 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
             when(
               submissionService.submitMessage(
                 TestData.aesIE507Message,
-                ExportOperationType.Awaiting,
-                TestData.eoriNumber
+                ExportOperationType.Standard,
+                TestData.eoriNumber,
+                None
               )
             )
               .thenReturn(
@@ -480,7 +488,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
         "that returns a 422 Result" - {
 
-          "when applied with a Request containing a valid XML body but XSD schema cannot be parsed" in {
+          "when applied with a Request containing a valid XML body but XSD schema cannot be parsed" in new Setup {
             val requestXml: Elem =
               <element>I'm valid XML</element>
 
@@ -517,7 +525,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
           "when applied with a Request containing a valid XML body that doesn't pass IE507 request schema validation" - {
 
-            "due to an XmlSchemaValidationError" in {
+            "due to an XmlSchemaValidationError" in new Setup {
               val requestXml: Elem =
                 <element>I'm valid XML</element>
 
@@ -560,7 +568,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
             }
 
-            "due to many XmlSchemaValidationError" in {
+            "due to many XmlSchemaValidationError" in new Setup {
               val requestXml: Elem =
                 <element>I'm valid XML</element>
 
@@ -626,7 +634,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(xmlFailedValidationErrorResponseXml)
             }
 
-            "due to an XmlFailedReadError" in {
+            "due to an XmlFailedReadError" in new Setup {
               when(xmlValidationService.validate(any[NodeSeq]))
                 .thenReturn(EitherT.rightT[Future, AesError](()))
 
@@ -682,7 +690,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
           "that returns a 200 Result with a payload containing all the submissions" - {
 
-            "when there are submissions found with that EORI" in {
+            "when there are submissions found with that EORI" in new Setup {
               when(submissionService.getSubmissions(TestData.eoriNumber))
                 .thenReturn(EitherT(Future.successful(Right(TestData.submissionSummaryList))))
 
@@ -721,7 +729,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionSummaryListXml)
             }
 
-            "when there are no submissions found with that EORI" in {
+            "when there are no submissions found with that EORI" in new Setup {
               when(submissionService.getSubmissions(TestData.eoriNumber))
                 .thenReturn(EitherT(Future.successful(Right(TestData.submissionSummaryListEmpty))))
 
@@ -745,7 +753,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
           "that returns a 500 Result" - {
 
-            "due to an unexpected error encountered while retrieving the submissions" in {
+            "due to an unexpected error encountered while retrieving the submissions" in new Setup {
               when(submissionService.getSubmissions(TestData.eoriNumber))
                 .thenReturn(
                   EitherT(
@@ -766,12 +774,12 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
               val submissionRetrieveFailureXml: Elem =
                 <errorResponse>
-                    <status>500</status>
-                    <code>INTERNAL_SERVER_ERROR</code>
-                    <message>
-                      Submission retrieval failed for EORI:
-                      {TestData.eoriNumber.value}
-                    </message>
+                  <status>500</status>
+                  <code>INTERNAL_SERVER_ERROR</code>
+                  <message>
+                    Submission retrieval failed for EORI:
+                    {TestData.eoriNumber.value}
+                  </message>
                 </errorResponse>
 
               val resultContent: String = Helpers.contentAsString(result)
@@ -794,7 +802,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
           "that returns a 200 Result with a payload containing a single submission" - {
 
-            "when there is a submission found with that EORI and given submissionId" in {
+            "when there is a submission found with that EORI and given submissionId" in new Setup {
               when(submissionService.getSubmission(TestData.eoriNumber, TestData.submissionId))
                 .thenReturn(EitherT(Future.successful(Right(TestData.submission))))
 
@@ -832,7 +840,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
           "that returns a 404 Result" - {
 
-            "and there is no submission found with that EORI and given submissionId" in {
+            "and there is no submission found with that EORI and given submissionId" in new Setup {
               val submissionServiceErrorMessage: String =
                 s"Submission not found for EORI: ${TestData.eoriNumber.value} " +
                   s"and submissionId: ${TestData.submissionId.value}"
@@ -855,12 +863,12 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
               val submissionNotFoundXml: Elem =
                 <errorResponse>
-                    <status>404</status>
-                    <code>NOT_FOUND</code>
-                    <message>
-                      {submissionServiceErrorMessage}
-                    </message>
-                  </errorResponse>
+                  <status>404</status>
+                  <code>NOT_FOUND</code>
+                  <message>
+                    {submissionServiceErrorMessage}
+                  </message>
+                </errorResponse>
 
               val resultContent: String = Helpers.contentAsString(result)
               val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
@@ -873,7 +881,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
           "that returns a 500 Result" - {
 
-            "due to an unexpected error encountered while retrieving the submissions" in {
+            "due to an unexpected error encountered while retrieving the submissions" in new Setup {
               val submissionServiceErrorMessage: String =
                 s"Submission retrieval failed for EORI: ${TestData.eoriNumber.value} " +
                   s"and submissionId: ${TestData.submissionId.value}"
@@ -925,7 +933,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
             "when there is a submission found with that EORI and submissionId" - {
 
-              "and the submission is not cancelled yet" in {
+              "and the submission is not cancelled yet" in new Setup {
                 when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
                   .thenReturn(SingleUpdateStatus.Updated("cancel").toEitherTRight[SubmissionServiceError])
 
@@ -938,7 +946,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 Helpers.contentAsBytes(result) shouldBe ByteString.empty
               }
 
-              "and the submission is already cancelled" in {
+              "and the submission is already cancelled" in new Setup {
                 when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
                   .thenReturn(SingleUpdateStatus.AlreadyUpToDate("cancel").toEitherTRight[SubmissionServiceError])
 
@@ -955,7 +963,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
           "that returns a 404 Result" - {
 
-            "when there is no submission found with that EORI and submissionId" in {
+            "when there is no submission found with that EORI and submissionId" in new Setup {
               val error: SubmissionServiceError = SubmissionServiceError.SubmissionNotFound(
                 s"Submission not found. EORI: ${TestData.eoriNumber.value}, submissionId: ${TestData.id}"
               )
@@ -986,7 +994,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
           "that returns a 500 Result" - {
 
-            "due to an unexpected error encountered while retrieving the submissions" in {
+            "due to an unexpected error encountered while retrieving the submissions" in new Setup {
               val error: SubmissionServiceError = SubmissionServiceError.SubmissionOperationFailure(
                 s"Submission update failed. EORI: ${TestData.eoriNumber.value} " +
                   s"and submissionId: ${TestData.submissionId.value}"

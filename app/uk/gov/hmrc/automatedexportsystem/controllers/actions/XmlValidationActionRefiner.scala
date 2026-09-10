@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 
 import play.api.mvc.{ActionRefiner, Result}
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{ValidatedXmlRequest, XmlPayloadRequest}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{AesXmlPayloadRequest, ValidatedXmlRequest}
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.services.XmlValidationService
@@ -29,8 +29,8 @@ import scala.xml.NodeSeq
 @Singleton
 class XmlValidationActionRefiner[T <: XmlValidationService] @Inject() (xmlValidationService: T)(using
   protected val executionContext: ExecutionContext
-) extends ActionRefiner[XmlPayloadRequest, ValidatedXmlRequest]:
-  protected def refine[A](request: XmlPayloadRequest[A]): Future[Either[Result, ValidatedXmlRequest[A]]] =
+) extends ActionRefiner[AesXmlPayloadRequest, ValidatedXmlRequest]:
+  protected def refine[A](request: AesXmlPayloadRequest[A]): Future[Either[Result, ValidatedXmlRequest[A]]] =
     val xml: NodeSeq = request.xml
 
     val validationOutcome: Future[Either[Result, ValidatedXmlRequest[A]]] =

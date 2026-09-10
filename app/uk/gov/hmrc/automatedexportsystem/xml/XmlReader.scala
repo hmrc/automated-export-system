@@ -21,7 +21,9 @@ import cats.syntax.option.*
 import cats.syntax.traverse.toTraverseOps
 import uk.gov.hmrc.automatedexportsystem.errors.XmlReaderError
 
-import java.time.Instant
+import java.time.format.DateTimeFormatter
+import java.time.temporal.Temporal
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 import java.util.UUID
 import scala.util.Try
 import scala.xml.NodeSeq
@@ -59,7 +61,7 @@ trait XmlReader[T]:
   def flatMap[U](f: T => XmlReader[U]): XmlReader[U] =
     (xml, path) => read(xml, path).andThen(t => f(t).read(xml, path))
 
-object XmlReader:
+object XmlReader extends TemporalXmlReaderDefaults:
   extension (xml: NodeSeq)
     def as[T](using reader: XmlReader[T]): ValidatedNel[XmlReaderError, T] =
       reader.read(xml, XmlPath)
@@ -111,15 +113,6 @@ object XmlReader:
         .toValidNel(XmlReaderError.ParseError(path.toString, s"Failed to parse '$text' to BigDecimal"))
     }
 
-  given instantReader: XmlReader[Instant] =
-    stringReader.flatMapResult { (value, path) =>
-      Try(Instant.parse(value)).toOption
-        .toValidNel(
-          XmlReaderError
-            .ParseError(path.toString, s"Failed to parse '$value' to Instant")
-        )
-    }
-
   given unitReader: XmlReader[Unit] =
     (xml, path) =>
       if xml.isEmpty then Validated.validNel(())
@@ -151,3 +144,50 @@ object XmlReader:
             )
     )
 end XmlReader
+
+final class TemporalXmlReader[T <: Temporal](
+  formatter:     TemporalFormatter,
+  parser:        DateTimeFormatter => String => Option[T],
+  epochFallback: Long => T
+) extends XmlReader[T]:
+  def read(xml: NodeSeq, path: XmlPath): ValidatedNel[XmlReaderError, T] =
+    val text: String = xml.text.trim
+
+    parser(formatter.formatter)(text)
+      .orElse(text.toLongOption.map(epochFallback))
+      .toValidNel(
+        XmlReaderError.ParseError(
+          path.toString,
+          s"Failed to parse '$text' to ISO date using ${formatter.formatName} format"
+        )
+      )
+
+object TemporalXmlReader:
+  def instantReader(formatter: TemporalFormatter): XmlReader[Instant] =
+    XmlReader.nonEmptyReader(
+      TemporalXmlReader(
+        formatter = formatter,
+        parser = f => s => Try(Instant.from(f.parse(s))).toOption,
+        epochFallback = Instant.ofEpochMilli
+      )
+    )
+
+  def localDateTimeReader(formatter: TemporalFormatter): XmlReader[LocalDateTime] =
+    XmlReader.nonEmptyReader(
+      TemporalXmlReader(
+        formatter = formatter,
+        parser = f => s => Try(LocalDateTime.from(f.parse(s))).toOption,
+        epochFallback = millis => LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
+      )
+    )
+
+trait TemporalXmlReaderDefaults:
+  given instantDefaultReader: XmlReader[Instant] =
+    TemporalXmlReader.instantReader(TemporalFormatter.IsoInstantTemporalFormatter)
+
+  given localDateTimeDefaultReader: XmlReader[LocalDateTime] =
+    TemporalXmlReader.localDateTimeReader(TemporalFormatter.LocalDateTimeTemporalFormatter)
+
+enum TemporalFormatter(val formatter: DateTimeFormatter, val formatName: String):
+  case IsoInstantTemporalFormatter extends TemporalFormatter(DateTimeFormatter.ISO_INSTANT, "ISO_INSTANT")
+  case LocalDateTimeTemporalFormatter extends TemporalFormatter(DateTimeFormatter.ISO_LOCAL_DATE_TIME, "ISO_LOCAL_DATE_TIME")

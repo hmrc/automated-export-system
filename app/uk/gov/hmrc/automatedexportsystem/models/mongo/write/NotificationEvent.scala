@@ -18,24 +18,21 @@ package uk.gov.hmrc.automatedexportsystem.models.mongo.write
 
 import cats.data.NonEmptyList
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.*
-import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
 
 import java.time.Instant
 
-final case class MongoAesIE507Message(
-  submissionId:              SubmissionId,
-  eoriNumber:                EoriNumber,
-  createdAt:                 Instant,
-  updatedAt:                 Instant,
-  exportOperation:           ExportOperation,
-  customsOfficeOfExitActual: CustomsOfficeOfExitActual,
-  goodsShipment:             Option[GoodsShipment],
-  metadata:                  NonEmptyList[NotificationEvent]
+final case class NotificationEvent(
+  correlationId: String,
+  dateCreated:   Instant,
+  dateUpdated:   Option[Instant],
+  isPending:     Boolean,
+  status:        NotificationEventStatus,
+  errors:        Option[NonEmptyList[NotificationError]]
 )
 
-object MongoAesIE507Message:
+object NotificationEvent:
   import uk.gov.hmrc.automatedexportsystem.models.formats.MongoFormats.mongoDateInstantFormat
   import uk.gov.hmrc.automatedexportsystem.models.formats.NonEmptyListFormat.nonEmptyListFormat
 
-  val mongoFormat: Format[MongoAesIE507Message] = Json.format[MongoAesIE507Message]
+  given mongoFormat: Format[NotificationEvent] = Json.format[NotificationEvent]

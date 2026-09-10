@@ -17,9 +17,9 @@
 package uk.gov.hmrc.automatedexportsystem.controllers.actions
 
 import play.api.mvc.{ActionRefiner, Result}
-import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{AesIE507Request, ValidatedXmlRequest}
+import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{NotificationRequest, NotificationXmlPayloadRequest}
 import uk.gov.hmrc.automatedexportsystem.errors.XmlFailedReadError
-import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.AesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.AesDigitalNotification
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.xml.XmlReader.as
 
@@ -28,17 +28,18 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.NodeSeq
 
 @Singleton
-class AesIE507ActionRefiner @Inject() ()(using protected val executionContext: ExecutionContext)
-    extends ActionRefiner[ValidatedXmlRequest, AesIE507Request]:
-  protected def refine[A](request: ValidatedXmlRequest[A]): Future[Either[Result, AesIE507Request[A]]] =
+class NotificationActionRefiner @Inject() ()(using override protected val executionContext: ExecutionContext)
+    extends ActionRefiner[NotificationXmlPayloadRequest, NotificationRequest]:
+
+  override protected def refine[A](request: NotificationXmlPayloadRequest[A]): Future[Either[Result, NotificationRequest[A]]] =
     val xml: NodeSeq = request.xml
 
     Future.successful(
       xml
-        .as[AesIE507Message]
+        .as[AesDigitalNotification]
         .bimap(
           errors => XmlFailedReadError(errors).toErrorResponse.toResult,
-          AesIE507Request(_, request.eori, request.request)
+          NotificationRequest(_, request.request)
         )
         .toEither
     )

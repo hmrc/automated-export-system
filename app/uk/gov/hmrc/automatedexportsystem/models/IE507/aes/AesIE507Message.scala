@@ -17,44 +17,15 @@
 package uk.gov.hmrc.automatedexportsystem.models.IE507.aes
 
 import cats.implicits.catsSyntaxTuple4Semigroupal
-import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader}
-
-import java.time.Instant
-import java.util.UUID
 
 case class AesIE507Message(
   submissionId:              Option[SubmissionId],
   exportOperation:           ExportOperation,
   customsOfficeOfExitActual: CustomsOfficeOfExitActual,
   goodsShipment:             Option[GoodsShipment]
-) extends Logging {
-  def toMongoMessage(
-    operationType: ExportOperationType,
-    eoriNumber:    EoriNumber,
-    createdAt:     Instant,
-    uuid:          => UUID
-  ): MongoAesIE507Message = {
-    logger.info(
-      s"Converting SubmissionRequest to MongoAesIE507Message with " +
-        s"submissionId: ${submissionId.getOrElse("None")}, " +
-        s"eoriNumber: $eoriNumber, " +
-        s"operationType: $operationType"
-    )
-
-    MongoAesIE507Message(
-      submissionId = submissionId.getOrElse(SubmissionId(uuid)),
-      eoriNumber = eoriNumber,
-      createdAt = createdAt,
-      updatedAt = createdAt,
-      exportOperation = exportOperation.copy(exportOperationType = operationType),
-      customsOfficeOfExitActual = customsOfficeOfExitActual,
-      goodsShipment = goodsShipment
-    )
-  }
-}
+)
 
 object AesIE507Message:
   given aesIE507MessageXmlReader: XmlReader[AesIE507Message] =

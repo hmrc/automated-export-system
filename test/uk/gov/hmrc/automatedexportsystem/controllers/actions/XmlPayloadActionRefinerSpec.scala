@@ -33,23 +33,25 @@ import scala.xml.{Elem, NodeSeq}
 class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValues, DefaultAwaitTimeout:
   given ec: ExecutionContext = ExecutionContext.global
 
-  val xmlPayloadActionRefiner: XmlPayloadActionRefiner = XmlPayloadActionRefiner()
+  object TestData:
+    val eori = EoriNumber("some-eori")
 
-  val eori = EoriNumber("some-eori")
-  "XmlPayloadActionRefiner" - {
+    val successfulBlockNodeSeq: Request[NodeSeq] => Future[Result] = _ =>
+      Future.successful(
+        Status(Helpers.OK)
+      )
+
+    val successfulBlockAnyContent: Request[AnyContent] => Future[Result] = _ =>
+      Future.successful(
+        Status(Helpers.OK)
+      )
+
+  "AesXmlPayloadActionRefiner" - {
+    val xmlPayloadActionRefiner: AesXmlPayloadActionRefiner = AesXmlPayloadActionRefiner()
 
     ".invokeBlock" - {
 
       "should return a Result" - {
-        val successfulBlockNodeSeq: Request[NodeSeq] => Future[Result] = _ =>
-          Future.successful(
-            Status(Helpers.OK)
-          )
-
-        val successfulBlockAnyContent: Request[AnyContent] => Future[Result] = _ =>
-          Future.successful(
-            Status(Helpers.OK)
-          )
 
         "when the body of the request is XML (NodeSeq)" in {
           val xml: Elem =
@@ -59,7 +61,11 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
             FakeRequest(Helpers.GET, "/dummy/path")
               .withBody(xml)
 
-          val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(AesAuthRequest(eori, request), successfulBlockNodeSeq)
+          val result: Future[Result] =
+            xmlPayloadActionRefiner.invokeBlock(
+              AesAuthRequest(TestData.eori, request),
+              TestData.successfulBlockNodeSeq
+            )
 
           Helpers.status(result)         shouldBe Helpers.OK
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
@@ -73,7 +79,11 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
             FakeRequest(Helpers.GET, "/dummy/path")
               .withXmlBody(xml)
 
-          val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(AesAuthRequest(eori, request), successfulBlockAnyContent)
+          val result: Future[Result] =
+            xmlPayloadActionRefiner.invokeBlock(
+              AesAuthRequest(TestData.eori, request),
+              TestData.successfulBlockAnyContent
+            )
 
           Helpers.status(result)         shouldBe Helpers.OK
           Helpers.contentAsBytes(result) shouldBe ByteString.empty
@@ -86,7 +96,86 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
             FakeRequest(Helpers.GET, "/dummy/path")
               .withTextBody(text)
 
-          val result: Future[Result] = xmlPayloadActionRefiner.invokeBlock(AesAuthRequest(eori, request), successfulBlockAnyContent)
+          val result: Future[Result] =
+            xmlPayloadActionRefiner.invokeBlock(
+              AesAuthRequest(TestData.eori, request),
+              TestData.successfulBlockAnyContent
+            )
+
+          val expectedXmlBodyErrorResponseXml: Elem =
+            <errorResponse>
+              <status>415</status>
+              <code>UNSUPPORTED_MEDIA_TYPE</code>
+              <message>The body of the request is not valid XML</message>
+            </errorResponse>
+
+          val resultContent: String = Helpers.contentAsString(result)
+          val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+          Helpers.status(result)      shouldBe Helpers.UNSUPPORTED_MEDIA_TYPE
+          Helpers.contentType(result) shouldBe Some(Helpers.XML)
+          XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(expectedXmlBodyErrorResponseXml)
+        }
+      }
+    }
+  }
+
+  "NotificationXmlPayloadActionRefiner" - {
+    val xmlPayloadActionRefiner: NotificationXmlPayloadActionRefiner =
+      NotificationXmlPayloadActionRefiner()
+
+    ".invokeBlock" - {
+
+      "should return a Result" - {
+
+        "when the body of the request is XML (NodeSeq)" in {
+          val xml: Elem =
+            <element>I'm XML</element>
+
+          val request: FakeRequest[NodeSeq] =
+            FakeRequest(Helpers.GET, "/dummy/path")
+              .withBody(xml)
+
+          val result: Future[Result] =
+            xmlPayloadActionRefiner.invokeBlock(
+              ValidatedNotificationRequest(request),
+              TestData.successfulBlockNodeSeq
+            )
+
+          Helpers.status(result)         shouldBe Helpers.OK
+          Helpers.contentAsBytes(result) shouldBe ByteString.empty
+        }
+
+        "when the body of the request is XML (AnyContent)" in {
+          val xml: Elem =
+            <element>I'm XML</element>
+
+          val request: FakeRequest[AnyContentAsXml] =
+            FakeRequest(Helpers.GET, "/dummy/path")
+              .withXmlBody(xml)
+
+          val result: Future[Result] =
+            xmlPayloadActionRefiner.invokeBlock(
+              ValidatedNotificationRequest(request),
+              TestData.successfulBlockAnyContent
+            )
+
+          Helpers.status(result)         shouldBe Helpers.OK
+          Helpers.contentAsBytes(result) shouldBe ByteString.empty
+        }
+
+        "when the body of the request is not XML" in {
+          val text: String = "<element>I'm XML in disguise</element>"
+
+          val request: FakeRequest[AnyContentAsText] =
+            FakeRequest(Helpers.GET, "/dummy/path")
+              .withTextBody(text)
+
+          val result: Future[Result] =
+            xmlPayloadActionRefiner.invokeBlock(
+              ValidatedNotificationRequest(request),
+              TestData.successfulBlockAnyContent
+            )
 
           val expectedXmlBodyErrorResponseXml: Elem =
             <errorResponse>

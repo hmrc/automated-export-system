@@ -30,13 +30,6 @@ import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import java.time.{Clock, Instant, LocalDateTime, ZoneOffset}
 
 class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
-  val instant: Instant = Instant.parse("2026-08-24T00:00:00.000Z")
-  val clock:   Clock   = Clock.fixed(instant, ZoneOffset.UTC)
-
-  val idGenerator: IdGenerator = mock[IdGenerator]
-
-  val eisIE507Factory: EisIE507Factory = EisIE507Factory(clock, idGenerator)
-
   object TestData:
     val aesIE507Message: AesIE507Message =
       AesIE507Message(
@@ -53,6 +46,7 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
         goodsShipment = None
       )
 
+    val instant:        Instant       = Instant.parse("2026-08-24T00:00:00.000Z")
     val eoriNumber:     EoriNumber    = EoriNumber("eoriNumber")
     val correlationId:  String        = "correlationId"
     val conversationId: String        = "conversationId"
@@ -63,6 +57,12 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
     val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
     val dateHeader:           HttpHeader.Date           = HttpHeader.Date("Mon, 24 Aug 2026 00:00:00 GMT")
   end TestData
+
+  val clock: Clock = Clock.fixed(TestData.instant, ZoneOffset.UTC)
+
+  val idGenerator: IdGenerator = mock[IdGenerator]
+
+  val eisIE507Factory: EisIE507Factory = EisIE507Factory(clock, idGenerator)
 
   "EisIE507Factory" - {
 
