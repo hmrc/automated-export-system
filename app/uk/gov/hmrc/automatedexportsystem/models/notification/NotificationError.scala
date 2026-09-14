@@ -18,7 +18,10 @@ package uk.gov.hmrc.automatedexportsystem.models.notification
 
 import cats.implicits.catsSyntaxTuple4Semigroupal
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag}
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
+import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag, XmlWriter}
+
+import scala.xml.NodeSeq
 
 final case class NotificationError(
   code:          String,
@@ -41,3 +44,13 @@ object NotificationError:
         (XmlPath \ "originalValue").read[Option[String]](xml, path)
       ).mapN(NotificationError.apply)
     }
+
+  given notificationErrorXmlWriter: XmlWriter[NotificationError] =
+    (o, label) =>
+      val children: NodeSeq =
+        o.code.toXml("code")
+          ++ o.description.toXml("description")
+          ++ o.path.toXml("path")
+          ++ o.originalValue.toXml("originalValue")
+
+      XmlWriter.elem(label, children)

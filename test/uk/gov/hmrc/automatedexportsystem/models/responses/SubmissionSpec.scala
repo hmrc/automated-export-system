@@ -22,6 +22,7 @@ import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 
 import java.time.LocalDateTime
@@ -37,6 +38,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
     val submission: Submission =
       Submission(
         submissionId = SubmissionId(id),
+        status = NotificationEventStatus.Rejected,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -185,13 +187,30 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             )
           )
         ),
-        updatedAt = dateTime
+        updatedAt = dateTime,
+        metadata = Some(
+          NonEmptyList.of(
+            NotificationError(
+              "CODE_1",
+              "description",
+              Some("path"),
+              Some("originalValue1")
+            ),
+            NotificationError(
+              "CODE_2",
+              "description",
+              Some("path"),
+              Some("originalValue2")
+            )
+          )
+        )
       )
     end submission
 
     val submissionNoNonRootOptionals: Submission =
       Submission(
         submissionId = SubmissionId(id),
+        status = NotificationEventStatus.Awaiting,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -340,13 +359,15 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             )
           )
         ),
-        updatedAt = dateTime
+        updatedAt = dateTime,
+        metadata = None
       )
     end submissionNoNonRootOptionals
 
     val submissionNoGoodsShipmentChildrenOptionals: Submission =
       Submission(
         submissionId = SubmissionId(id),
+        status = NotificationEventStatus.Accepted,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -376,13 +397,15 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             goodsItem = None
           )
         ),
-        updatedAt = dateTime
+        updatedAt = dateTime,
+        metadata = None
       )
     end submissionNoGoodsShipmentChildrenOptionals
 
     val submissionNoGoodsShipment: Submission =
       Submission(
         submissionId = SubmissionId(id),
+        status = NotificationEventStatus.Cancelled,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -393,7 +416,8 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
           referenceNumber = ReferenceNumber("referenceNumber")
         ),
         goodsShipment = None,
-        updatedAt = dateTime
+        updatedAt = dateTime,
+        metadata = None
       )
     end submissionNoGoodsShipment
 
@@ -405,6 +429,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
+            <status>4</status>
             <ExportOperation>
               <type>1</type>
               <MRN>mrn</MRN>
@@ -514,6 +539,20 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
               </GoodsItem>
             </GoodsShipment>
             <updatedAt>2026-08-11T00:00:00</updatedAt>
+            <metadata>
+              <error>
+                <code>CODE_1</code>
+                <description>description</description>
+                <path>path</path>
+                <originalValue>originalValue1</originalValue>
+              </error>
+              <error>
+                <code>CODE_2</code>
+                <description>description</description>
+                <path>path</path>
+                <originalValue>originalValue2</originalValue>
+              </error>
+            </metadata>
           </Submission>
         end xml
 
@@ -524,6 +563,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
+            <status>0</status>
             <ExportOperation>
               <type>1</type>
               <MRN>mrn</MRN>
@@ -584,6 +624,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
+            <status>1</status>
             <ExportOperation>
               <type>1</type>
               <MRN>mrn</MRN>
@@ -613,6 +654,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
+            <status>3</status>
             <ExportOperation>
               <type>1</type>
               <MRN>mrn</MRN>

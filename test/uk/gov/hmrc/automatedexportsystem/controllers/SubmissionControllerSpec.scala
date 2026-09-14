@@ -36,6 +36,7 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, Subm
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, SourceFaultDetail}
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
@@ -88,6 +89,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
     val submission: Submission =
       Submission(
         submissionId = submissionId,
+        status = NotificationEventStatus.Awaiting,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -98,7 +100,8 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
           referenceNumber = ReferenceNumber("referenceNumber")
         ),
         goodsShipment = None,
-        updatedAt = dateTime
+        updatedAt = dateTime,
+        metadata = None
       )
 
     val aesIE507Message: AesIE507Message =
@@ -813,9 +816,8 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
               val submissionXml: Elem =
                 <Submission>
-                  <submissionId>
-                    {TestData.submissionId.value}
-                  </submissionId>
+                  <submissionId>{TestData.submissionId.value}</submissionId>
+                  <status>0</status>
                   <ExportOperation>
                     <type>1</type>
                     <MRN>mrn</MRN>
