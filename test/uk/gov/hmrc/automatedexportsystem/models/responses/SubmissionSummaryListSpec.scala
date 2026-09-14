@@ -40,7 +40,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
         ducr = Some(ReferenceNumberUcr("referenceNumberUcr")),
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = ExportOperationType.Standard
+        status = AesStatus.Created
       )
 
     val submissionSummaryNoDucr: SubmissionSummary =
@@ -50,7 +50,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
         ducr = None,
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = ExportOperationType.Standard
+        status = AesStatus.Amended
       )
 
     val submissionSummaryList: SubmissionSummaryList =
@@ -83,7 +83,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
               <mrn>mrn</mrn>
               <officeOfExitCode>referenceNumber</officeOfExitCode>
               <updatedAt>2026-07-31T00:00:00</updatedAt>
-              <status>1</status>
+              <status>2</status>
             </Submission>
 
         XmlOps.normalize(TestData.submissionSummaryNoDucr.toXmlRoot) shouldBe XmlOps.normalize(xml)
@@ -113,7 +113,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
                 <mrn>mrn</mrn>
                 <officeOfExitCode>referenceNumber</officeOfExitCode>
                 <updatedAt>2026-07-31T00:00:00</updatedAt>
-                <status>1</status>
+                <status>2</status>
               </Submission>
             </Submissions>
 

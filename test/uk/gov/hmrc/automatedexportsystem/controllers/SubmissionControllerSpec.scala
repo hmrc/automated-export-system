@@ -36,7 +36,7 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, Subm
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, SourceFaultDetail}
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
-import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
+import uk.gov.hmrc.automatedexportsystem.models.responses.{AesStatus, Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import uk.gov.hmrc.http.HeaderCarrier
@@ -66,7 +66,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
         ducr = Some(ReferenceNumberUcr("referenceNumberUcr")),
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = ExportOperationType.Standard
+        status = AesStatus.Awaiting
       )
 
     val submissionSummary2: SubmissionSummary =
@@ -76,7 +76,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
         ducr = None,
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = ExportOperationType.Standard
+        status = AesStatus.Awaiting
       )
 
     val submissionSummaryList: SubmissionSummaryList =
@@ -708,7 +708,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                     <ducr>referenceNumberUcr</ducr>
                     <officeOfExitCode>referenceNumber</officeOfExitCode>
                     <updatedAt>2026-08-03T00:00:00</updatedAt>
-                    <status>1</status>
+                    <status>4</status>
                   </Submission>
                   <Submission>
                     <submissionId>
@@ -717,7 +717,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                     <mrn>mrn</mrn>
                     <officeOfExitCode>referenceNumber</officeOfExitCode>
                     <updatedAt>2026-08-03T00:00:00</updatedAt>
-                    <status>1</status>
+                    <status>4</status>
                   </Submission>
                 </Submissions>
 

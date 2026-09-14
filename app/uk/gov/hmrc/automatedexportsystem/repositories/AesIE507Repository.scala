@@ -31,7 +31,7 @@ import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProjections, SingleUpdateStatus}
@@ -91,7 +91,7 @@ class AesIE507RepositoryImpl @Inject() (
       AesIE507Repository,
       Logging:
 
-  def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageSummary]] =
+  override def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageSummary]] =
     val pipeline: Seq[Bson] = Seq(
       Aggregates.filter(Filters.eq("eoriNumber", eori.value)),
       Aggregates.project(MongoAesIE507MessageProjections.summaryProjection),
@@ -111,7 +111,7 @@ class AesIE507RepositoryImpl @Inject() (
         }
     }
 
-  def getMessage(
+  override def getMessage(
     eori:         EoriNumber,
     submissionId: SubmissionId
   ): EitherT[Future, MongoError, MongoAesIE507Message] =
@@ -172,7 +172,7 @@ class AesIE507RepositoryImpl @Inject() (
         )
     }
 
-  def cancel(
+  override def cancel(
     eori:         EoriNumber,
     submissionId: SubmissionId,
     updatedAt:    Instant

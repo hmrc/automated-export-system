@@ -21,9 +21,8 @@ import play.api.libs.json.*
 enum NotificationEventStatus(val status: Int):
   case Awaiting extends NotificationEventStatus(0)
   case Accepted extends NotificationEventStatus(1)
-  case Amended extends NotificationEventStatus(2)
-  case Cancelled extends NotificationEventStatus(3)
-  case Rejected extends NotificationEventStatus(4)
+  case Diverted extends NotificationEventStatus(5)
+  case Rejected extends NotificationEventStatus(2)
 
 object NotificationEventStatus:
   given mongoFormat: Format[NotificationEventStatus] =

@@ -39,7 +39,8 @@ import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, EisIE507R
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEvent, NotificationEventStatus}
-import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
+import uk.gov.hmrc.automatedexportsystem.models.responses.AesStatus.Created
+import uk.gov.hmrc.automatedexportsystem.models.responses.{AesStatus, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.{AesIE507Repository, AesIE507RepositoryImpl}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -224,7 +225,7 @@ class SubmissionControllerITSpec extends BaseISpec:
         ducr = Some(ReferenceNumberUcr("referenceNumberUcr")),
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = ExportOperationType.Standard
+        status = Created
       )
 
     val submissionSummary2: SubmissionSummary =
@@ -234,7 +235,7 @@ class SubmissionControllerITSpec extends BaseISpec:
         ducr = None,
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = ExportOperationType.Standard
+        status = AesStatus.Created
       )
 
     val submissionSummaryList: SubmissionSummaryList =
@@ -1064,14 +1065,14 @@ class SubmissionControllerITSpec extends BaseISpec:
                   <ducr>referenceNumberUcr</ducr>
                   <officeOfExitCode>referenceNumber</officeOfExitCode>
                   <updatedAt>2026-08-03T00:00:00</updatedAt>
-                  <status>1</status>
+                  <status>4</status>
                 </Submission>
                 <Submission>
                   <submissionId>4b10d823-4585-4f1e-bea5-d4bbe4605d6e</submissionId>
                   <mrn>26GB0000X6524786A9</mrn>
                   <officeOfExitCode>IEARK100</officeOfExitCode>
                   <updatedAt>2026-08-03T00:00:00</updatedAt>
-                  <status>3</status>
+                  <status>4</status>
                 </Submission>
               </Submissions>
 

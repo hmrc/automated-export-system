@@ -19,7 +19,12 @@ package uk.gov.hmrc.automatedexportsystem.models.responses
 import play.api.libs.json.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.responses.AesStatus
+import uk.gov.hmrc.automatedexportsystem.models.responses.AesStatusXmlWriters.given
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.NotificationEventStatus
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationStatus
+import uk.gov.hmrc.automatedexportsystem.utils.StatusMapper
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
@@ -42,7 +47,7 @@ final case class SubmissionSummary(
   ducr:             Option[ReferenceNumberUcr],
   officeOfExitCode: ReferenceNumber,
   updatedAt:        LocalDateTime,
-  status:           ExportOperationType
+  status:           AesStatus
 )
 
 object SubmissionSummary:
@@ -64,11 +69,25 @@ object SubmissionSummary:
       XmlWriter.elem(label, children)
 
   def fromMongoAesIE507MessageSummary(message: MongoAesIE507MessageSummary): SubmissionSummary =
+    val latestStatus = getMostRecentAesStatus(message.exportOperation.exportOperationType, message.latestNotification.map(_.status))
     SubmissionSummary(
       submissionId = message.submissionId,
       mrn = message.exportOperation.mrn,
       ducr = message.ducr,
       officeOfExitCode = message.customsOfficeOfExitActual.referenceNumber,
       updatedAt = LocalDateTime.ofInstant(message.updatedAt, ZoneOffset.UTC),
-      status = message.exportOperation.exportOperationType
+      status = latestStatus
     )
+
+private def getMostRecentAesStatus(
+  submitted:    ExportOperationType,
+  notification: Option[NotificationEventStatus]
+): AesStatus =
+  StatusMapper.currentStatus(submitted, toNotificationStatus(notification))
+
+private def toNotificationStatus(s: Option[NotificationEventStatus]): Option[NotificationStatus] =
+  s match
+    case Some(NotificationEventStatus.Accepted) => Some(NotificationStatus.Accepted)
+    case Some(NotificationEventStatus.Diverted) => Some(NotificationStatus.Diversion)
+    case Some(NotificationEventStatus.Rejected) => Some(NotificationStatus.Rejected)
+    case _                                      => None

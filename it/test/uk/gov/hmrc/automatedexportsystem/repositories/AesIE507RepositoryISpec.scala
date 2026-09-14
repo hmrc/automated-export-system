@@ -35,7 +35,6 @@ import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -60,6 +59,7 @@ class AesIE507RepositoryISpec
   protected val repository: AesIE507RepositoryImpl = AesIE507RepositoryImpl(mongoComponent, appConfig)
 
   object TestData:
+
     val instant: Instant = Instant.parse("2026-08-17T00:00:00.000Z")
 
     val submissionId: SubmissionId = SubmissionId(UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317"))
@@ -72,7 +72,12 @@ class AesIE507RepositoryISpec
         exportOperation = mongoAesIE507Message.exportOperation,
         customsOfficeOfExitActual = mongoAesIE507Message.customsOfficeOfExitActual,
         ducr = mongoAesIE507Message.goodsShipment.map(_.consignment.referenceNumberUCR),
-        updatedAt = mongoAesIE507Message.updatedAt
+        updatedAt = mongoAesIE507Message.updatedAt,
+        latestNotification = Some(
+          mongoAesIE507Message.metadata.toList
+            .sortBy(ne => ne.dateUpdated.getOrElse(ne.dateCreated))(Ordering[Instant].reverse)
+            .head
+        )
       )
 
     extension (mongoAesIE507MessageGen: Gen[MongoAesIE507Message])
