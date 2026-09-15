@@ -31,12 +31,15 @@ import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProjections, SingleUpdateStatus}
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+import org.mongodb.scala.bson.{BsonArray, BsonDocument}
+import play.api.libs.json.Json
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
@@ -51,6 +54,21 @@ trait AesIE507Repository:
   def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageSummary]]
 
   def getMessage(eori: EoriNumber, submissionId: SubmissionId): EitherT[Future, MongoError, MongoAesIE507Message]
+
+  def getMessageByNotification(
+    eori:          EoriNumber,
+    mrn:           Mrn,
+    correlationId: String
+  ): EitherT[Future, MongoError, MongoAesIE507Message]
+
+  def updateNotification(
+    eori:          EoriNumber,
+    mrn:           Mrn,
+    correlationId: String,
+    updatedAt:     Instant,
+    status:        NotificationEventStatus,
+    errors:        Option[NonEmptyList[NotificationError]]
+  ): EitherT[Future, MongoError, SingleUpdateStatus]
 
   def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, SingleUpdateStatus]
 
@@ -132,6 +150,113 @@ class AesIE507RepositoryImpl @Inject() (
             MongoError.DocumentNotFound(
               s"No document found for EORI: ${eori.value} and submissionId: ${submissionId.value}"
             )
+          )
+        )
+    }
+
+  def getMessageByNotification(
+    eori:          EoriNumber,
+    mrn:           Mrn,
+    correlationId: String
+  ): EitherT[Future, MongoError, MongoAesIE507Message] =
+    retryOperation(
+      operationName = "getMessageByNotification",
+      context = Map(
+        "eoriNumber"    -> eori.value,
+        "mrn"           -> mrn.value,
+        "correlationId" -> correlationId
+      )
+    ) {
+      collection
+        .find(
+          Filters.and(
+            Filters.eq("eoriNumber", eori.value),
+            Filters.eq("exportOperation.mrn", mrn.value),
+            Filters.eq("metadata.correlationId", correlationId)
+          )
+        )
+        .headOption()
+        .map(
+          _.toRight(
+            MongoError.DocumentNotFound(
+              s"No document found for EORI: ${eori.value}, MRN: ${mrn.value} and correlationId: $correlationId"
+            )
+          )
+        )
+    }
+
+  def updateNotification(
+    eori:          EoriNumber,
+    mrn:           Mrn,
+    correlationId: String,
+    updatedAt:     Instant,
+    status:        NotificationEventStatus,
+    errors:        Option[NonEmptyList[NotificationError]]
+  ): EitherT[Future, MongoError, SingleUpdateStatus] =
+
+    val operationName: String = "updateNotification"
+
+    val filter: Bson =
+      Filters.and(
+        Filters.eq("eoriNumber", eori.value),
+        Filters.eq("exportOperation.mrn", mrn.value),
+        Filters.eq("metadata.correlationId", correlationId)
+      )
+
+    val errorsUpdate: Bson =
+      errors match
+        case Some(notificationErrors) =>
+          val errorsBson =
+            BsonArray.fromIterable(
+              notificationErrors.toList.map(error => BsonDocument(Json.stringify(Json.toJson(error))))
+            )
+
+          Updates.set("metadata.$.errors", errorsBson)
+
+        case None =>
+          Updates.unset("metadata.$.errors")
+
+    val update: Bson =
+      Updates.combine(
+        Updates.set("metadata.$.dateUpdated", updatedAt),
+        Updates.set("metadata.$.isPending", false),
+        Updates.set("metadata.$.status", status.status),
+        errorsUpdate
+      )
+
+    retryOperation(
+      operationName,
+      context = Map(
+        "eoriNumber"    -> eori.value,
+        "mrn"           -> mrn.value,
+        "correlationId" -> correlationId
+      )
+    ) {
+      collection
+        .updateOne(filter, update)
+        .toFuture()
+        .map(updateResult =>
+          getUpdateStatus(
+            updateResult,
+            operationName,
+            context = Map(
+              "eoriNumber"    -> eori.value,
+              "mrn"           -> mrn.value,
+              "correlationId" -> correlationId
+            )
+          )(acknowledgedUpdateResult =>
+            val matchedCount:  Long = acknowledgedUpdateResult.getMatchedCount
+            val modifiedCount: Long = acknowledgedUpdateResult.getModifiedCount
+
+            if matchedCount == 0 then
+              Left(
+                MongoError.DocumentNotFound(
+                  s"No notification event found for EORI: ${eori.value}, " +
+                    s"MRN: ${mrn.value} and correlationId: $correlationId"
+                )
+              )
+            else if modifiedCount == 0 then Right(SingleUpdateStatus.AlreadyUpToDate(operationName))
+            else Right(SingleUpdateStatus.Updated(operationName))
           )
         )
     }

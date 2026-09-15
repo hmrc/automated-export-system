@@ -22,7 +22,14 @@ import play.api.test.Helpers.POST
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
+import cats.data.EitherT
+import org.mockito.ArgumentMatchers.any
+import uk.gov.hmrc.automatedexportsystem.errors.SubmissionServiceError
+import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
+import uk.gov.hmrc.automatedexportsystem.models.notification.AesDigitalNotification
+import uk.gov.hmrc.automatedexportsystem.services.SubmissionService
 
+import scala.concurrent.Future
 import scala.xml.Elem
 
 class NotificationControllerSpec extends BaseSpec, AllMocks:
@@ -30,7 +37,8 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
     implicit val controllerComponents: ControllerComponents = Helpers.stubControllerComponents(executionContext = ec)
 
     val playBodyParsers = play.api.mvc.PlayBodyParsers()
-    val parser: BodyParsers.Default = new BodyParsers.Default(playBodyParsers)
+    val parser:            BodyParsers.Default = new BodyParsers.Default(playBodyParsers)
+    val submissionService: SubmissionService   = mock[SubmissionService]
 
     when(mockAppConfig.notificationToken).thenReturn("some-token")
 
@@ -49,7 +57,8 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
         controllerComponents,
         notificationAction,
         notificationXmlPaylodActionRefiner,
-        notificationActionRefiner
+        notificationActionRefiner,
+        submissionService
       )
 
     val fakeRequest = FakeRequest(POST, "notification")
@@ -69,6 +78,16 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
   "notification" - {
 
     "authorization header is valid and payload is valid" in new Setup {
+
+      when(submissionService.updateNotification(any[AesDigitalNotification]))
+        .thenReturn(
+          EitherT(
+            Future.successful(
+              Right(SingleUpdateStatus.Updated("updateNotification"))
+            )
+          )
+        )
+
       val request = fakeRequest
         .withHeaders("Authorization" -> "some-token")
         .withXmlBody(validPayload)
@@ -98,5 +117,53 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
         .withXmlBody(invalidPayload)
       val result = controller.notification(request)
       Helpers.status(result) shouldBe Helpers.UNPROCESSABLE_ENTITY
+    }
+
+    "authorization header is valid but notification submission is not found" in new Setup {
+
+      when(submissionService.updateNotification(any[AesDigitalNotification]))
+        .thenReturn(
+          EitherT(
+            Future.successful(
+              Left(
+                SubmissionServiceError.SubmissionNotFound(
+                  "Submission not found"
+                )
+              )
+            )
+          )
+        )
+
+      val request = fakeRequest
+        .withHeaders("Authorization" -> "some-token")
+        .withXmlBody(validPayload)
+
+      val result = controller.notification(request)
+
+      Helpers.status(result) shouldBe Helpers.NOT_FOUND
+    }
+
+    "authorization header is valid but notification update fails" in new Setup {
+
+      when(submissionService.updateNotification(any[AesDigitalNotification]))
+        .thenReturn(
+          EitherT(
+            Future.successful(
+              Left(
+                SubmissionServiceError.SubmissionOperationFailure(
+                  "Submission update failed"
+                )
+              )
+            )
+          )
+        )
+
+      val request = fakeRequest
+        .withHeaders("Authorization" -> "some-token")
+        .withXmlBody(validPayload)
+
+      val result = controller.notification(request)
+
+      Helpers.status(result) shouldBe Helpers.INTERNAL_SERVER_ERROR
     }
   }

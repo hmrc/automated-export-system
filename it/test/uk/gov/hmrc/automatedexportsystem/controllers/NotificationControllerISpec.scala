@@ -19,17 +19,33 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
+import cats.data.NonEmptyList
+import org.scalacheck.Arbitrary.arbitrary
+import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEventStatus}
+import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507RepositoryImpl
 
 import scala.xml.{Elem, XML as Xml}
 
-class NotificationControllerISpec extends BaseISpec:
+class NotificationControllerISpec extends BaseISpec with MongoAesIE507MessageGenerator:
 
   private val endpoint = "/automated-export-system/notification"
+
+  private val correlationId =
+    "8f3c2a19-7d2b-4b74-a9f0-123456789012"
+
+  private val eoriNumber =
+    EoriNumber("GB123456789000")
+
+  private val mrn =
+    Mrn("25GB1234567890ABCDE")
+
   val validPayload: Elem =
     <notification>
-      <correlationId>8f3c2a19-7d2b-4b74-a9f0-123456789012</correlationId>
-      <eori>GB123456789000</eori>
-      <mrn>25GB1234567890ABCDE</mrn>
+      <correlationId>{correlationId}</correlationId>
+      <eori>{eoriNumber.value}</eori>
+      <mrn>{mrn.value}</mrn>
       <dateCreated>2026-08-12T10:15:30</dateCreated>
       <status>1</status>
     </notification>
@@ -43,14 +59,51 @@ class NotificationControllerISpec extends BaseISpec:
       <status>1</status>
     </notification>
 
+  val aesIE507Repository: AesIE507RepositoryImpl =
+    app.injector.instanceOf[AesIE507RepositoryImpl]
+
+  override def beforeEach(): Unit =
+    super.beforeEach()
+    await(aesIE507Repository.collection.drop().head())
+
   "POST /notification" - {
 
     "return 204 when authorization header is valid and payload is valid" in {
+
+      val generatedMessage =
+        arbitrary[MongoAesIE507Message].sample.value
+
+      val notificationEvent =
+        generatedMessage.metadata.head.copy(
+          correlationId = correlationId,
+          dateUpdated = None,
+          isPending = true,
+          status = NotificationEventStatus.Awaiting,
+          errors = None
+        )
+
+      val message =
+        generatedMessage.copy(
+          eoriNumber = eoriNumber,
+          exportOperation = generatedMessage.exportOperation.copy(
+            exportOperationType = ExportOperationType.Standard,
+            mrn = mrn
+          ),
+          metadata = NonEmptyList.one(notificationEvent)
+        )
+
+      await(
+        aesIE507Repository.collection
+          .insertOne(message)
+          .head()
+      )
+
       val request = FakeRequest(Helpers.POST, endpoint)
         .withHeaders("Authorization" -> "some-token")
         .withXmlBody(validPayload)
 
       val result = Helpers.route(app, request).value
+
       Helpers.status(result) shouldBe Helpers.NO_CONTENT
     }
 

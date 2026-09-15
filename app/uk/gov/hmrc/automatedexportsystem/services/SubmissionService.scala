@@ -19,12 +19,13 @@ package uk.gov.hmrc.automatedexportsystem.services
 import cats.data.EitherT
 import uk.gov.hmrc.automatedexportsystem.errors.{AesErrorMapper, MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEventStatus}
+import uk.gov.hmrc.automatedexportsystem.models.notification.{AesDigitalNotification, NotificationStatus}
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
@@ -43,6 +44,10 @@ trait SubmissionService:
   def getSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, Submission]
 
   def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, SingleUpdateStatus]
+
+  def updateNotification(
+    notification: AesDigitalNotification
+  ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus]
 
 @Singleton
 class SubmissionServiceImpl @Inject() (
@@ -100,6 +105,72 @@ class SubmissionServiceImpl @Inject() (
           .withUpdateMongoError
           .apply
       )
+
+  def updateNotification(
+    notification: AesDigitalNotification
+  ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
+
+    val eori: EoriNumber = EoriNumber(notification.eori)
+    val mrn:  Mrn        = Mrn(notification.mrn)
+
+    val context: String =
+      s"EORI: ${notification.eori}, MRN: ${notification.mrn}, correlationId: ${notification.correlationId}"
+
+    for
+      submission <- aesIE507Repository
+                      .getMessageByNotification(
+                        eori,
+                        mrn,
+                        notification.correlationId
+                      )
+                      .leftMap(
+                        SubmissionService
+                          .MongoErrorMapper(context)
+                          .withRetrieveMongoError
+                          .apply
+                      )
+
+      status = notificationEventStatus(
+                 submission.exportOperation.exportOperationType,
+                 notification.status
+               )
+
+      result <- aesIE507Repository
+                  .updateNotification(
+                    eori,
+                    mrn,
+                    notification.correlationId,
+                    Instant.now(clock),
+                    status,
+                    notification.notificationErrors
+                  )
+                  .leftMap(
+                    SubmissionService
+                      .MongoErrorMapper(context)
+                      .withUpdateMongoError
+                      .apply
+                  )
+    yield result
+
+  private def notificationEventStatus(
+    exportOperationType: ExportOperationType,
+    notificationStatus:  NotificationStatus
+  ): NotificationEventStatus =
+    (exportOperationType, notificationStatus) match
+      case (ExportOperationType.Standard, NotificationStatus.Accepted) =>
+        NotificationEventStatus.Accepted
+
+      case (ExportOperationType.Amend, NotificationStatus.Accepted) =>
+        NotificationEventStatus.Amended
+
+      case (ExportOperationType.Cancel, NotificationStatus.Accepted) =>
+        NotificationEventStatus.Cancelled
+
+      case (_, NotificationStatus.Rejected) =>
+        NotificationEventStatus.Rejected
+
+      case (_, NotificationStatus.Diversion) =>
+        NotificationEventStatus.Awaiting
 
   def submitMessage(
     message:             AesIE507Message,
