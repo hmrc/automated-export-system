@@ -38,7 +38,8 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, EisIE507Request}
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEvent, NotificationEventStatus}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.{AesIE507Repository, AesIE507RepositoryImpl}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -1196,6 +1197,7 @@ class SubmissionControllerITSpec extends BaseISpec:
             val submissionXml: Elem =
               <Submission>
                 <submissionId>{id1}</submissionId>
+                <status>0</status>
                 <ExportOperation>
                   <type>1</type>
                   <MRN>mrn</MRN>

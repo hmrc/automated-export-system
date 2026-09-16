@@ -30,7 +30,8 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, Subm
 import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEvent, NotificationEventStatus}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
@@ -79,6 +80,38 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         goodsShipment = None
       )
 
+    val notificationEvent1: NotificationEvent =
+      NotificationEvent(
+        correlationId = correlationId,
+        dateCreated = instant,
+        dateUpdated = None,
+        isPending = false,
+        status = NotificationEventStatus.Awaiting,
+        errors = None
+      )
+
+    val notificationEvent2: NotificationEvent =
+      notificationEvent1.copy(
+        dateUpdated = Some(instant.plusMillis(1)),
+        status = NotificationEventStatus.Accepted
+      )
+
+    val notificationEvent3: NotificationEvent =
+      notificationEvent1.copy(
+        dateCreated = instant.plusMillis(2),
+        status = NotificationEventStatus.Rejected,
+        errors = Some(
+          NonEmptyList.one(
+            NotificationError(
+              code = "code",
+              description = "description",
+              path = Some("path"),
+              originalValue = Some("originalValue")
+            )
+          )
+        )
+      )
+
     val mongoAesIE507Message: MongoAesIE507Message =
       MongoAesIE507Message(
         submissionId = submissionId,
@@ -95,15 +128,10 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
           referenceNumber = ReferenceNumber("referenceNumber")
         ),
         goodsShipment = None,
-        metadata = NonEmptyList.one(
-          NotificationEvent(
-            correlationId = correlationId,
-            dateCreated = instant,
-            dateUpdated = None,
-            isPending = false,
-            status = NotificationEventStatus.Awaiting,
-            errors = None
-          )
+        metadata = NonEmptyList.of(
+          notificationEvent1,
+          notificationEvent2,
+          notificationEvent3
         )
       )
 
@@ -122,16 +150,6 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         ducr = None,
         updatedAt = instant
       )
-
-    val submissionSummary: SubmissionSummary =
-      SubmissionSummary(
-        submissionId = submissionId,
-        mrn = Mrn("mrn"),
-        ducr = None,
-        officeOfExitCode = ReferenceNumber("referenceNumber"),
-        updatedAt = dateTime,
-        status = ExportOperationType.Standard
-      )
   end TestData
 
   "SubmissionService" - {
@@ -141,6 +159,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
       "should return a list of submissions" - {
 
         "when no submission with the given EORI can be found in the mongodb collection" in {
+          implicitly[Ordering[Instant]]
           when(aesIE507Repository.getMessages(TestData.eoriNumber))
             .thenReturn(EitherT(Future.successful(Left(MongoError.DocumentNotFound("")))))
 
@@ -154,8 +173,18 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
           val mongoAesIE507MessageSummaries: Seq[MongoAesIE507MessageSummary] =
             Seq.fill(3)(TestData.mongoAesIE507MessageSummary)
 
+          val submissionSummary: SubmissionSummary =
+            SubmissionSummary(
+              submissionId = TestData.submissionId,
+              mrn = Mrn("mrn"),
+              ducr = None,
+              officeOfExitCode = ReferenceNumber("referenceNumber"),
+              updatedAt = TestData.dateTime,
+              status = ExportOperationType.Standard
+            )
+
           val submissionSummaryList: List[SubmissionSummary] =
-            List.fill(3)(TestData.submissionSummary)
+            List.fill(3)(submissionSummary)
 
           when(aesIE507Repository.getMessages(TestData.eoriNumber))
             .thenReturn(
@@ -201,16 +230,39 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
       "should return a single submission" - {
 
-        "when one submission with the given EORI and submissionId is found in the mongodb collection" in {
-          val mongoAesIE507Messages: Seq[MongoAesIE507Message] = Seq(TestData.mongoAesIE507Message)
+        "when one submission with the given EORI and submissionId is found in the mongodb collection" - {
 
-          when(aesIE507Repository.getMessage(TestData.eoriNumber, TestData.submissionId))
-            .thenReturn(EitherT(Future.successful(Right(mongoAesIE507Messages.head))))
+          "and there are multiple NotificationEvent in the submission, will select the most recent" in {
+            val mongoAesIE507Messages: Seq[MongoAesIE507Message] = Seq(TestData.mongoAesIE507Message)
 
-          val result: Submission =
-            submissionService.getSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
+            when(aesIE507Repository.getMessage(TestData.eoriNumber, TestData.submissionId))
+              .thenReturn(EitherT(Future.successful(Right(mongoAesIE507Messages.head))))
 
-          result.submissionId shouldBe TestData.submissionId
+            val submission: Submission =
+              Submission(
+                submissionId = TestData.submissionId,
+                status = NotificationEventStatus.Rejected,
+                exportOperation = TestData.mongoAesIE507Message.exportOperation,
+                customsOfficeOfExitActual = TestData.mongoAesIE507Message.customsOfficeOfExitActual,
+                goodsShipment = TestData.mongoAesIE507Message.goodsShipment,
+                updatedAt = TestData.dateTime,
+                metadata = Some(
+                  NonEmptyList.one(
+                    NotificationError(
+                      code = "code",
+                      description = "description",
+                      path = Some("path"),
+                      originalValue = Some("originalValue")
+                    )
+                  )
+                )
+              )
+
+            val result: Submission =
+              submissionService.getSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
+
+            result shouldBe submission
+          }
         }
       }
 

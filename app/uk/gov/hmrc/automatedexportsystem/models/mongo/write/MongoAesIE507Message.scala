@@ -20,6 +20,7 @@ import cats.data.NonEmptyList
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEvent
 
 import java.time.Instant
 
