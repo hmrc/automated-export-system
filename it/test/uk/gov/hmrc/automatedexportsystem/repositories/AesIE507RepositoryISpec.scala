@@ -29,15 +29,18 @@ import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
 import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.Accepted
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
@@ -67,9 +70,11 @@ class AesIE507RepositoryISpec
 
     val eoriNumber: EoriNumber = EoriNumber("eoriNumber")
 
-    def mongoAesIE507MessageSummary(
-      message: MongoAesIE507Message
-    ): MongoAesIE507MessageSummary =
+    val mrn: Mrn = Mrn("24GB12345678901234")
+
+    val correlationId: String = "12345678-1234-1234-1234-12345678901"
+
+    def mongoAesIE507MessageSummary(message: MongoAesIE507Message) =
       MongoAesIE507MessageSummary(
         submissionId = message.submissionId,
         exportOperation = message.exportOperation,
@@ -297,6 +302,232 @@ class AesIE507RepositoryISpec
               s"and submissionId: ${TestData.submissionId.value}"
           )
         }
+      }
+    }
+
+    ".updateNotification" - {
+
+      "should update the matching notification event" in {
+
+        val generatedMessage =
+          arbitrary[MongoAesIE507Message].sample.value
+
+        val targetCorrelationId = "12345678-1234-1234-1234-12345678901"
+        val otherCorrelationId  = "98765432-4321-4321-4321-10987654321"
+
+        val targetEvent =
+          generatedMessage.metadata.head.copy(
+            correlationId = targetCorrelationId,
+            dateUpdated = None,
+            isPending = true,
+            status = NotificationEventStatus.Awaiting,
+            errors = None
+          )
+
+        val otherEvent =
+          generatedMessage.metadata.head.copy(
+            correlationId = otherCorrelationId
+          )
+
+        val message =
+          generatedMessage.copy(
+            eoriNumber = TestData.eoriNumber,
+            exportOperation = generatedMessage.exportOperation.copy(
+              mrn = TestData.mrn
+            ),
+            metadata = NonEmptyList.of(targetEvent, otherEvent)
+          )
+
+        repository.collection.insertOne(message).head().futureValue
+
+        val updatedAt =
+          Instant.now().truncatedTo(ChronoUnit.MILLIS)
+
+        val result =
+          repository
+            .updateNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              targetCorrelationId,
+              updatedAt,
+              NotificationEventStatus.Accepted,
+              None
+            )
+            .value
+            .futureValue
+            .value
+
+        result shouldBe SingleUpdateStatus.Updated("updateNotification")
+
+        val updatedMessage =
+          repository
+            .getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              targetCorrelationId
+            )
+            .value
+            .futureValue
+            .value
+
+        val updatedTarget =
+          updatedMessage.metadata.toList.find(_.correlationId == targetCorrelationId).value
+
+        val unchangedOther =
+          updatedMessage.metadata.toList.find(_.correlationId == otherCorrelationId).value
+
+        updatedTarget.dateUpdated shouldBe Some(updatedAt)
+        updatedTarget.isPending   shouldBe false
+        updatedTarget.status      shouldBe NotificationEventStatus.Accepted
+        updatedTarget.errors      shouldBe None
+
+        unchangedOther shouldBe otherEvent
+      }
+
+      "should store notification errors on the matching event" in {
+
+        val generatedMessage =
+          arbitrary[MongoAesIE507Message].sample.value
+
+        val targetCorrelationId = "12345678-1234-1234-1234-12345678901"
+
+        val targetEvent =
+          generatedMessage.metadata.head.copy(
+            correlationId = targetCorrelationId,
+            errors = None
+          )
+
+        val message =
+          generatedMessage.copy(
+            eoriNumber = TestData.eoriNumber,
+            exportOperation = generatedMessage.exportOperation.copy(
+              mrn = TestData.mrn
+            ),
+            metadata = NonEmptyList.one(targetEvent)
+          )
+
+        repository.collection.insertOne(message).head().futureValue
+
+        val notificationError =
+          NotificationError(
+            code = "ERR001",
+            description = "Test error",
+            path = Some("/test/path"),
+            originalValue = Some("bad-value")
+          )
+
+        val updatedAt =
+          Instant.now().truncatedTo(ChronoUnit.MILLIS)
+
+        repository
+          .updateNotification(
+            TestData.eoriNumber,
+            TestData.mrn,
+            targetCorrelationId,
+            updatedAt,
+            NotificationEventStatus.Rejected,
+            Some(NonEmptyList.one(notificationError))
+          )
+          .value
+          .futureValue
+          .value
+
+        val updatedMessage =
+          repository
+            .getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              targetCorrelationId
+            )
+            .value
+            .futureValue
+            .value
+
+        val updatedTarget =
+          updatedMessage.metadata.head
+
+        updatedTarget.status shouldBe NotificationEventStatus.Rejected
+        updatedTarget.errors shouldBe Some(
+          NonEmptyList.one(notificationError)
+        )
+      }
+
+      "should return DocumentNotFound when no matching notification event exists" in {
+
+        val result =
+          repository
+            .updateNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              "missing-correlation-id",
+              Instant.now(),
+              NotificationEventStatus.Accepted,
+              None
+            )
+            .value
+            .futureValue
+            .left
+            .value
+
+        result shouldBe MongoError.DocumentNotFound(
+          s"No document found for EORI: ${TestData.eoriNumber.value}, " +
+            s"MRN: ${TestData.mrn.value} with a notification event with correlationId: missing-correlation-id"
+        )
+      }
+    }
+
+    ".getMessageByNotification" - {
+
+      "should return the document matching eori, mrn and correlationId" in {
+
+        val generatedMessage: MongoAesIE507Message =
+          arbitrary[MongoAesIE507Message].sample.value
+
+        val matchingMessage: MongoAesIE507Message =
+          generatedMessage.copy(
+            eoriNumber = TestData.eoriNumber,
+            exportOperation = generatedMessage.exportOperation.copy(
+              mrn = TestData.mrn
+            ),
+            metadata = generatedMessage.metadata.map(
+              _.copy(correlationId = TestData.correlationId)
+            )
+          )
+
+        repository.collection.insertOne(matchingMessage).head().futureValue
+
+        val result: MongoAesIE507Message =
+          repository
+            .getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+            .value
+            .futureValue
+            .value
+
+        result shouldBe matchingMessage
+      }
+
+      "should return DocumentNotFound when no matching document exists" in {
+
+        val result: MongoError =
+          repository
+            .getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+            .value
+            .futureValue
+            .left
+            .value
+
+        result shouldBe MongoError.DocumentNotFound(
+          s"No document found for EORI: ${TestData.eoriNumber.value}, " +
+            s"MRN: ${TestData.mrn.value} with a notification event with correlationId: ${TestData.correlationId}"
+        )
       }
     }
 
