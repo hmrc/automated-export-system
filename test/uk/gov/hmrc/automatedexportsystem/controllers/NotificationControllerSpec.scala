@@ -22,14 +22,14 @@ import play.api.test.Helpers.POST
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
-import cats.data.EitherT
 import org.mockito.ArgumentMatchers.any
+import helpers.XmlOps
+import helpers.EitherTFutureOps.{toEitherTLeft, toEitherTRight}
 import uk.gov.hmrc.automatedexportsystem.errors.SubmissionServiceError
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.notification.AesDigitalNotification
 import uk.gov.hmrc.automatedexportsystem.services.SubmissionService
 
-import scala.concurrent.Future
 import scala.xml.Elem
 
 class NotificationControllerSpec extends BaseSpec, AllMocks:
@@ -81,11 +81,9 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
 
       when(submissionService.updateNotification(any[AesDigitalNotification]))
         .thenReturn(
-          EitherT(
-            Future.successful(
-              Right(SingleUpdateStatus.Updated("updateNotification"))
-            )
-          )
+          SingleUpdateStatus
+            .Updated("updateNotification")
+            .toEitherTRight[SubmissionServiceError]
         )
 
       val request = fakeRequest
@@ -121,18 +119,11 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
 
     "authorization header is valid but notification submission is not found" in new Setup {
 
+      val error =
+        SubmissionServiceError.SubmissionNotFound("Submission not found")
+
       when(submissionService.updateNotification(any[AesDigitalNotification]))
-        .thenReturn(
-          EitherT(
-            Future.successful(
-              Left(
-                SubmissionServiceError.SubmissionNotFound(
-                  "Submission not found"
-                )
-              )
-            )
-          )
-        )
+        .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
 
       val request = fakeRequest
         .withHeaders("Authorization" -> "some-token")
@@ -140,23 +131,30 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
 
       val result = controller.notification(request)
 
-      Helpers.status(result) shouldBe Helpers.NOT_FOUND
+      val expectedErrorXml: Elem =
+        <errorResponse>
+          <status>404</status>
+          <code>NOT_FOUND</code>
+          <message>{error.message}</message>
+        </errorResponse>
+
+      val resultContent: String = Helpers.contentAsString(result)
+      val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+      Helpers.status(result)      shouldBe Helpers.NOT_FOUND
+      Helpers.contentType(result) shouldBe Some(Helpers.XML)
+      XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(expectedErrorXml)
     }
 
     "authorization header is valid but notification update fails" in new Setup {
 
-      when(submissionService.updateNotification(any[AesDigitalNotification]))
-        .thenReturn(
-          EitherT(
-            Future.successful(
-              Left(
-                SubmissionServiceError.SubmissionOperationFailure(
-                  "Submission update failed"
-                )
-              )
-            )
-          )
+      val error =
+        SubmissionServiceError.SubmissionOperationFailure(
+          "Submission update failed"
         )
+
+      when(submissionService.updateNotification(any[AesDigitalNotification]))
+        .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
 
       val request = fakeRequest
         .withHeaders("Authorization" -> "some-token")
@@ -164,6 +162,18 @@ class NotificationControllerSpec extends BaseSpec, AllMocks:
 
       val result = controller.notification(request)
 
-      Helpers.status(result) shouldBe Helpers.INTERNAL_SERVER_ERROR
+      val expectedErrorXml: Elem =
+        <errorResponse>
+          <status>500</status>
+          <code>INTERNAL_SERVER_ERROR</code>
+          <message>{error.message}</message>
+        </errorResponse>
+
+      val resultContent: String = Helpers.contentAsString(result)
+      val resultXml:     Elem   = XmlOps.loadXmlFromString(resultContent).value
+
+      Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
+      Helpers.contentType(result) shouldBe Some(Helpers.XML)
+      XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(expectedErrorXml)
     }
   }

@@ -26,7 +26,7 @@ import org.bson.codecs.Codec
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
 import org.mongodb.scala.result.UpdateResult
-import org.mongodb.scala.{Document, MongoCollection, MongoException, bson}
+import org.mongodb.scala.{Document, MongoCollection, MongoException}
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
@@ -38,8 +38,7 @@ import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProje
 import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-import org.mongodb.scala.bson.{BsonArray, BsonDocument}
-import play.api.libs.json.Json
+import org.mongodb.scala.bson
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
@@ -103,7 +102,8 @@ class AesIE507RepositoryImpl @Inject() (
         )
       ),
       extraCodecs = Seq(
-        Codecs.playFormatCodec(MongoAesIE507MessageSummary.mongoFormat)
+        Codecs.playFormatCodec(MongoAesIE507MessageSummary.mongoFormat),
+        Codecs.playFormatCodec(NotificationError.mongoFormat)
       )
     ),
       AesIE507Repository,
@@ -179,7 +179,7 @@ class AesIE507RepositoryImpl @Inject() (
         .map(
           _.toRight(
             MongoError.DocumentNotFound(
-              s"No document found for EORI: ${eori.value}, MRN: ${mrn.value} and correlationId: $correlationId"
+              s"No document found for EORI: ${eori.value}, " + s"MRN: ${mrn.value} with a notification event with correlationId: $correlationId"
             )
           )
         )
@@ -204,17 +204,9 @@ class AesIE507RepositoryImpl @Inject() (
       )
 
     val errorsUpdate: Bson =
-      errors match
-        case Some(notificationErrors) =>
-          val errorsBson =
-            BsonArray.fromIterable(
-              notificationErrors.toList.map(error => BsonDocument(Json.stringify(Json.toJson(error))))
-            )
-
-          Updates.set("metadata.$.errors", errorsBson)
-
-        case None =>
-          Updates.unset("metadata.$.errors")
+      errors
+        .map(notificationErrors => Updates.set("metadata.$.errors", notificationErrors.toList))
+        .getOrElse(Updates.unset("metadata.$.errors"))
 
     val update: Bson =
       Updates.combine(
@@ -251,8 +243,7 @@ class AesIE507RepositoryImpl @Inject() (
             if matchedCount == 0 then
               Left(
                 MongoError.DocumentNotFound(
-                  s"No notification event found for EORI: ${eori.value}, " +
-                    s"MRN: ${mrn.value} and correlationId: $correlationId"
+                  s"No document found for EORI: ${eori.value}, " + s"MRN: ${mrn.value} with a notification event with correlationId: $correlationId"
                 )
               )
             else if modifiedCount == 0 then Right(SingleUpdateStatus.AlreadyUpToDate(operationName))

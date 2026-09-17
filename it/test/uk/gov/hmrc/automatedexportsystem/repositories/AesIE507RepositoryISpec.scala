@@ -473,8 +473,8 @@ class AesIE507RepositoryISpec
             .value
 
         result shouldBe MongoError.DocumentNotFound(
-          s"No notification event found for EORI: ${TestData.eoriNumber.value}, " +
-            s"MRN: ${TestData.mrn.value} and correlationId: missing-correlation-id"
+          s"No document found for EORI: ${TestData.eoriNumber.value}, " +
+            s"MRN: ${TestData.mrn.value} with a notification event with correlationId: missing-correlation-id"
         )
       }
     }
@@ -529,7 +529,7 @@ class AesIE507RepositoryISpec
 
         result shouldBe MongoError.DocumentNotFound(
           s"No document found for EORI: ${TestData.eoriNumber.value}, " +
-            s"MRN: ${TestData.mrn.value} and correlationId: ${TestData.correlationId}"
+            s"MRN: ${TestData.mrn.value} with a notification event with correlationId: ${TestData.correlationId}"
         )
       }
     }

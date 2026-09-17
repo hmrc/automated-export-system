@@ -113,7 +113,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             correlationId = correlationId,
             dateCreated = instant,
             dateUpdated = None,
-            isPending = false,
+            isPending = true,
             status = NotificationEventStatus.Awaiting,
             errors = None
           )
@@ -646,6 +646,105 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
               .value
 
           result shouldBe SingleUpdateStatus.Updated("updateNotification")
+        }
+      }
+
+      "should return an error" - {
+
+        "when retrieving the submission fails" in {
+
+          val mongoError =
+            MongoError.UnexpectedError(Exception("Unexpected error"))
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(mongoError.toEitherTLeft[MongoAesIE507Message])
+
+          val result: SubmissionServiceError =
+            submissionService
+              .updateNotification(TestData.notification)
+              .value
+              .futureValue
+              .left
+              .value
+
+          result shouldBe SubmissionServiceError.SubmissionOperationFailure(
+            s"Submission retrieval failed. EORI: ${TestData.eoriNumber.value}, " +
+              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationId}"
+          )
+        }
+
+        "when updating the notification fails" in {
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(TestData.mongoAesIE507Message.toEitherTRight[MongoError])
+
+          val mongoError =
+            MongoError.UnexpectedError(Exception("Unexpected error"))
+
+          when(
+            aesIE507Repository.updateNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId,
+              instant,
+              NotificationEventStatus.Accepted,
+              None
+            )
+          )
+            .thenReturn(mongoError.toEitherTLeft[SingleUpdateStatus])
+
+          val result: SubmissionServiceError =
+            submissionService
+              .updateNotification(TestData.notification)
+              .value
+              .futureValue
+              .left
+              .value
+
+          result shouldBe SubmissionServiceError.SubmissionOperationFailure(
+            s"Submission update failed. EORI: ${TestData.eoriNumber.value}, " +
+              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationId}"
+          )
+        }
+
+        "when the submission cannot be found" in {
+
+          val mongoError =
+            MongoError.DocumentNotFound("Document not found")
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(mongoError.toEitherTLeft[MongoAesIE507Message])
+
+          val result: SubmissionServiceError =
+            submissionService
+              .updateNotification(TestData.notification)
+              .value
+              .futureValue
+              .left
+              .value
+
+          result shouldBe SubmissionServiceError.SubmissionNotFound(
+            s"Submission not found. EORI: ${TestData.eoriNumber.value}, " +
+              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationId}"
+          )
         }
       }
     }
