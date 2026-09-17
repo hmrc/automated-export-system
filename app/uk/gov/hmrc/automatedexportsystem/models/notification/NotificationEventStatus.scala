@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.mongo.write
+package uk.gov.hmrc.automatedexportsystem.models.notification
 
 import play.api.libs.json.*
+import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter
 
 enum NotificationEventStatus(val status: Int):
   case Awaiting extends NotificationEventStatus(0)
@@ -35,3 +36,6 @@ object NotificationEventStatus:
       ),
       Writes.IntWrites.contramap(_.status)
     )
+
+  given notificationEventStatusXmlWriter: XmlWriter[NotificationEventStatus] =
+    XmlWriter.intWriter.contramap(_.status)

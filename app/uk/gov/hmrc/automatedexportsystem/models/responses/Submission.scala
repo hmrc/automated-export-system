@@ -16,23 +16,27 @@
 
 package uk.gov.hmrc.automatedexportsystem.models.responses
 
+import cats.data.NonEmptyList
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
 
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDateTime, ZoneOffset}
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 import scala.xml.NodeSeq
 
 final case class Submission(
   submissionId:              SubmissionId,
+  status:                    NotificationEventStatus,
   exportOperation:           ExportOperation,
   customsOfficeOfExitActual: CustomsOfficeOfExitActual,
   goodsShipment:             Option[GoodsShipment],
-  updatedAt:                 LocalDateTime
+  updatedAt:                 LocalDateTime,
+  metadata:                  Option[NonEmptyList[NotificationError]]
 )
 
 object Submission:
@@ -42,18 +46,27 @@ object Submission:
     (o, label) =>
       val children: NodeSeq =
         o.submissionId.toXml("submissionId")
+          ++ o.status.toXml("status")
           ++ o.exportOperation.toXmlRoot
           ++ o.customsOfficeOfExitActual.toXmlRoot
           ++ o.goodsShipment.toXmlRoot
           ++ o.updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).toXml("updatedAt")
+          ++ XmlWriter.optElem("metadata", o.metadata.toXmlRoot)
 
       XmlWriter.elem(label, children)
 
-  def fromMongoAesIE507Message(message: MongoAesIE507Message): Submission =
+  def fromMongoAesIE507Message(message: MongoAesIE507Message): Submission = {
+    val mostRecentNotificationEvent: NotificationEvent =
+      message.metadata.toList
+        .maxBy(event => event.dateUpdated.getOrElse(event.dateCreated))
+
     Submission(
       submissionId = message.submissionId,
+      status = mostRecentNotificationEvent.status,
       exportOperation = message.exportOperation,
       customsOfficeOfExitActual = message.customsOfficeOfExitActual,
       goodsShipment = message.goodsShipment,
-      updatedAt = LocalDateTime.ofInstant(message.updatedAt, ZoneOffset.UTC)
+      updatedAt = LocalDateTime.ofInstant(message.updatedAt, ZoneOffset.UTC),
+      metadata = mostRecentNotificationEvent.errors
     )
+  }

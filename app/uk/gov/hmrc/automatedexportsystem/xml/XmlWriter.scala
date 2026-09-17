@@ -86,3 +86,4 @@ object XmlWriter:
       case true => 1
       case _    => 0
     }
+end XmlWriter

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.models.mongo.write
+package uk.gov.hmrc.automatedexportsystem.models.notification
 
 import cats.data.NonEmptyList
 import play.api.libs.json.{Format, Json}

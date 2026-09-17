@@ -21,7 +21,8 @@ import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEvent, NotificationEventStatus}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 
 import java.time.{Clock, Instant}

@@ -22,21 +22,42 @@ import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 
-import java.time.LocalDateTime
+import java.time.{Instant, LocalDateTime}
 import java.util.UUID
 import scala.xml.Elem
 
 class SubmissionSpec extends AnyFreeSpecLike, Matchers:
   object TestData:
-    val id: UUID = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val id:            UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val eoriNumber:    EoriNumber    = EoriNumber("eoriNumber")
+    val correlationId: String        = "correlationId"
+    val dateTime:      LocalDateTime = LocalDateTime.parse("2026-08-11T00:00:00")
+    val instant:       Instant       = Instant.parse("2026-08-11T00:00:00Z")
 
-    val dateTime: LocalDateTime = LocalDateTime.parse("2026-08-11T00:00:00")
+    val notificationError1: NotificationError =
+      NotificationError(
+        "CODE_1",
+        "description",
+        Some("path"),
+        Some("originalValue1")
+      )
+
+    val notificationError2: NotificationError =
+      NotificationError(
+        "CODE_2",
+        "description",
+        Some("path"),
+        Some("originalValue2")
+      )
 
     val submission: Submission =
       Submission(
         submissionId = SubmissionId(id),
+        status = NotificationEventStatus.Rejected,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -185,13 +206,15 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             )
           )
         ),
-        updatedAt = dateTime
+        updatedAt = dateTime,
+        metadata = Some(NonEmptyList.of(notificationError1, notificationError2))
       )
     end submission
 
     val submissionNoNonRootOptionals: Submission =
       Submission(
         submissionId = SubmissionId(id),
+        status = NotificationEventStatus.Awaiting,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -340,13 +363,15 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             )
           )
         ),
-        updatedAt = dateTime
+        updatedAt = dateTime,
+        metadata = None
       )
     end submissionNoNonRootOptionals
 
     val submissionNoGoodsShipmentChildrenOptionals: Submission =
       Submission(
         submissionId = SubmissionId(id),
+        status = NotificationEventStatus.Accepted,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -376,13 +401,15 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
             goodsItem = None
           )
         ),
-        updatedAt = dateTime
+        updatedAt = dateTime,
+        metadata = None
       )
     end submissionNoGoodsShipmentChildrenOptionals
 
     val submissionNoGoodsShipment: Submission =
       Submission(
         submissionId = SubmissionId(id),
+        status = NotificationEventStatus.Cancelled,
         exportOperation = ExportOperation(
           exportOperationType = ExportOperationType.Standard,
           mrn = Mrn("mrn"),
@@ -393,9 +420,69 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
           referenceNumber = ReferenceNumber("referenceNumber")
         ),
         goodsShipment = None,
-        updatedAt = dateTime
+        updatedAt = dateTime,
+        metadata = None
       )
     end submissionNoGoodsShipment
+
+    val notificationEvent1: NotificationEvent =
+      NotificationEvent(
+        correlationId = correlationId,
+        dateCreated = instant,
+        dateUpdated = None,
+        isPending = false,
+        status = NotificationEventStatus.Awaiting,
+        errors = None
+      )
+
+    val notificationEvent2: NotificationEvent =
+      notificationEvent1.copy(
+        dateUpdated = Some(instant.plusMillis(1)),
+        status = NotificationEventStatus.Accepted
+      )
+
+    val notificationEvent3: NotificationEvent =
+      notificationEvent1.copy(
+        dateCreated = instant.plusMillis(2),
+        status = NotificationEventStatus.Rejected,
+        errors = Some(NonEmptyList.one(notificationError1))
+      )
+
+    val notificationEvent4: NotificationEvent =
+      notificationEvent3.copy(
+        dateUpdated = Some(instant.plusMillis(3)),
+        errors = notificationEvent3.errors.map(errors => errors :+ notificationError2)
+      )
+
+    val mongoAesIE507MessageOneEvent: MongoAesIE507Message =
+      MongoAesIE507Message(
+        submissionId = SubmissionId(id),
+        eoriNumber = eoriNumber,
+        createdAt = instant,
+        updatedAt = instant,
+        exportOperation = ExportOperation(
+          exportOperationType = ExportOperationType.Standard,
+          mrn = Mrn("mrn"),
+          discrepanciesExist = DiscrepanciesExist(true),
+          splitIndicator = SplitIndicator(true)
+        ),
+        customsOfficeOfExitActual = CustomsOfficeOfExitActual(
+          referenceNumber = ReferenceNumber("referenceNumber")
+        ),
+        goodsShipment = None,
+        metadata = NonEmptyList.one(notificationEvent1)
+      )
+
+    val mongoAesIE507MessageMultipleEvents: MongoAesIE507Message =
+      mongoAesIE507MessageOneEvent.copy(metadata =
+        NonEmptyList.of(
+          notificationEvent3,
+          notificationEvent2,
+          notificationEvent4,
+          notificationEvent1
+        )
+      )
+  end TestData
 
   "Submission" - {
 
@@ -405,6 +492,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
+            <status>4</status>
             <ExportOperation>
               <type>1</type>
               <MRN>mrn</MRN>
@@ -514,6 +602,20 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
               </GoodsItem>
             </GoodsShipment>
             <updatedAt>2026-08-11T00:00:00</updatedAt>
+            <metadata>
+              <error>
+                <code>CODE_1</code>
+                <description>description</description>
+                <path>path</path>
+                <originalValue>originalValue1</originalValue>
+              </error>
+              <error>
+                <code>CODE_2</code>
+                <description>description</description>
+                <path>path</path>
+                <originalValue>originalValue2</originalValue>
+              </error>
+            </metadata>
           </Submission>
         end xml
 
@@ -524,6 +626,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
+            <status>0</status>
             <ExportOperation>
               <type>1</type>
               <MRN>mrn</MRN>
@@ -584,6 +687,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
+            <status>1</status>
             <ExportOperation>
               <type>1</type>
               <MRN>mrn</MRN>
@@ -613,6 +717,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
         val xml: Elem =
           <Submission>
             <submissionId>{TestData.id}</submissionId>
+            <status>3</status>
             <ExportOperation>
               <type>1</type>
               <MRN>mrn</MRN>
@@ -626,6 +731,42 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
           </Submission>
 
         XmlOps.normalize(TestData.submissionNoGoodsShipment.toXmlRoot) shouldBe XmlOps.normalize(xml)
+      }
+    }
+
+    ".fromMongoAesIE507Message" - {
+
+      "should correctly map a MongoAesIE507Message to a Submission" - {
+
+        "when there is only one NotificationEvent" in {
+          val submission: Submission =
+            Submission(
+              submissionId = SubmissionId(TestData.id),
+              status = NotificationEventStatus.Awaiting,
+              exportOperation = TestData.mongoAesIE507MessageOneEvent.exportOperation,
+              customsOfficeOfExitActual = TestData.mongoAesIE507MessageOneEvent.customsOfficeOfExitActual,
+              goodsShipment = TestData.mongoAesIE507MessageOneEvent.goodsShipment,
+              updatedAt = TestData.dateTime,
+              metadata = None
+            )
+
+          Submission.fromMongoAesIE507Message(TestData.mongoAesIE507MessageOneEvent) shouldBe submission
+        }
+
+        "when there are multiple NotificationEvent, will select the most recent" in {
+          val submission: Submission =
+            Submission(
+              submissionId = SubmissionId(TestData.id),
+              status = NotificationEventStatus.Rejected,
+              exportOperation = TestData.mongoAesIE507MessageOneEvent.exportOperation,
+              customsOfficeOfExitActual = TestData.mongoAesIE507MessageOneEvent.customsOfficeOfExitActual,
+              goodsShipment = TestData.mongoAesIE507MessageOneEvent.goodsShipment,
+              updatedAt = TestData.dateTime,
+              metadata = Some(NonEmptyList.of(TestData.notificationError1, TestData.notificationError2))
+            )
+
+          Submission.fromMongoAesIE507Message(TestData.mongoAesIE507MessageMultipleEvents) shouldBe submission
+        }
       }
     }
   }
