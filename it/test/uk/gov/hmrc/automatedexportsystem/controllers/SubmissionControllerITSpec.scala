@@ -183,7 +183,7 @@ class SubmissionControllerITSpec extends BaseISpec:
             correlationId = correlationId,
             dateCreated = instant,
             dateUpdated = None,
-            isPending = false,
+            isPending = true,
             status = NotificationEventStatus.Awaiting,
             errors = None
           )
@@ -211,7 +211,7 @@ class SubmissionControllerITSpec extends BaseISpec:
             correlationId = correlationId,
             dateCreated = instant,
             dateUpdated = None,
-            isPending = false,
+            isPending = true,
             status = NotificationEventStatus.Awaiting,
             errors = None
           )

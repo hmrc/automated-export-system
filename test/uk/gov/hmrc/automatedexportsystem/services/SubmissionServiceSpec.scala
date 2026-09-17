@@ -35,6 +35,7 @@ import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError,
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
+import uk.gov.hmrc.automatedexportsystem.models.notification.{AesDigitalNotification, NotificationStatus}
 
 import java.time.*
 import java.util.UUID
@@ -63,6 +64,18 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
     val instant:       Instant       = Instant.parse("2026-08-12T00:00:00.000Z")
     val dateTime:      LocalDateTime = LocalDateTime.parse("2026-08-12T00:00:00")
 
+    val mrn: Mrn = Mrn("mrn")
+
+    val notification: AesDigitalNotification =
+      AesDigitalNotification(
+        correlationId = correlationId,
+        eori = eoriNumber.value,
+        mrn = mrn.value,
+        dateCreated = dateTime,
+        status = NotificationStatus.Accepted,
+        notificationErrors = None
+      )
+
     val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId)
 
     val aesIE507Message: AesIE507Message =
@@ -85,7 +98,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         correlationId = correlationId,
         dateCreated = instant,
         dateUpdated = None,
-        isPending = false,
+        isPending = true,
         status = NotificationEventStatus.Awaiting,
         errors = None
       )
@@ -93,12 +106,14 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
     val notificationEvent2: NotificationEvent =
       notificationEvent1.copy(
         dateUpdated = Some(instant.plusMillis(1)),
+        isPending = false,
         status = NotificationEventStatus.Accepted
       )
 
     val notificationEvent3: NotificationEvent =
       notificationEvent1.copy(
         dateCreated = instant.plusMillis(2),
+        isPending = false,
         status = NotificationEventStatus.Rejected,
         errors = Some(
           NonEmptyList.one(
@@ -468,6 +483,322 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
 
           result shouldBe error
+        }
+      }
+    }
+
+    ".updateNotification" - {
+
+      "should update the notification event" - {
+
+        "with Accepted status for a Standard submission" in {
+
+          val notification =
+            TestData.notification.copy(
+              status = NotificationStatus.Accepted
+            )
+
+          val mongoMessage =
+            TestData.mongoAesIE507Message.copy(
+              exportOperation = TestData.mongoAesIE507Message.exportOperation.copy(
+                exportOperationType = ExportOperationType.Standard
+              )
+            )
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(mongoMessage.toEitherTRight[MongoError])
+
+          when(
+            aesIE507Repository.updateNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId,
+              instant,
+              NotificationEventStatus.Accepted,
+              None
+            )
+          )
+            .thenReturn(SingleUpdateStatus.Updated("updateNotification").toEitherTRight[MongoError])
+
+          val result =
+            submissionService
+              .updateNotification(notification)
+              .value
+              .futureValue
+              .value
+
+          result shouldBe SingleUpdateStatus.Updated("updateNotification")
+        }
+
+        "with Amended status for an Amend submission" in {
+
+          val notification =
+            TestData.notification.copy(
+              status = NotificationStatus.Accepted
+            )
+
+          val mongoMessage =
+            TestData.mongoAesIE507Message.copy(
+              exportOperation = TestData.mongoAesIE507Message.exportOperation.copy(
+                exportOperationType = ExportOperationType.Amend
+              )
+            )
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(mongoMessage.toEitherTRight[MongoError])
+
+          when(
+            aesIE507Repository.updateNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId,
+              instant,
+              NotificationEventStatus.Amended,
+              None
+            )
+          )
+            .thenReturn(SingleUpdateStatus.Updated("updateNotification").toEitherTRight[MongoError])
+
+          val result =
+            submissionService
+              .updateNotification(notification)
+              .value
+              .futureValue
+              .value
+
+          result shouldBe SingleUpdateStatus.Updated("updateNotification")
+        }
+
+        "with Cancelled status for a Cancel submission" in {
+
+          val notification =
+            TestData.notification.copy(
+              status = NotificationStatus.Accepted
+            )
+
+          val mongoMessage =
+            TestData.mongoAesIE507Message.copy(
+              exportOperation = TestData.mongoAesIE507Message.exportOperation.copy(
+                exportOperationType = ExportOperationType.Cancel
+              )
+            )
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(mongoMessage.toEitherTRight[MongoError])
+
+          when(
+            aesIE507Repository.updateNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId,
+              instant,
+              NotificationEventStatus.Cancelled,
+              None
+            )
+          )
+            .thenReturn(SingleUpdateStatus.Updated("updateNotification").toEitherTRight[MongoError])
+
+          val result =
+            submissionService
+              .updateNotification(notification)
+              .value
+              .futureValue
+              .value
+
+          result shouldBe SingleUpdateStatus.Updated("updateNotification")
+        }
+
+        "with Rejected status when the notification is rejected" in {
+
+          val notification =
+            TestData.notification.copy(
+              status = NotificationStatus.Rejected
+            )
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(TestData.mongoAesIE507Message.toEitherTRight[MongoError])
+
+          when(
+            aesIE507Repository.updateNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId,
+              instant,
+              NotificationEventStatus.Rejected,
+              None
+            )
+          )
+            .thenReturn(SingleUpdateStatus.Updated("updateNotification").toEitherTRight[MongoError])
+
+          val result =
+            submissionService
+              .updateNotification(notification)
+              .value
+              .futureValue
+              .value
+
+          result shouldBe SingleUpdateStatus.Updated("updateNotification")
+        }
+
+        "with Awaiting status when the notification is a diversion" in {
+
+          val notification =
+            TestData.notification.copy(
+              status = NotificationStatus.Diversion
+            )
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(TestData.mongoAesIE507Message.toEitherTRight[MongoError])
+
+          when(
+            aesIE507Repository.updateNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId,
+              instant,
+              NotificationEventStatus.Awaiting,
+              None
+            )
+          )
+            .thenReturn(SingleUpdateStatus.Updated("updateNotification").toEitherTRight[MongoError])
+
+          val result =
+            submissionService
+              .updateNotification(notification)
+              .value
+              .futureValue
+              .value
+
+          result shouldBe SingleUpdateStatus.Updated("updateNotification")
+        }
+      }
+
+      "should return an error" - {
+
+        "when retrieving the submission fails" in {
+
+          val mongoError =
+            MongoError.UnexpectedError(Exception("Unexpected error"))
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(mongoError.toEitherTLeft[MongoAesIE507Message])
+
+          val result: SubmissionServiceError =
+            submissionService
+              .updateNotification(TestData.notification)
+              .value
+              .futureValue
+              .left
+              .value
+
+          result shouldBe SubmissionServiceError.SubmissionOperationFailure(
+            s"Submission retrieval failed. EORI: ${TestData.eoriNumber.value}, " +
+              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationId}"
+          )
+        }
+
+        "when updating the notification fails" in {
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(TestData.mongoAesIE507Message.toEitherTRight[MongoError])
+
+          val mongoError =
+            MongoError.UnexpectedError(Exception("Unexpected error"))
+
+          when(
+            aesIE507Repository.updateNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId,
+              instant,
+              NotificationEventStatus.Accepted,
+              None
+            )
+          )
+            .thenReturn(mongoError.toEitherTLeft[SingleUpdateStatus])
+
+          val result: SubmissionServiceError =
+            submissionService
+              .updateNotification(TestData.notification)
+              .value
+              .futureValue
+              .left
+              .value
+
+          result shouldBe SubmissionServiceError.SubmissionOperationFailure(
+            s"Submission update failed. EORI: ${TestData.eoriNumber.value}, " +
+              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationId}"
+          )
+        }
+
+        "when the submission cannot be found" in {
+
+          val mongoError =
+            MongoError.DocumentNotFound("Document not found")
+
+          when(
+            aesIE507Repository.getMessageByNotification(
+              TestData.eoriNumber,
+              TestData.mrn,
+              TestData.correlationId
+            )
+          )
+            .thenReturn(mongoError.toEitherTLeft[MongoAesIE507Message])
+
+          val result: SubmissionServiceError =
+            submissionService
+              .updateNotification(TestData.notification)
+              .value
+              .futureValue
+              .left
+              .value
+
+          result shouldBe SubmissionServiceError.SubmissionNotFound(
+            s"Submission not found. EORI: ${TestData.eoriNumber.value}, " +
+              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationId}"
+          )
         }
       }
     }
