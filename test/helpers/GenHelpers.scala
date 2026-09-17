@@ -16,10 +16,12 @@
 
 package helpers
 
+import cats.data.NonEmptyList
 import org.scalacheck.Gen
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
 
 import java.time.Instant
 
@@ -27,6 +29,19 @@ trait GenHelpers:
   extension (mongoAesIE507MessageGen: Gen[MongoAesIE507Message])
     def withEori(eoriNumber: EoriNumber): Gen[MongoAesIE507Message] =
       mongoAesIE507MessageGen.map(_.copy(eoriNumber = eoriNumber))
+
+    def withEoriAndStatus(
+      eoriNumber: EoriNumber,
+      status:     NotificationEventStatus
+    ): Gen[MongoAesIE507Message] =
+      mongoAesIE507MessageGen.map { message =>
+        message.copy(
+          eoriNumber = eoriNumber,
+          metadata = message.metadata.copy(
+            head = message.metadata.head.copy(status = status)
+          )
+        )
+      }
 
     def withSubmissionId(submissionId: SubmissionId): Gen[MongoAesIE507Message] =
       mongoAesIE507MessageGen.map(_.copy(submissionId = submissionId))

@@ -20,7 +20,6 @@ import cats.data.NonEmptyList
 import org.mockito.Mockito.when
 import org.mongodb.scala.model.{Filters, Indexes}
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{EitherValues, OptionValues}
@@ -34,6 +33,8 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperati
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.Accepted
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.Instant
@@ -66,21 +67,19 @@ class AesIE507RepositoryISpec
 
     val eoriNumber: EoriNumber = EoriNumber("eoriNumber")
 
-    def mongoAesIE507MessageSummary(mongoAesIE507Message: MongoAesIE507Message) =
+    def mongoAesIE507MessageSummary(
+      message: MongoAesIE507Message
+    ): MongoAesIE507MessageSummary =
       MongoAesIE507MessageSummary(
-        submissionId = mongoAesIE507Message.submissionId,
-        exportOperation = mongoAesIE507Message.exportOperation,
-        customsOfficeOfExitActual = mongoAesIE507Message.customsOfficeOfExitActual,
-        ducr = mongoAesIE507Message.goodsShipment.map(_.consignment.referenceNumberUCR),
-        updatedAt = mongoAesIE507Message.updatedAt
+        submissionId = message.submissionId,
+        exportOperation = message.exportOperation,
+        customsOfficeOfExitActual = message.customsOfficeOfExitActual,
+        ducr = message.goodsShipment.map(_.consignment.referenceNumberUCR),
+        updatedAt = message.updatedAt,
+        status = message.metadata.toList
+          .maxBy(event => event.dateUpdated.getOrElse(event.dateCreated))
+          .status
       )
-
-    extension (mongoAesIE507MessageGen: Gen[MongoAesIE507Message])
-      def withEori(eoriNumber: EoriNumber): Gen[MongoAesIE507Message] =
-        mongoAesIE507MessageGen.map(_.copy(eoriNumber = eoriNumber))
-
-      def withSubmissionId(submissionId: SubmissionId): Gen[MongoAesIE507Message] =
-        mongoAesIE507MessageGen.map(_.copy(submissionId = submissionId))
 
   "AesIE507Repository" - {
     import helpers.GenHelpers.*
@@ -161,7 +160,7 @@ class AesIE507RepositoryISpec
             Seq.fill(2)(arbitrary[MongoAesIE507Message].sample).flatten
 
           val mongoAesIE507MessagesMatchingEori: Seq[MongoAesIE507Message] =
-            Seq.fill(1)(arbitrary[MongoAesIE507Message].withEori(TestData.eoriNumber).sample).flatten
+            Seq.fill(1)(arbitrary[MongoAesIE507Message].withEoriAndStatus(TestData.eoriNumber, NotificationEventStatus.Rejected).sample).flatten
 
           val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
             mongoAesIE507MessagesDifferentEori ++ mongoAesIE507MessagesMatchingEori
@@ -183,7 +182,7 @@ class AesIE507RepositoryISpec
             Seq.fill(2)(arbitrary[MongoAesIE507Message].sample).flatten
 
           val mongoAesIE507MessagesMatchingEori: Seq[MongoAesIE507Message] =
-            Seq.fill(2)(arbitrary[MongoAesIE507Message].withEori(TestData.eoriNumber).sample).flatten
+            Seq.fill(2)(arbitrary[MongoAesIE507Message].withEoriAndStatus(TestData.eoriNumber, Accepted).sample).flatten
 
           val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
             mongoAesIE507MessagesDifferentEori ++ mongoAesIE507MessagesMatchingEori

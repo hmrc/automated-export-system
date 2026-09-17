@@ -67,7 +67,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
         ducr = Some(ReferenceNumberUcr("referenceNumberUcr")),
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = ExportOperationType.Standard
+        status = NotificationEventStatus.Awaiting
       )
 
     val submissionSummary2: SubmissionSummary =
@@ -77,7 +77,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
         ducr = None,
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = ExportOperationType.Standard
+        status = NotificationEventStatus.Awaiting
       )
 
     val submissionSummaryList: SubmissionSummaryList =
@@ -711,7 +711,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                     <ducr>referenceNumberUcr</ducr>
                     <officeOfExitCode>referenceNumber</officeOfExitCode>
                     <updatedAt>2026-08-03T00:00:00</updatedAt>
-                    <status>1</status>
+                    <status>0</status>
                   </Submission>
                   <Submission>
                     <submissionId>
@@ -720,7 +720,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                     <mrn>mrn</mrn>
                     <officeOfExitCode>referenceNumber</officeOfExitCode>
                     <updatedAt>2026-08-03T00:00:00</updatedAt>
-                    <status>1</status>
+                    <status>0</status>
                   </Submission>
                 </Submissions>
 
