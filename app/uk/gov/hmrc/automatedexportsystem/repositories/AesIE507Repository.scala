@@ -33,7 +33,8 @@ import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEventStatus}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProjections, SingleUpdateStatus}
 import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
 import uk.gov.hmrc.mongo.MongoComponent

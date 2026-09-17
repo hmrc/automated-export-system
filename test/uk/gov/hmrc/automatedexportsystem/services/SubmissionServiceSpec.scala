@@ -98,7 +98,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         correlationId = correlationId,
         dateCreated = instant,
         dateUpdated = None,
-        isPending = false,
+        isPending = true,
         status = NotificationEventStatus.Awaiting,
         errors = None
       )
@@ -106,12 +106,14 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
     val notificationEvent2: NotificationEvent =
       notificationEvent1.copy(
         dateUpdated = Some(instant.plusMillis(1)),
+        isPending = false,
         status = NotificationEventStatus.Accepted
       )
 
     val notificationEvent3: NotificationEvent =
       notificationEvent1.copy(
         dateCreated = instant.plusMillis(2),
+        isPending = false,
         status = NotificationEventStatus.Rejected,
         errors = Some(
           NonEmptyList.one(
@@ -141,15 +143,10 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
           referenceNumber = ReferenceNumber("referenceNumber")
         ),
         goodsShipment = None,
-        metadata = NonEmptyList.one(
-          NotificationEvent(
-            correlationId = correlationId,
-            dateCreated = instant,
-            dateUpdated = None,
-            isPending = true,
-            status = NotificationEventStatus.Awaiting,
-            errors = None
-          )
+        metadata = NonEmptyList.of(
+          notificationEvent1,
+          notificationEvent2,
+          notificationEvent3
         )
       )
 

@@ -24,7 +24,8 @@ import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEventStatus}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
 import uk.gov.hmrc.automatedexportsystem.models.notification.{AesDigitalNotification, NotificationStatus}
 
 import java.time.{Clock, Instant}

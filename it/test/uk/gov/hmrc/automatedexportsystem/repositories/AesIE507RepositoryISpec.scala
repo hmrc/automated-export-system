@@ -35,7 +35,7 @@ import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.NotificationEventStatus
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
 import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
 
 import java.time.Instant

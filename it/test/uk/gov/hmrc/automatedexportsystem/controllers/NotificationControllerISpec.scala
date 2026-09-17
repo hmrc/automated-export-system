@@ -23,7 +23,8 @@ import cats.data.NonEmptyList
 import org.scalacheck.Arbitrary.arbitrary
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
-import uk.gov.hmrc.automatedexportsystem.models.mongo.write.{MongoAesIE507Message, NotificationEventStatus}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507RepositoryImpl
 
 import scala.xml.{Elem, XML as Xml}
