@@ -19,6 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.models.mongo.read
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
 
 import java.time.Instant
 
@@ -27,7 +28,8 @@ final case class MongoAesIE507MessageSummary(
   exportOperation:           ExportOperation,
   customsOfficeOfExitActual: CustomsOfficeOfExitActual,
   ducr:                      Option[ReferenceNumberUcr],
-  updatedAt:                 Instant
+  updatedAt:                 Instant,
+  status:                    NotificationEventStatus
 )
 
 object MongoAesIE507MessageSummary:

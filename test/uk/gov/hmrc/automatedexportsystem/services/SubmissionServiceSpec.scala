@@ -31,6 +31,7 @@ import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.Awaiting
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
@@ -163,6 +164,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
           referenceNumber = ReferenceNumber("referenceNumber")
         ),
         ducr = None,
+        status = NotificationEventStatus.Awaiting,
         updatedAt = instant
       )
   end TestData
@@ -195,7 +197,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
               ducr = None,
               officeOfExitCode = ReferenceNumber("referenceNumber"),
               updatedAt = TestData.dateTime,
-              status = ExportOperationType.Standard
+              status = Awaiting
             )
 
           val submissionSummaryList: List[SubmissionSummary] =

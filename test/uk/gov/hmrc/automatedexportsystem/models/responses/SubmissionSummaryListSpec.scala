@@ -21,6 +21,7 @@ import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.{Accepted, Awaiting}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 
 import java.time.LocalDateTime
@@ -40,7 +41,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
         ducr = Some(ReferenceNumberUcr("referenceNumberUcr")),
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = ExportOperationType.Standard
+        status = Awaiting
       )
 
     val submissionSummaryNoDucr: SubmissionSummary =
@@ -50,7 +51,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
         ducr = None,
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = ExportOperationType.Standard
+        status = Accepted
       )
 
     val submissionSummaryList: SubmissionSummaryList =
@@ -70,7 +71,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
               <ducr>referenceNumberUcr</ducr>
               <officeOfExitCode>referenceNumber</officeOfExitCode>
               <updatedAt>2026-07-31T00:00:00</updatedAt>
-              <status>1</status>
+              <status>0</status>
             </Submission>
 
         XmlOps.normalize(TestData.submissionSummary.toXmlRoot) shouldBe XmlOps.normalize(xml)
@@ -106,7 +107,7 @@ class SubmissionSummaryListSpec extends AnyFreeSpecLike, Matchers:
                 <ducr>referenceNumberUcr</ducr>
                 <officeOfExitCode>referenceNumber</officeOfExitCode>
                 <updatedAt>2026-07-31T00:00:00</updatedAt>
-                <status>1</status>
+                <status>0</status>
               </Submission>
               <Submission>
                 <submissionId>{TestData.id}</submissionId>

@@ -20,6 +20,7 @@ import play.api.libs.json.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.automatedexportsystem.xml.XmlWriter.toXml
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlRootTag, XmlWriter}
@@ -42,7 +43,7 @@ final case class SubmissionSummary(
   ducr:             Option[ReferenceNumberUcr],
   officeOfExitCode: ReferenceNumber,
   updatedAt:        LocalDateTime,
-  status:           ExportOperationType
+  status:           NotificationEventStatus
 )
 
 object SubmissionSummary:
@@ -70,5 +71,5 @@ object SubmissionSummary:
       ducr = message.ducr,
       officeOfExitCode = message.customsOfficeOfExitActual.referenceNumber,
       updatedAt = LocalDateTime.ofInstant(message.updatedAt, ZoneOffset.UTC),
-      status = message.exportOperation.exportOperationType
+      status = message.status
     )

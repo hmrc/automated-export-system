@@ -17,6 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.models.mongo
 
 import com.mongodb.client.model.Projections
+import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.conversions.Bson
 
 object MongoAesIE507MessageProjections:
@@ -26,5 +27,39 @@ object MongoAesIE507MessageProjections:
     Projections.include("customsOfficeOfExitActual"),
     Projections.computed("ducr", "$goodsShipment.consignment.referenceNumberUCR"),
     Projections.include("updatedAt"),
+    Projections.computed(
+      "status",
+      BsonDocument(
+        """
+          |{
+          |  "$let": {
+          |    "vars": {
+          |      "sorted": {
+          |        "$sortArray": {
+          |          "input": {
+          |            "$map": {
+          |              "input": { "$ifNull": ["$metadata", []] },
+          |              "as": "m",
+          |              "in": {
+          |                "event": "$$m",
+          |                "sortDate": { "$ifNull": ["$$m.dateUpdated", "$$m.dateCreated"] }
+          |              }
+          |            }
+          |          },
+          |          "sortBy": { "sortDate": -1 }
+          |        }
+          |      }
+          |    },
+          |    "in": {
+          |      "$let": {
+          |        "vars": { "top": { "$arrayElemAt": ["$$sorted", 0] } },
+          |        "in": "$$top.event.status"
+          |      }
+          |    }
+          |  }
+          |}
+          |""".stripMargin
+      )
+    ),
     Projections.excludeId()
   )
