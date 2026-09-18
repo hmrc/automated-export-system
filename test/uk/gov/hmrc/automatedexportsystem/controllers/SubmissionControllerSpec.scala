@@ -192,7 +192,8 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
         aesIE507ActionRefiner,
         xmlBodyParsers,
         submissionService,
-        eisService
+        eisService,
+        idGenerator
       )
   end Setup
 
