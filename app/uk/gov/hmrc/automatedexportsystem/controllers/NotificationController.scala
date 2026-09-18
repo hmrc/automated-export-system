@@ -43,7 +43,6 @@ class NotificationController @Inject() (
       andThen xmlPayloadActionRefiner
       andThen notificationActionRefiner).async { implicit req =>
       val notification = req.notification
-
       logger.info(s"Received notification for MRN: ${notification.mrn}")
 
       submissionService

@@ -31,6 +31,7 @@ import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHea
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -72,7 +73,10 @@ class SubmissionController @Inject() (
       val eoriNumber:      EoriNumber      = request.eori
       val correlationId:   CorrelationId   = request.correlationId
 
-      val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] =
+      val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] = {
+
+        val correlationId: HttpHeader.CorrelationId =
+          maybeCorrelationIdHeader.getOrElse(HttpHeader.CorrelationId(idGenerator.generate35Char))
         submissionService
           .submitMessage(
             aesIE507Message,
@@ -94,6 +98,7 @@ class SubmissionController @Inject() (
                 maybeConversationIdHeader
               )
           )
+      }
 
       result.fold(
         error => error.toErrorResponse.toResult,

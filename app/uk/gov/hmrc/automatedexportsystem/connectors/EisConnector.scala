@@ -50,9 +50,6 @@ class EisConnector @Inject() (
 
     given httpReads: HttpReads[Either[ConnectorError, Either[EisErrorResponse, Unit]]] =
       submitXmlBasedHttpReads.httpReads
-
-    logger.warn(s"*********: ${eisIE507Request.message.toXmlRoot}")
-    logger.warn(s"headers=> ${eisIE507Request.headers.normalizedHeaders}")
     EitherT(
       httpClient
         .post(submitUrl)
