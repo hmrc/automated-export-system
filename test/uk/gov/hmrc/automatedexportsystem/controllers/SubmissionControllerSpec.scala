@@ -167,6 +167,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
     val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner()
 
     val idGenerator: IdGenerator = mock[IdGenerator]
+    when(idGenerator.generate35Char).thenReturn(TestData.correlationId)
 
     val aesAuthAction: AesAuthAction =
       new AesAuthAction(mockAuthConnector, idGenerator)(ec, materializer):
@@ -193,7 +194,8 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
         aesIE507ActionRefiner,
         xmlBodyParsers,
         submissionService,
-        eisService
+        eisService,
+        idGenerator
       )
   end Setup
 
@@ -263,7 +265,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                     TestData.aesIE507Message,
                     ExportOperationType.Standard,
                     TestData.eoriNumber,
-                    None
+                    Some(TestData.correlationIdHeader)
                   )
                 )
                   .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
@@ -272,7 +274,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   eisService.submitMessage(
                     eqTo(TestData.aesIE507Message),
                     EoriNumber(eqTo(TestData.eoriNumber.value)),
-                    eqTo(None),
+                    eqTo(Some(TestData.correlationIdHeader)),
                     eqTo(None)
                   )(using any())
                 ).thenReturn(
@@ -317,7 +319,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                     TestData.aesIE507Message,
                     ExportOperationType.Standard,
                     TestData.eoriNumber,
-                    None
+                    Some(TestData.correlationIdHeader)
                   )
                 )
                   .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
@@ -326,7 +328,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   eisService.submitMessage(
                     eqTo(TestData.aesIE507Message),
                     EoriNumber(eqTo(TestData.eoriNumber.value)),
-                    eqTo(None),
+                    eqTo(Some(TestData.correlationIdHeader)),
                     eqTo(None)
                   )(using any())
                 ).thenReturn(
@@ -414,7 +416,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   TestData.aesIE507Message,
                   ExportOperationType.Standard,
                   TestData.eoriNumber,
-                  None
+                  Some(TestData.correlationIdHeader)
                 )
               )
                 .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
@@ -450,7 +452,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 TestData.aesIE507Message,
                 ExportOperationType.Standard,
                 TestData.eoriNumber,
-                None
+                Some(TestData.correlationIdHeader)
               )
             )
               .thenReturn(
@@ -466,7 +468,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               eisService.submitMessage(
                 eqTo(TestData.aesIE507Message),
                 EoriNumber(eqTo(TestData.eoriNumber.value)),
-                eqTo(None),
+                eqTo(Some(TestData.correlationIdHeader)),
                 eqTo(None)
               )(using any[HeaderCarrier])
             ).thenReturn(error.toEitherTLeft[Either[EisErrorResponse, Unit]])

@@ -29,6 +29,7 @@ import uk.gov.hmrc.automatedexportsystem.models.eis.EisErrorResponse
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -47,7 +48,8 @@ class SubmissionController @Inject() (
   aesIE507ActionRefiner:      AesIE507ActionRefiner,
   xmlBodyParsers:             XmlBodyParsers,
   submissionService:          SubmissionService,
-  eisService:                 EisService
+  eisService:                 EisService,
+  idGenerator:                IdGenerator
 ) extends BackendController(cc):
   import SubmissionController.eitherTAesErrorWiden
   import writeables.NodeSeqFormattedWriteables.writeableOfFormattedNodeSeq
@@ -72,13 +74,16 @@ class SubmissionController @Inject() (
           .get(CustomHeaderNames.X_CORRELATION_ID)
           .map(HttpHeader.CorrelationId.apply)
 
-      val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] =
+      val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] = {
+
+        val correlationId: HttpHeader.CorrelationId =
+          maybeCorrelationIdHeader.getOrElse(HttpHeader.CorrelationId(idGenerator.generate35Char))
         submissionService
           .submitMessage(
             aesIE507Message,
             ExportOperationType.Standard,
             eoriNumber,
-            maybeCorrelationIdHeader
+            Some(correlationId)
           )
           .flatMap(_ =>
             val maybeConversationIdHeader: Option[HttpHeader.ConversationId] =
@@ -90,10 +95,11 @@ class SubmissionController @Inject() (
               .submitMessage(
                 aesIE507Message,
                 eoriNumber,
-                maybeCorrelationIdHeader,
+                Some(correlationId),
                 maybeConversationIdHeader
               )
           )
+      }
 
       result.fold(
         error => error.toErrorResponse.toResult,
