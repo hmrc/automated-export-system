@@ -29,6 +29,7 @@ import uk.gov.hmrc.automatedexportsystem.models.eis.EisErrorResponse
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -47,7 +48,8 @@ class SubmissionController @Inject() (
   aesIE507ActionRefiner:      AesIE507ActionRefiner,
   xmlBodyParsers:             XmlBodyParsers,
   submissionService:          SubmissionService,
-  eisService:                 EisService
+  eisService:                 EisService,
+  idGenerator:                IdGenerator
 ) extends BackendController(cc):
   import SubmissionController.eitherTAesErrorWiden
   import writeables.NodeSeqFormattedWriteables.writeableOfFormattedNodeSeq
@@ -68,7 +70,10 @@ class SubmissionController @Inject() (
       val eoriNumber:      EoriNumber      = request.eori
       val correlationId:   CorrelationId   = request.correlationId
 
-      val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] =
+      val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] = {
+
+        val correlationId: HttpHeader.CorrelationId =
+          maybeCorrelationIdHeader.getOrElse(HttpHeader.CorrelationId(idGenerator.generate35Char))
         submissionService
           .submitMessage(
             aesIE507Message,
@@ -90,6 +95,7 @@ class SubmissionController @Inject() (
                 maybeConversationIdHeader
               )
           )
+      }
 
       result.fold(
         error => error.toErrorResponse.toResult,
