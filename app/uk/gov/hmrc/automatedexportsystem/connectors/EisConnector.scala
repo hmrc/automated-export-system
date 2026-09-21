@@ -50,6 +50,7 @@ class EisConnector @Inject() (
 
     given httpReads: HttpReads[Either[ConnectorError, Either[EisErrorResponse, Unit]]] =
       submitXmlBasedHttpReads.httpReads
+
     EitherT(
       httpClient
         .post(submitUrl)

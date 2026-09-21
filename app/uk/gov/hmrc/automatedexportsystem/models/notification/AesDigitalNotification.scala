@@ -18,7 +18,6 @@ package uk.gov.hmrc.automatedexportsystem.models.notification
 
 import cats.data.NonEmptyList
 import cats.implicits.catsSyntaxTuple6Semigroupal
-import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.xml.{XmlPath, XmlReader, XmlRootTag}
 
 import java.time.LocalDateTime
@@ -32,7 +31,7 @@ final case class AesDigitalNotification(
   notificationErrors: Option[NonEmptyList[NotificationError]]
 )
 
-object AesDigitalNotification extends Logging:
+object AesDigitalNotification:
   given aesDigitalNotificationTag: XmlRootTag[AesDigitalNotification] = XmlRootTag("notification")
 
   given aesDigitalNotificationXmlReader: XmlReader[AesDigitalNotification] =
