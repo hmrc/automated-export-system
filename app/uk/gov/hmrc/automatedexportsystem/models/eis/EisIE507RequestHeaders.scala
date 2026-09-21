@@ -20,19 +20,17 @@ import play.api.http.MimeTypes
 import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
 
 final case class EisIE507RequestHeaders(
-  correlationId:  HttpHeader.CorrelationId,
-  conversationId: HttpHeader.ConversationId,
-  forwardedHost:  HttpHeader.ForwardedHost,
-  messageType:    HttpHeader.MessageType,
-  contentType:    HttpHeader.ContentType,
-  accept:         HttpHeader.Accept,
-  authorization:  HttpHeader.Authorization,
-  date:           HttpHeader.Date
+  correlationId: HttpHeader.CorrelationId,
+  forwardedHost: HttpHeader.ForwardedHost,
+  messageType:   HttpHeader.MessageType,
+  contentType:   HttpHeader.ContentType,
+  accept:        HttpHeader.Accept,
+  authorization: HttpHeader.Authorization,
+  date:          HttpHeader.Date
 ):
   def normalizedHeaders: Seq[(String, String)] =
     Seq(
       correlationId.normalized,
-      conversationId.normalized,
       forwardedHost.normalized,
       messageType.normalized,
       contentType.normalized,
@@ -43,14 +41,12 @@ final case class EisIE507RequestHeaders(
 
 object EisIE507RequestHeaders:
   def apply(
-    correlationId:  HttpHeader.CorrelationId,
-    conversationId: HttpHeader.ConversationId,
-    authorization:  HttpHeader.Authorization,
-    date:           HttpHeader.Date
+    correlationId: HttpHeader.CorrelationId,
+    authorization: HttpHeader.Authorization,
+    date:          HttpHeader.Date
   ): EisIE507RequestHeaders =
     EisIE507RequestHeaders(
       correlationId,
-      conversationId,
       HttpHeader.ForwardedHost("automated-export-system"),
       HttpHeader.MessageType("aesIE507Request"),
       HttpHeader.ContentType(MimeTypes.XML),

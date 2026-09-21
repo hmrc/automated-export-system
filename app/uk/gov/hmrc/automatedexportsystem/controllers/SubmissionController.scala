@@ -26,7 +26,6 @@ import uk.gov.hmrc.automatedexportsystem.errors.{AesError, ResponseCode}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.eis.EisErrorResponse
-import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
@@ -76,20 +75,13 @@ class SubmissionController @Inject() (
             eoriNumber,
             correlationId
           )
-          .flatMap(_ =>
-            val maybeConversationIdHeader: Option[HttpHeader.ConversationId] =
-              request.headers
-                .get(CustomHeaderNames.X_CONVERSATION_ID)
-                .map(HttpHeader.ConversationId.apply)
-
-            eisService
-              .submitMessage(
-                aesIE507Message,
-                eoriNumber,
-                correlationId,
-                maybeConversationIdHeader
-              )
-          )
+          .flatMap { _ =>
+            eisService.submitMessage(
+              aesIE507Message,
+              eoriNumber,
+              correlationId
+            )
+          }
 
       result.fold(
         error => error.toErrorResponse.toResult,

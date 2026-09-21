@@ -36,10 +36,9 @@ class EisService @Inject() (
   appConfig:       AppConfig
 )(using protected val ec: ExecutionContext):
   def submitMessage(
-    aesIE507Message:     AesIE507Message,
-    eoriNumber:          EoriNumber,
-    correlationId:       CorrelationId,
-    maybeConversationId: Option[HttpHeader.ConversationId]
+    aesIE507Message: AesIE507Message,
+    eoriNumber:      EoriNumber,
+    correlationId:   CorrelationId
   )(using hc: HeaderCarrier): EitherT[Future, EisServiceError, Either[EisErrorResponse, Unit]] =
     val eisBearerToken: String = appConfig.eisToken
 
@@ -50,8 +49,7 @@ class EisService @Inject() (
         aesIE507Message,
         eoriNumber,
         authorization,
-        correlationId,
-        maybeConversationId
+        correlationId
       )
 
     eisConnector
