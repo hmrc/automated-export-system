@@ -19,8 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.services
 import cats.data.EitherT
 import uk.gov.hmrc.automatedexportsystem.errors.{AesErrorMapper, MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
-import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
@@ -37,7 +36,7 @@ trait SubmissionService:
     message:             AesIE507Message,
     exportOperationType: ExportOperationType,
     eoriNumber:          EoriNumber,
-    maybeCorrelationId:  Option[HttpHeader.CorrelationId]
+    correlationId:       CorrelationId
   ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus]
 
   def getSubmissions(eoriNumber: EoriNumber): EitherT[Future, SubmissionServiceError, SubmissionSummaryList]
@@ -177,10 +176,10 @@ class SubmissionServiceImpl @Inject() (
     message:             AesIE507Message,
     exportOperationType: ExportOperationType,
     eoriNumber:          EoriNumber,
-    maybeCorrelationId:  Option[HttpHeader.CorrelationId]
+    correlationId:       CorrelationId
   ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
     val mongoMessage: MongoAesIE507Message =
-      aesIE507Factory.mongoMessage(message, eoriNumber, exportOperationType, maybeCorrelationId)
+      aesIE507Factory.mongoMessage(message, eoriNumber, exportOperationType, correlationId)
 
     aesIE507Repository
       .submit(mongoMessage)

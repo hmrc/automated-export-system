@@ -19,8 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.services
 import cats.data.NonEmptyList
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
-import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
@@ -34,7 +33,7 @@ class AesIE507Factory @Inject() (clock: Clock, idGenerator: IdGenerator) extends
     aesIE507Message:     AesIE507Message,
     eoriNumber:          EoriNumber,
     exportOperationType: ExportOperationType,
-    maybeCorrelationId:  Option[HttpHeader.CorrelationId]
+    correlationId:       CorrelationId
   ): MongoAesIE507Message =
     logger.info(
       s"Converting AesIE507Message to MongoAesIE507Message with " +
@@ -43,9 +42,6 @@ class AesIE507Factory @Inject() (clock: Clock, idGenerator: IdGenerator) extends
     )
 
     val instantNow: Instant = Instant.now(clock)
-
-    val correlationId: HttpHeader.CorrelationId =
-      maybeCorrelationId.getOrElse(HttpHeader.CorrelationId(idGenerator.generate35Char))
 
     val submissionId: SubmissionId =
       aesIE507Message.submissionId.getOrElse(SubmissionId(idGenerator.generate))

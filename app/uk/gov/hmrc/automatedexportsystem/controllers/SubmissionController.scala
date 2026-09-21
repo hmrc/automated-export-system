@@ -24,12 +24,11 @@ import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.{AesError, ResponseCode}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.eis.EisErrorResponse
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
-import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -48,8 +47,7 @@ class SubmissionController @Inject() (
   aesIE507ActionRefiner:      AesIE507ActionRefiner,
   xmlBodyParsers:             XmlBodyParsers,
   submissionService:          SubmissionService,
-  eisService:                 EisService,
-  idGenerator:                IdGenerator
+  eisService:                 EisService
 ) extends BackendController(cc):
   import SubmissionController.eitherTAesErrorWiden
   import writeables.NodeSeqFormattedWriteables.writeableOfFormattedNodeSeq
@@ -68,22 +66,15 @@ class SubmissionController @Inject() (
     composed.async { implicit request =>
       val aesIE507Message: AesIE507Message = request.message
       val eoriNumber:      EoriNumber      = request.eori
+      val correlationId:   CorrelationId   = request.correlationId
 
-      val maybeCorrelationIdHeader: Option[HttpHeader.CorrelationId] =
-        request.headers
-          .get(CustomHeaderNames.X_CORRELATION_ID)
-          .map(HttpHeader.CorrelationId.apply)
-
-      val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] = {
-
-        val correlationId: HttpHeader.CorrelationId =
-          maybeCorrelationIdHeader.getOrElse(HttpHeader.CorrelationId(idGenerator.generate35Char))
+      val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] =
         submissionService
           .submitMessage(
             aesIE507Message,
             ExportOperationType.Standard,
             eoriNumber,
-            Some(correlationId)
+            correlationId
           )
           .flatMap(_ =>
             val maybeConversationIdHeader: Option[HttpHeader.ConversationId] =
@@ -95,11 +86,10 @@ class SubmissionController @Inject() (
               .submitMessage(
                 aesIE507Message,
                 eoriNumber,
-                Some(correlationId),
+                correlationId,
                 maybeConversationIdHeader
               )
           )
-      }
 
       result.fold(
         error => error.toErrorResponse.toResult,

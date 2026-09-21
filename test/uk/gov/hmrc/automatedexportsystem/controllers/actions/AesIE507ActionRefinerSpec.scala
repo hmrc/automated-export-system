@@ -21,19 +21,23 @@ import org.apache.pekko.util.ByteString
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Results.Status
 import play.api.mvc.{AnyContent, AnyContentAsEmpty, Request, Result}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.ValidatedXmlRequest
 import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
-
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
+import org.mockito.Mockito.when
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
 class AesIE507ActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValues, DefaultAwaitTimeout:
   given ec: ExecutionContext = ExecutionContext.global
 
-  val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner()
+  val idGenerator: IdGenerator = mock[IdGenerator]
+  when(idGenerator.generate35Char).thenReturn("correlationId")
+  val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner(idGenerator)
 
   object TestData:
     val successfulBlock: Request[AnyContent] => Future[Result] =

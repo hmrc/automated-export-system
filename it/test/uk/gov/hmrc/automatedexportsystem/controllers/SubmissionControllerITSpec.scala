@@ -57,7 +57,7 @@ class SubmissionControllerITSpec extends BaseISpec:
     val id2:             UUID          = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
     val instant:         Instant       = Instant.parse("2026-08-03T00:00:00.000Z")
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
-    val correlationId:   String        = "correlationId"
+    val correlationId:   String        = "correlationIdValue"
     val conversationId:  String        = "conversationId"
     val rfc1123DateTime: String        = "Mon, 3 Aug 2026 00:00:00 GMT"
     val bearerToken:     String        = "Bearer token"
