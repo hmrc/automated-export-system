@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.automatedexportsystem.services
 
-import org.mockito.Mockito.when
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
@@ -25,7 +24,6 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.AesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.IE507.eis.{EisIE507Body, EisIE507Header, EisIE507Message, MessageIdentification}
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisIE507Request, EisIE507RequestHeaders}
 import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
-import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 
 import java.time.{Clock, Instant, LocalDateTime, ZoneOffset}
 
@@ -50,20 +48,16 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
     val eoriNumber:         EoriNumber    = EoriNumber("eoriNumber")
     val correlationIdValue: String        = "correlationId"
     val correlationId:      CorrelationId = CorrelationId(correlationIdValue)
-    val conversationId:     String        = "conversationId"
     val dateTime:           LocalDateTime = LocalDateTime.parse("2026-08-24T00:00:00")
 
-    val authorizationHeader:  HttpHeader.Authorization  = HttpHeader.Authorization("Bearer token")
-    val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationIdValue)
-    val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
-    val dateHeader:           HttpHeader.Date           = HttpHeader.Date("Mon, 24 Aug 2026 00:00:00 GMT")
+    val authorizationHeader: HttpHeader.Authorization = HttpHeader.Authorization("Bearer token")
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationIdValue)
+    val dateHeader:          HttpHeader.Date          = HttpHeader.Date("Mon, 24 Aug 2026 00:00:00 GMT")
   end TestData
 
   val clock: Clock = Clock.fixed(TestData.instant, ZoneOffset.UTC)
 
-  val idGenerator: IdGenerator = mock[IdGenerator]
-
-  val eisIE507Factory: EisIE507Factory = EisIE507Factory(clock, idGenerator)
+  val eisIE507Factory: EisIE507Factory = EisIE507Factory(clock)
 
   "EisIE507Factory" - {
 
@@ -71,12 +65,11 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
 
       "should return an EisIE507Request" - {
 
-        "when correlationId and conversationId are provided" in {
+        "when correlationId is provided" in {
           val eisIE507Request: EisIE507Request =
             EisIE507Request(
               headers = EisIE507RequestHeaders(
                 correlationId = TestData.correlationIdHeader,
-                conversationId = TestData.conversationIdHeader,
                 authorization = TestData.authorizationHeader,
                 date = TestData.dateHeader
               ),
@@ -105,19 +98,17 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
             TestData.aesIE507Message,
             TestData.eoriNumber,
             TestData.authorizationHeader,
-            TestData.correlationId,
-            Some(TestData.conversationIdHeader)
+            TestData.correlationId
           )
 
           result shouldBe eisIE507Request
         }
 
-        "when correlationId and conversationId are not provided (should generate new ones)" in {
+        "when correlationId is not provided (should generate new ones)" in {
           val eisIE507Request: EisIE507Request =
             EisIE507Request(
               headers = EisIE507RequestHeaders(
                 correlationId = HttpHeader.CorrelationId("correlationId"),
-                conversationId = HttpHeader.ConversationId("generated-conversation-id"),
                 authorization = TestData.authorizationHeader,
                 date = TestData.dateHeader
               ),
@@ -142,15 +133,11 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               )
             )
 
-          when(idGenerator.generate35Char)
-            .thenReturn("generated-conversation-id")
-
           val result: EisIE507Request = eisIE507Factory.request(
             TestData.aesIE507Message,
             TestData.eoriNumber,
             TestData.authorizationHeader,
-            TestData.correlationId,
-            maybeConversationId = None
+            TestData.correlationId
           )
 
           result shouldBe eisIE507Request

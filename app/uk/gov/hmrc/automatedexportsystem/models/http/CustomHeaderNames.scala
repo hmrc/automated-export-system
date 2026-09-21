@@ -17,6 +17,5 @@
 package uk.gov.hmrc.automatedexportsystem.models.http
 
 object CustomHeaderNames:
-  val X_CORRELATION_ID  = "X-Correlation-Id"
-  val X_CONVERSATION_ID = "X-Conversation-Id"
-  val X_MESSAGE_TYPE    = "X-Message-Type"
+  val X_CORRELATION_ID = "X-Correlation-Id"
+  val X_MESSAGE_TYPE   = "X-Message-Type"

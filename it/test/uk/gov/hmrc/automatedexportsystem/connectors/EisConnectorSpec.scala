@@ -39,15 +39,13 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
     val instant:         Instant       = Instant.parse("2026-08-29T00:00:00.000Z")
     val eoriNumber:      EoriNumber    = EoriNumber("eoriNumber")
     val correlationId:   String        = "correlationIdValue"
-    val conversationId:  String        = "conversationId"
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-29T00:00:00")
     val rfc1123DateTime: String        = "Sat, 29 Aug 2026 00:00:00 GMT"
     val bearerToken:     String        = "Bearer token"
 
-    val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationId)
-    val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
-    val authorizationHeader:  HttpHeader.Authorization  = HttpHeader.Authorization(bearerToken)
-    val dateHeader:           HttpHeader.Date           = HttpHeader.Date(rfc1123DateTime)
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId)
+    val authorizationHeader: HttpHeader.Authorization = HttpHeader.Authorization(bearerToken)
+    val dateHeader:          HttpHeader.Date          = HttpHeader.Date(rfc1123DateTime)
 
     val aesIE507Message: AesIE507Message =
       AesIE507Message(
@@ -68,7 +66,6 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
       EisIE507Request(
         headers = EisIE507RequestHeaders(
           correlationIdHeader,
-          conversationIdHeader,
           authorizationHeader,
           dateHeader
         ),
@@ -157,7 +154,6 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
   def eisPostRequestMappingBuilder: MappingBuilder =
     post(urlEqualTo("/cds/aesIE507Request/v1"))
       .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(TestData.correlationId))
-      .withHeader(CustomHeaderNames.X_CONVERSATION_ID, equalTo(TestData.conversationId))
       .withHeader(Helpers.X_FORWARDED_HOST, equalTo("automated-export-system"))
       .withHeader(CustomHeaderNames.X_MESSAGE_TYPE, equalTo("aesIE507Request"))
       .withHeader(Helpers.CONTENT_TYPE, equalTo(Helpers.XML))

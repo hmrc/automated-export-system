@@ -21,25 +21,20 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.AesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.IE507.eis.{EisIE507Body, EisIE507Header, EisIE507Message, MessageIdentification}
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisIE507Request, EisIE507RequestHeaders}
 import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
-import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 
 import java.time.*
 import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class EisIE507Factory @Inject() (clock: Clock, idGenerator: IdGenerator):
+class EisIE507Factory @Inject() (clock: Clock):
   def request(
-    aesIE507Message:     AesIE507Message,
-    eori:                EoriNumber,
-    authorization:       HttpHeader.Authorization,
-    correlationId:       CorrelationId,
-    maybeConversationId: Option[HttpHeader.ConversationId]
+    aesIE507Message: AesIE507Message,
+    eori:            EoriNumber,
+    authorization:   HttpHeader.Authorization,
+    correlationId:   CorrelationId
   ): EisIE507Request =
     val instantNow: Instant = Instant.now(clock)
-
-    val conversationId: HttpHeader.ConversationId =
-      maybeConversationId.getOrElse(HttpHeader.ConversationId(idGenerator.generate35Char))
 
     val dateHeader: HttpHeader.Date =
       HttpHeader.Date(
@@ -48,7 +43,7 @@ class EisIE507Factory @Inject() (clock: Clock, idGenerator: IdGenerator):
       )
 
     val headers: EisIE507RequestHeaders =
-      EisIE507RequestHeaders(HttpHeader.CorrelationId(correlationId.value), conversationId, authorization, dateHeader)
+      EisIE507RequestHeaders(HttpHeader.CorrelationId(correlationId.value), authorization, dateHeader)
 
     val messageHeader: EisIE507Header =
       EisIE507Header(
