@@ -133,11 +133,15 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               )
             )
 
+          when(idGenerator.generate35Char)
+            .thenReturn("generated-correlation-id", "generated-conversation-id")
+
           val result: EisIE507Request = eisIE507Factory.request(
             TestData.aesIE507Message,
             TestData.eoriNumber,
             TestData.authorizationHeader,
-            TestData.correlationId
+            maybeCorrelationId = None,
+            maybeConversationId = None
           )
 
           result shouldBe eisIE507Request

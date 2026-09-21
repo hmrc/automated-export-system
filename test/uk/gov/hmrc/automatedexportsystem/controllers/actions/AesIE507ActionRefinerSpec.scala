@@ -21,10 +21,14 @@ import org.apache.pekko.util.ByteString
 import org.scalatest.EitherValues
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Results.Status
 import play.api.mvc.{AnyContent, AnyContentAsEmpty, Request, Result}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.ValidatedXmlRequest
+import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
+import org.mockito.Mockito.when
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
 
 import scala.concurrent.{ExecutionContext, Future}

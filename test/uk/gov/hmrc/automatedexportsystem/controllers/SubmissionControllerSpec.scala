@@ -192,8 +192,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
         aesIE507ActionRefiner,
         xmlBodyParsers,
         submissionService,
-        eisService,
-        idGenerator
+        eisService
       )
   end Setup
 
@@ -230,7 +229,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 eisService.submitMessage(
                   eqTo(TestData.aesIE507Message),
                   EoriNumber(eqTo(TestData.eoriNumber.value)),
-                  CorrelationId(eqTo(TestData.correlationIdValue))
+                  eqTo(Some(TestData.correlationIdHeader))
                 )(using any())
               ).thenReturn(Right(()).toEitherTRight[EisServiceError])
 
