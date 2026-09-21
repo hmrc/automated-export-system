@@ -51,11 +51,25 @@ class EisConnector @Inject() (
     given httpReads: HttpReads[Either[ConnectorError, Either[EisErrorResponse, Unit]]] =
       submitXmlBasedHttpReads.httpReads
 
+    val headers = eisIE507Request.headers.normalizedHeaders
+    val payload = eisIE507Request.message.toXmlRoot
+
+    val headersToLog: Seq[(String, String)] =
+      headers.filterNot { case (name, _) =>
+        name.equalsIgnoreCase("Authorization")
+      }
+
+    logger.debug(
+      s"Submitting request to EIS/stubs. " +
+        s"Headers: ${headersToLog.map { case (name, value) => s"$name=$value" }.mkString(", ")}. " +
+        s"Payload: $payload"
+    )
+
     EitherT(
       httpClient
         .post(submitUrl)
-        .setHeader(eisIE507Request.headers.normalizedHeaders*)
-        .withBody(eisIE507Request.message.toXmlRoot)
+        .setHeader(headers*)
+        .withBody(payload)
         .execute
         .recover { case NonFatal(t) =>
           logger.error(s"Error encountered on POST request to $submitUrl", t)
