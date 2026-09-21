@@ -229,7 +229,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 eisService.submitMessage(
                   eqTo(TestData.aesIE507Message),
                   EoriNumber(eqTo(TestData.eoriNumber.value)),
-                  eqTo(Some(TestData.correlationIdHeader))
+                  CorrelationId(eqTo(TestData.correlationIdValue))
                 )(using any())
               ).thenReturn(Right(()).toEitherTRight[EisServiceError])
 
