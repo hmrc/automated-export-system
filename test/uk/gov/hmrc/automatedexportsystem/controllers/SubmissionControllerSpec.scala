@@ -56,10 +56,8 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
     val dateTime:           LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
     val correlationIdValue: String        = "correlationIdValue"
     val correlationId:      CorrelationId = CorrelationId(correlationIdValue)
-    val conversationId:     String        = "conversationId"
 
-    val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationIdValue)
-    val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationIdValue)
 
     val submissionSummary1: SubmissionSummary =
       SubmissionSummary(
@@ -231,8 +229,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 eisService.submitMessage(
                   eqTo(TestData.aesIE507Message),
                   EoriNumber(eqTo(TestData.eoriNumber.value)),
-                  CorrelationId(eqTo(TestData.correlationIdValue)),
-                  eqTo(None)
+                  CorrelationId(eqTo(TestData.correlationIdValue))
                 )(using any())
               ).thenReturn(Right(()).toEitherTRight[EisServiceError])
 
@@ -273,8 +270,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   eisService.submitMessage(
                     eqTo(TestData.aesIE507Message),
                     EoriNumber(eqTo(TestData.eoriNumber.value)),
-                    CorrelationId(eqTo(TestData.correlationIdValue)),
-                    eqTo(None)
+                    CorrelationId(eqTo(TestData.correlationIdValue))
                   )(using any())
                 ).thenReturn(
                   Left(TestData.eisErrorResponse(Helpers.INTERNAL_SERVER_ERROR))
@@ -327,8 +323,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   eisService.submitMessage(
                     eqTo(TestData.aesIE507Message),
                     EoriNumber(eqTo(TestData.eoriNumber.value)),
-                    CorrelationId(eqTo(TestData.correlationIdValue)),
-                    eqTo(None)
+                    CorrelationId(eqTo(TestData.correlationIdValue))
                   )(using any())
                 ).thenReturn(
                   Left(TestData.eisErrorResponse(Helpers.BAD_REQUEST))
@@ -467,8 +462,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               eisService.submitMessage(
                 eqTo(TestData.aesIE507Message),
                 EoriNumber(eqTo(TestData.eoriNumber.value)),
-                CorrelationId(eqTo(TestData.correlationIdValue)),
-                eqTo(None)
+                CorrelationId(eqTo(TestData.correlationIdValue))
               )(using any[HeaderCarrier])
             ).thenReturn(error.toEitherTLeft[Either[EisErrorResponse, Unit]])
 

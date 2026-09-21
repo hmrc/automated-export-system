@@ -22,7 +22,6 @@ enum HttpHeader(val name: String, val value: String):
   def normalized: (String, String) = (name, value)
 
   case CorrelationId(override val value: String) extends HttpHeader(CustomHeaderNames.X_CORRELATION_ID, value)
-  case ConversationId(override val value: String) extends HttpHeader(CustomHeaderNames.X_CONVERSATION_ID, value)
   case MessageType(override val value: String) extends HttpHeader(CustomHeaderNames.X_MESSAGE_TYPE, value)
   case ForwardedHost(override val value: String) extends HttpHeader(HeaderNames.X_FORWARDED_HOST, value)
   case ContentType(override val value: String) extends HttpHeader(HeaderNames.CONTENT_TYPE, value)
