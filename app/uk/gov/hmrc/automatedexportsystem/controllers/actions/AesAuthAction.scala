@@ -73,7 +73,7 @@ class AesAuthAction @Inject() (
     val maybeCorrelationId: Option[String] = request.headers.get(AuthConstants.CorrelationIdHeader)
 
     maybeCorrelationId.fold(
-      acc.map(_.withHeaders(AuthConstants.CorrelationIdHeader -> idGenerator.generate.toString))
+      acc.map(_.withHeaders(AuthConstants.CorrelationIdHeader -> idGenerator.generate35Char))
     )(_ => acc)
 
   private def hasAuthorizationHeader(requestHeader: RequestHeader): Boolean =
