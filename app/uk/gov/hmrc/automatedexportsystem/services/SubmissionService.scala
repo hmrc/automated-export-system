@@ -49,6 +49,11 @@ trait SubmissionService:
     notification: AesDigitalNotification
   ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus]
 
+  def getCancellationMessage(
+    eoriNumber:   EoriNumber,
+    submissionId: SubmissionId
+  ): EitherT[Future, SubmissionServiceError, AesIE507Message]
+
 @Singleton
 class SubmissionServiceImpl @Inject() (
   aesIE507Repository: AesIE507Repository,
@@ -95,6 +100,31 @@ class SubmissionServiceImpl @Inject() (
         .withRetrieveMongoError
         .apply
     )
+
+  def getCancellationMessage(
+    eoriNumber:   EoriNumber,
+    submissionId: SubmissionId
+  ): EitherT[Future, SubmissionServiceError, AesIE507Message] =
+    aesIE507Repository
+      .getMessage(eoriNumber, submissionId)
+      .map { mongoMessage =>
+        AesIE507Message(
+          submissionId = Some(mongoMessage.submissionId),
+          exportOperation = mongoMessage.exportOperation.copy(
+            exportOperationType = ExportOperationType.Cancel
+          ),
+          customsOfficeOfExitActual = mongoMessage.customsOfficeOfExitActual,
+          goodsShipment = mongoMessage.goodsShipment
+        )
+      }
+      .leftMap(
+        SubmissionService
+          .MongoErrorMapper(
+            context = s"EORI: ${eoriNumber.value}, submissionId: ${submissionId.value}"
+          )
+          .withRetrieveMongoError
+          .apply
+      )
 
   def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
     aesIE507Repository

@@ -22,7 +22,7 @@ import cats.syntax.bifunctor.toBifunctorOps
 import play.api.mvc.{Action, AnyContent, ControllerComponents, EssentialAction}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
-import uk.gov.hmrc.automatedexportsystem.errors.{AesError, ResponseCode}
+import uk.gov.hmrc.automatedexportsystem.errors.{AesError, EisServiceError, ResponseCode}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.eis.EisErrorResponse
@@ -49,6 +49,7 @@ class SubmissionController @Inject() (
   submissionService:          SubmissionService,
   eisService:                 EisService
 ) extends BackendController(cc):
+
   import SubmissionController.eitherTAesErrorWiden
   import writeables.NodeSeqFormattedWriteables.writeableOfFormattedNodeSeq
 
@@ -139,14 +140,49 @@ class SubmissionController @Inject() (
   private def cancelBySubmissionIdAction(id: UUID) =
     Action
       .andThen(aesAuthRequestRefiner)
-      .async(aesAuthRequest =>
-        submissionService
-          .cancelSubmission(aesAuthRequest.eori, SubmissionId(id))
-          .fold(
-            error => error.toErrorResponse.toResult,
+      .async { implicit aesAuthRequest =>
+        val eoriNumber:   EoriNumber   = aesAuthRequest.eori
+        val submissionId: SubmissionId = SubmissionId(id)
+
+        val maybeCorrelationIdHeader: Option[HttpHeader.CorrelationId] =
+          aesAuthRequest.headers
+            .get(CustomHeaderNames.X_CORRELATION_ID)
+            .map(HttpHeader.CorrelationId.apply)
+
+        val maybeConversationIdHeader: Option[HttpHeader.ConversationId] =
+          aesAuthRequest.headers
+            .get(CustomHeaderNames.X_CONVERSATION_ID)
+            .map(HttpHeader.ConversationId.apply)
+
+        val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] =
+          submissionService
+            .getCancellationMessage(eoriNumber, submissionId)
+            .flatMap { cancellationMessage =>
+              eisService
+                .submitMessage(
+                  cancellationMessage,
+                  eoriNumber,
+                  maybeCorrelationIdHeader,
+                  maybeConversationIdHeader
+                )
+                .flatMap {
+                  case eisError @ Left(_) =>
+                    EitherT.rightT[Future, EisServiceError](eisError)
+                  case Right(_) =>
+                    submissionService
+                      .cancelSubmission(eoriNumber, submissionId)
+                      .map(_ => Right(()))
+                }
+            }
+
+        result.fold(
+          error => error.toErrorResponse.toResult,
+          _.fold(
+            error => Status(error.errorCode)(error.toXmlRoot),
             _ => Status(ResponseCode.NoContent.status)
           )
-      )
+        )
+      }
 
   def cancel(id: UUID): EssentialAction =
     aesAuthEssentialAction(cancelBySubmissionIdAction(id))
