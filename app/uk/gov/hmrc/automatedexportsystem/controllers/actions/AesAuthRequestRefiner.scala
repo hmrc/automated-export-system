@@ -19,13 +19,15 @@ package uk.gov.hmrc.automatedexportsystem.controllers.actions
 import play.api.Logging
 import play.api.mvc.*
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{AesAuthAttr, AesAuthRequest}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
+import uk.gov.hmrc.automatedexportsystem.models.http.CustomHeaderNames
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AesAuthRequestRefiner @Inject() ()(using protected val ec: ExecutionContext)
+class AesAuthRequestRefiner @Inject() (idGenerator: IdGenerator)(using protected val ec: ExecutionContext)
     extends ActionRefiner[Request, AesAuthRequest]
     with Results
     with Logging {
@@ -34,7 +36,12 @@ class AesAuthRequestRefiner @Inject() ()(using protected val ec: ExecutionContex
     Future.successful {
       request.attrs.get(AesAuthAttr.Eori) match {
         case Some(eori) =>
-          Right(AesAuthRequest(EoriNumber(eori), request))
+          val correlationId: CorrelationId =
+            request.headers
+              .get(CustomHeaderNames.X_CORRELATION_ID)
+              .map(CorrelationId.apply)
+              .getOrElse(CorrelationId(idGenerator.generate35Char))
+          Right(AesAuthRequest(EoriNumber(eori), correlationId, request))
         case None =>
           logger.warn(s"Missing authenticated EORI in request attrs [path=${request.path}]")
           Left(Unauthorized)

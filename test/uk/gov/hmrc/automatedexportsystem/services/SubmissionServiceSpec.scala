@@ -430,21 +430,21 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         "when a submission with the given EORI and submissionId is found in the mongodb collection" - {
 
           "and the submission is not cancelled yet" in {
-            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent1, instant))
               .thenReturn(EitherT(Future.successful(Right(SingleUpdateStatus.Updated("cancel")))))
 
             val result: SingleUpdateStatus =
-              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
+              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId).value.futureValue.value
 
             result shouldBe SingleUpdateStatus.Updated("cancel")
           }
 
           "and the submission is already cancelled" in {
-            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent1, instant))
               .thenReturn(EitherT(Future.successful(Right(SingleUpdateStatus.AlreadyUpToDate("cancel")))))
 
             val result: SingleUpdateStatus =
-              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
+              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId).value.futureValue.value
 
             result shouldBe SingleUpdateStatus.AlreadyUpToDate("cancel")
           }
@@ -454,7 +454,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
       "should return an error" - {
 
         "when there is no submission with the given submissionId found in the mongodb collection" in {
-          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent1, instant))
             .thenReturn(EitherT(Future.successful(Left(MongoError.DocumentNotFound("")))))
 
           val error: SubmissionServiceError =
@@ -464,13 +464,13 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             )
 
           val result: SubmissionServiceError =
-            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
+            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId).value.futureValue.left.value
 
           result shouldBe error
         }
 
         "when the update operation returns an unexpected error" in {
-          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent1, instant))
             .thenReturn(EitherT(Future.successful(Left(MongoError.UnexpectedError(Exception())))))
 
           val error: SubmissionServiceError =
@@ -480,7 +480,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             )
 
           val result: SubmissionServiceError =
-            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
+            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId).value.futureValue.left.value
 
           result shouldBe error
         }

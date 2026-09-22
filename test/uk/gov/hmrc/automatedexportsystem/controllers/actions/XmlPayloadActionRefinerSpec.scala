@@ -25,7 +25,7 @@ import play.api.mvc.*
 import play.api.mvc.Results.Status
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthRequest
-import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
@@ -34,8 +34,8 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
   given ec: ExecutionContext = ExecutionContext.global
 
   object TestData:
-    val eori = EoriNumber("some-eori")
-
+    val eori          = EoriNumber("some-eori")
+    val correlationId = CorrelationId("correlationId")
     val successfulBlockNodeSeq: Request[NodeSeq] => Future[Result] = _ =>
       Future.successful(
         Status(Helpers.OK)
@@ -63,7 +63,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
 
           val result: Future[Result] =
             xmlPayloadActionRefiner.invokeBlock(
-              AesAuthRequest(TestData.eori, request),
+              AesAuthRequest(TestData.eori, TestData.correlationId, request),
               TestData.successfulBlockNodeSeq
             )
 
@@ -81,7 +81,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
 
           val result: Future[Result] =
             xmlPayloadActionRefiner.invokeBlock(
-              AesAuthRequest(TestData.eori, request),
+              AesAuthRequest(TestData.eori, TestData.correlationId, request),
               TestData.successfulBlockAnyContent
             )
 
@@ -98,7 +98,7 @@ class XmlPayloadActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValue
 
           val result: Future[Result] =
             xmlPayloadActionRefiner.invokeBlock(
-              AesAuthRequest(TestData.eori, request),
+              AesAuthRequest(TestData.eori, TestData.correlationId, request),
               TestData.successfulBlockAnyContent
             )
 

@@ -176,7 +176,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
             next(rh.addAttr(AesAuthAttr.Eori, "GB123456789000"))
           }
 
-    val aesAuthRequestRefiner: AesAuthRequestRefiner = new AesAuthRequestRefiner
+    val aesAuthRequestRefiner: AesAuthRequestRefiner = new AesAuthRequestRefiner(idGenerator)
 
     val xmlBodyParsers: XmlBodyParsers = XmlBodyParsers(controllerComponents.parsers)
 
@@ -937,7 +937,20 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
             "when there is a submission found with that EORI and submissionId" - {
 
               "and the submission is not cancelled yet" in new Setup {
-                when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
+
+                when(submissionService.getCancellationMessage(TestData.eoriNumber, TestData.submissionId))
+                  .thenReturn(TestData.aesIE507Message.toEitherTRight[SubmissionServiceError])
+
+                when(
+                  eisService.submitMessage(
+                    eqTo(TestData.aesIE507Message),
+                    EoriNumber(eqTo(TestData.eoriNumber.value)),
+                    CorrelationId(eqTo(TestData.correlationIdValue)),
+                    eqTo(None)
+                  )(using any())
+                ).thenReturn(Right(()).toEitherTRight[EisServiceError])
+
+                when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId))
                   .thenReturn(SingleUpdateStatus.Updated("cancel").toEitherTRight[SubmissionServiceError])
 
                 val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
@@ -950,8 +963,20 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               }
 
               "and the submission is already cancelled" in new Setup {
-                when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
+                when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId))
                   .thenReturn(SingleUpdateStatus.AlreadyUpToDate("cancel").toEitherTRight[SubmissionServiceError])
+
+                when(submissionService.getCancellationMessage(TestData.eoriNumber, TestData.submissionId))
+                  .thenReturn(TestData.aesIE507Message.toEitherTRight[SubmissionServiceError])
+
+                when(
+                  eisService.submitMessage(
+                    eqTo(TestData.aesIE507Message),
+                    EoriNumber(eqTo(TestData.eoriNumber.value)),
+                    CorrelationId(eqTo(TestData.correlationIdValue)),
+                    eqTo(None)
+                  )(using any())
+                ).thenReturn(Right(()).toEitherTRight[EisServiceError])
 
                 val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
@@ -970,9 +995,8 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               val error: SubmissionServiceError = SubmissionServiceError.SubmissionNotFound(
                 s"Submission not found. EORI: ${TestData.eoriNumber.value}, submissionId: ${TestData.id}"
               )
-
-              when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
-                .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
+              when(submissionService.getCancellationMessage(TestData.eoriNumber, TestData.submissionId))
+                .thenReturn(EitherT.leftT[Future, AesIE507Message](error))
 
               val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
@@ -1003,8 +1027,8 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   s"and submissionId: ${TestData.submissionId.value}"
               )
 
-              when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
-                .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
+              when(submissionService.getCancellationMessage(TestData.eoriNumber, TestData.submissionId))
+                .thenReturn(EitherT.leftT[Future, AesIE507Message](error))
 
               val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
