@@ -20,12 +20,15 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesAuthAttr
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseSpec
 import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
-
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
+import org.mockito.Mockito.when
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 class AesAuthRequestRefinerSpec extends BaseSpec:
-  private val refiner = new AesAuthRequestRefiner
+  private val mockIdGenerator = mock[IdGenerator]
+  when(mockIdGenerator.generate35Char).thenReturn("correlationId")
+  private val refiner = new AesAuthRequestRefiner(mockIdGenerator)
   private val eori    = EoriNumber("GB123456789000")
 
   "AesAuthRequestRefiner.refine" - {

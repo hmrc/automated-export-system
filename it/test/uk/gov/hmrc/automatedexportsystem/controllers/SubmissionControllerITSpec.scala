@@ -19,7 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 import cats.data.{EitherT, NonEmptyList}
 import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import helpers.EitherTFutureOps.toEitherTLeft
+import helpers.EitherTFutureOps.{toEitherTLeft, toEitherTRight}
 import helpers.XmlOps
 import org.apache.pekko.util.ByteString
 import org.mockito.ArgumentMatchers.any as mAny
@@ -52,20 +52,21 @@ import scala.xml.{Elem, NodeSeq}
 
 class SubmissionControllerITSpec extends BaseISpec:
   trait Setup:
-    val eori:            String        = "GB123456789000"
-    val id1:             UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
-    val id2:             UUID          = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
-    val instant:         Instant       = Instant.parse("2026-08-03T00:00:00.000Z")
-    val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
-    val correlationId:   String        = "correlationIdValue"
-    val conversationId:  String        = "conversationId"
-    val rfc1123DateTime: String        = "Mon, 3 Aug 2026 00:00:00 GMT"
-    val bearerToken:     String        = "Bearer token"
+
+    val eori:     String        = "GB123456789000"
+    val id1:      UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val id2:      UUID          = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
+    val instant:  Instant       = Instant.parse("2026-08-03T00:00:00.000Z")
+    val dateTime: LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
+
+    val rfc1123DateTime: String = "Mon, 3 Aug 2026 00:00:00 GMT"
+    val bearerToken:     String = "Bearer token"
 
     val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationId)
     val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
     val authorizationHeader:  HttpHeader.Authorization  = HttpHeader.Authorization(bearerToken)
     val dateHeader:           HttpHeader.Date           = HttpHeader.Date(rfc1123DateTime)
+    val notificationEvent = NotificationEvent(correlationId, instant, None, true, Awaiting, None)
 
     val authSuccessPayload: String =
       s"""{
@@ -1377,6 +1378,80 @@ class SubmissionControllerITSpec extends BaseISpec:
           "when there is a submission found with that EORI and submissionId" - {
 
             "and the submission is not cancelled yet" in new Setup {
+              val cancellationMessageXml: Elem =
+                <n:CC507C xmlns:n="http://ecs.dgtaxud.ec">
+                  <Header>
+                    <messageSender>GB123456789000</messageSender>
+                    <messageRecipient>NECA.XI</messageRecipient>
+                    <preparationDateAndTime>2026-08-03T00:00:00</preparationDateAndTime>
+                    <messageIdentification>8f3c2a19-7d2b-4b74-a9f0-123456789012</messageIdentification>
+                    <messageType>CC507C</messageType>
+                  </Header>
+                  <Body>
+                    <ExportOperation>
+                      <type>3</type>
+                      <MRN>mrn</MRN>
+                      <discrepanciesExist>0</discrepanciesExist>
+                      <splitIndicator>1</splitIndicator>
+                    </ExportOperation>
+                    <CustomsOfficeOfExitActual>
+                      <referenceNumber>referenceNumber</referenceNumber>
+                    </CustomsOfficeOfExitActual>
+                    <GoodsShipment>
+                      <Consignment>
+                        <modeOfTransportAtTheBorder>1</modeOfTransportAtTheBorder>
+                        <referenceNumberUCR>referenceNumberUcr</referenceNumberUCR>
+                        <parentUCRID>parentUcrId</parentUCRID>
+                        <TransportEquipment>
+                          <sequenceNumber>1</sequenceNumber>
+                          <containerIdentificationNumber>1</containerIdentificationNumber>
+                          <numberOfSeals>1</numberOfSeals>
+                          <Seal>
+                            <sequenceNumber>1</sequenceNumber>
+                            <identifier>sealIdentifier</identifier>
+                          </Seal>
+                          <GoodsReference>
+                            <sequenceNumber>1</sequenceNumber>
+                            <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                          </GoodsReference>
+                        </TransportEquipment>
+                        <LocationOfGoods>
+                          <typeOfLocation>typeOfLocation</typeOfLocation>
+                          <qualifierOfIdentification>qualifierOfIdentification</qualifierOfIdentification>
+                          <authorisationNumber>authorisationNumber</authorisationNumber>
+                          <additionalIdentifier>additionalIdentifier</additionalIdentifier>
+                          <UNLocode>unLocode</UNLocode>
+                        </LocationOfGoods>
+                        <ActiveBorderTransportMeans>
+                          <typeOfIdentification>typeOfIdentification</typeOfIdentification>
+                          <identificationNumber>identificationNumber</identificationNumber>
+                          <nationality>nationality</nationality>
+                        </ActiveBorderTransportMeans>
+                        <TransportDocument>
+                          <sequenceNumber>1</sequenceNumber>
+                          <type>1</type>
+                          <referenceNumber>referenceNumber</referenceNumber>
+                        </TransportDocument>
+                      </Consignment>
+                      <GoodsItem>
+                        <declarationGoodsItemNumber>1</declarationGoodsItemNumber>
+                        <referenceNumberUCR>ducr</referenceNumberUCR>
+                        <Commodity>
+                          <GoodsMeasure>
+                            <grossMass>100.55</grossMass>
+                            <netMass>80.45</netMass>
+                          </GoodsMeasure>
+                        </Commodity>
+                        <Packaging>
+                          <sequenceNumber>1</sequenceNumber>
+                          <typeOfPackages>typeOfPackages</typeOfPackages>
+                          <numberOfPackages>1</numberOfPackages>
+                          <shippingMarks>shippingMarks</shippingMarks>
+                        </Packaging>
+                      </GoodsItem>
+                    </GoodsShipment>
+                  </Body>
+                </n:CC507C>
               stubFor(
                 post(urlEqualTo("/auth/authorise"))
                   .willReturn(
@@ -1384,6 +1459,15 @@ class SubmissionControllerITSpec extends BaseISpec:
                       .withStatus(200)
                       .withHeader("Content-Type", "application/json")
                       .withBody(authSuccessPayload)
+                  )
+              )
+              stubFor(
+                eisPostRequestMappingBuilder(cancellationMessageXml)
+                  .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId))
+                  .withHeader(CustomHeaderNames.X_CONVERSATION_ID, equalTo(conversationId))
+                  .willReturn(
+                    aResponse()
+                      .withStatus(202)
                   )
               )
 
@@ -1415,6 +1499,29 @@ class SubmissionControllerITSpec extends BaseISpec:
             }
 
             "and the submission is already cancelled" in new Setup {
+
+              val cancellationMessageXml: Elem =
+                <n:CC507C xmlns:n="http://ecs.dgtaxud.ec">
+                  <Header>
+                    <messageSender>GB123456789000</messageSender>
+                    <messageRecipient>NECA.XI</messageRecipient>
+                    <preparationDateAndTime>2026-08-03T00:00:00</preparationDateAndTime>
+                    <messageIdentification>8f3c2a19-7d2b-4b74-a9f0-123456789012</messageIdentification>
+                    <messageType>CC507C</messageType>
+                  </Header>
+                  <Body>
+                    <ExportOperation>
+                      <type>3</type>
+                      <MRN>26GB0000X6524786A9</MRN>
+                      <discrepanciesExist>0</discrepanciesExist>
+                      <splitIndicator>1</splitIndicator>
+                    </ExportOperation>
+                    <CustomsOfficeOfExitActual>
+                      <referenceNumber>IEARK100</referenceNumber>
+                    </CustomsOfficeOfExitActual>
+                  </Body>
+                </n:CC507C>
+
               stubFor(
                 post(urlEqualTo("/auth/authorise"))
                   .willReturn(
@@ -1425,6 +1532,15 @@ class SubmissionControllerITSpec extends BaseISpec:
                   )
               )
 
+              stubFor(
+                eisPostRequestMappingBuilder(cancellationMessageXml)
+                  .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId))
+                  .withHeader(CustomHeaderNames.X_CONVERSATION_ID, equalTo(conversationId))
+                  .willReturn(
+                    aResponse()
+                      .withStatus(202)
+                  )
+              )
               await(aesIE507Repository.collection.insertOne(mongoAesIE507Message2).head())
 
               val request: FakeRequest[AnyContentAsEmpty.type] =
@@ -1513,7 +1629,10 @@ class SubmissionControllerITSpec extends BaseISpec:
               )
               .build()
 
-            when(aesIE507Repository.cancel(EoriNumber(eori), SubmissionId(id1), instant))
+            when(aesIE507Repository.getMessage(EoriNumber(eori), SubmissionId(id1)))
+              .thenReturn(mongoAesIE507Message1.toEitherTRight[MongoError])
+
+            when(aesIE507Repository.cancel(EoriNumber(eori), SubmissionId(id1), notificationEvent, instant))
               .thenReturn(MongoError.WriteUnacknowledgedError.toEitherTLeft[SingleUpdateStatus])
 
             val request: FakeRequest[AnyContentAsEmpty.type] =

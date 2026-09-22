@@ -17,6 +17,6 @@
 package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
 import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
 
-case class AesAuthRequest[A](eori: EoriNumber, request: Request[A]) extends WrappedRequest[A](request)
+case class AesAuthRequest[A](eori: EoriNumber, correlationId: CorrelationId, request: Request[A]) extends WrappedRequest[A](request)
