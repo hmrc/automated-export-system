@@ -130,6 +130,12 @@ class SubmissionServiceImpl @Inject() (
           .apply
       )
 
+  def cancelSubmission(
+    eoriNumber:    EoriNumber,
+    submissionId:  SubmissionId,
+    correlationId: CorrelationId
+  ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] = {
+    val notificationEvent = NotificationEvent(correlationId.value, Instant.now(clock), None, true, Awaiting, None)
   def getCancellationMessage(
     eoriNumber:   EoriNumber,
     submissionId: SubmissionId

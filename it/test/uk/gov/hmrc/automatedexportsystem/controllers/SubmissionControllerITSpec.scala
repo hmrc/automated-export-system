@@ -52,15 +52,15 @@ import scala.xml.{Elem, NodeSeq}
 
 class SubmissionControllerITSpec extends BaseISpec:
   trait Setup:
-    val eori:            String        = "GB123456789000"
-    val id1:             UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
-    val id2:             UUID          = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
-    val instant:         Instant       = Instant.parse("2026-08-03T00:00:00.000Z")
-    val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
-    val correlationId:   String        = "correlationIdValue"
-    val conversationId:  String        = "conversationId"
-    val rfc1123DateTime: String        = "Mon, 3 Aug 2026 00:00:00 GMT"
-    val bearerToken:     String        = "Bearer token"
+
+    val eori:     String        = "GB123456789000"
+    val id1:      UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val id2:      UUID          = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
+    val instant:  Instant       = Instant.parse("2026-08-03T00:00:00.000Z")
+    val dateTime: LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
+
+    val rfc1123DateTime: String = "Mon, 3 Aug 2026 00:00:00 GMT"
+    val bearerToken:     String = "Bearer token"
 
     val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationId)
     val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
