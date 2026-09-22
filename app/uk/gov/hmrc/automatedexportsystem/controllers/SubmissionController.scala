@@ -23,7 +23,7 @@ import play.api.Logging
 import play.api.mvc.{Action, AnyContent, ControllerComponents, EssentialAction}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
-import uk.gov.hmrc.automatedexportsystem.errors.{AesError, ResponseCode}
+import uk.gov.hmrc.automatedexportsystem.errors.{AesError, EisServiceError, ResponseCode}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.eis.EisErrorResponse
@@ -143,9 +143,13 @@ class SubmissionController @Inject() (
     Action
       .andThen(aesAuthRequestRefiner)
       .async { implicit aesAuthRequest =>
-        val eoriNumber:    EoriNumber    = aesAuthRequest.eori
-        val correlationId: CorrelationId = aesAuthRequest.correlationId
-        val submissionId:  SubmissionId  = SubmissionId(id)
+        val eoriNumber:   EoriNumber   = aesAuthRequest.eori
+        val submissionId: SubmissionId = SubmissionId(id)
+
+        val maybeCorrelationIdHeader: Option[HttpHeader.CorrelationId] =
+          aesAuthRequest.headers
+            .get(CustomHeaderNames.X_CORRELATION_ID)
+            .map(HttpHeader.CorrelationId.apply)
 
         val maybeConversationIdHeader: Option[HttpHeader.ConversationId] =
           aesAuthRequest.headers
@@ -153,11 +157,25 @@ class SubmissionController @Inject() (
             .map(HttpHeader.ConversationId.apply)
 
         val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] =
-          for
-            cancellationMessage <- submissionService.getCancellationMessage(eoriNumber, submissionId).leftWiden[AesError]
-            _                   <- submissionService.cancelSubmission(eoriNumber, submissionId, correlationId).leftWiden[AesError]
-            eisResult <- eisService.submitMessage(cancellationMessage, eoriNumber, correlationId, maybeConversationIdHeader).leftWiden[AesError]
-          yield eisResult
+          submissionService
+            .getCancellationMessage(eoriNumber, submissionId)
+            .flatMap { cancellationMessage =>
+              eisService
+                .submitMessage(
+                  cancellationMessage,
+                  eoriNumber,
+                  maybeCorrelationIdHeader,
+                  maybeConversationIdHeader
+                )
+                .flatMap {
+                  case eisError @ Left(_) =>
+                    EitherT.rightT[Future, EisServiceError](eisError)
+                  case Right(_) =>
+                    submissionService
+                      .cancelSubmission(eoriNumber, submissionId)
+                      .map(_ => Right(()))
+                }
+            }
 
         result.fold(
           error => error.toErrorResponse.toResult,
