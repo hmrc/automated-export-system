@@ -19,8 +19,11 @@ package uk.gov.hmrc.automatedexportsystem.controllers.actions
 import play.api.mvc.{ActionRefiner, Result}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{AesIE507Request, ValidatedXmlRequest}
 import uk.gov.hmrc.automatedexportsystem.errors.XmlFailedReadError
+import uk.gov.hmrc.automatedexportsystem.models.IE507.CorrelationId
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.AesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.http.CustomHeaderNames
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import uk.gov.hmrc.automatedexportsystem.xml.XmlReader.as
 
 import javax.inject.{Inject, Singleton}
@@ -28,17 +31,21 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.NodeSeq
 
 @Singleton
-class AesIE507ActionRefiner @Inject() ()(using protected val executionContext: ExecutionContext)
+class AesIE507ActionRefiner @Inject() (idGenerator: IdGenerator)(using protected val executionContext: ExecutionContext)
     extends ActionRefiner[ValidatedXmlRequest, AesIE507Request]:
   protected def refine[A](request: ValidatedXmlRequest[A]): Future[Either[Result, AesIE507Request[A]]] =
     val xml: NodeSeq = request.xml
 
+    val correlationId = request.headers
+      .get(CustomHeaderNames.X_CORRELATION_ID)
+      .map(CorrelationId.apply)
+      .getOrElse(CorrelationId(idGenerator.generate35Char))
     Future.successful(
       xml
         .as[AesIE507Message]
         .bimap(
           errors => XmlFailedReadError(errors).toErrorResponse.toResult,
-          AesIE507Request(_, request.eori, request.request)
+          AesIE507Request(_, request.eori, request.request, correlationId)
         )
         .toEither
     )

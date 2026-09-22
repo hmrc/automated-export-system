@@ -33,12 +33,12 @@ import java.util.UUID
 
 class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
   object TestData:
-    val uuid:          UUID       = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
-    val instant:       Instant    = Instant.parse("2026-08-24T00:00:00.000Z")
-    val eoriNumber:    EoriNumber = EoriNumber("eoriNumber")
-    val correlationId: String     = "correlationId"
-
-    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId)
+    val uuid:                UUID                     = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val instant:             Instant                  = Instant.parse("2026-08-24T00:00:00.000Z")
+    val eoriNumber:          EoriNumber               = EoriNumber("eoriNumber")
+    val correlationIdValue:  String                   = "correlationIdValue"
+    val correlationId:       CorrelationId            = CorrelationId(correlationIdValue)
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationIdValue)
 
     val aesIE507Message: AesIE507Message =
       AesIE507Message(
@@ -60,6 +60,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
     val clock: Clock = Clock.fixed(TestData.instant, ZoneOffset.UTC)
 
     val idGenerator: IdGenerator = mock[IdGenerator]
+    when(idGenerator.generate35Char).thenReturn(TestData.correlationIdValue)
 
     val aesIE507Factory: AesIE507Factory = AesIE507Factory(clock, idGenerator)
   end Setup
@@ -89,7 +90,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               goodsShipment = None,
               metadata = NonEmptyList.one(
                 NotificationEvent(
-                  correlationId = TestData.correlationId,
+                  correlationId = TestData.correlationIdValue,
                   dateCreated = TestData.instant,
                   dateUpdated = None,
                   isPending = true,
@@ -104,7 +105,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               TestData.aesIE507Message,
               TestData.eoriNumber,
               ExportOperationType.Standard,
-              Some(TestData.correlationIdHeader)
+              TestData.correlationId
             )
 
           result shouldBe mongoAesIE507Message
@@ -132,7 +133,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               goodsShipment = None,
               metadata = NonEmptyList.one(
                 NotificationEvent(
-                  correlationId = TestData.correlationId,
+                  correlationId = TestData.correlationIdValue,
                   dateCreated = TestData.instant,
                   dateUpdated = None,
                   isPending = true,
@@ -147,7 +148,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               TestData.aesIE507Message.copy(submissionId = None),
               TestData.eoriNumber,
               ExportOperationType.Standard,
-              Some(TestData.correlationIdHeader)
+              TestData.correlationId
             )
 
           result shouldBe mongoAesIE507Message
@@ -172,7 +173,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               goodsShipment = None,
               metadata = NonEmptyList.one(
                 NotificationEvent(
-                  correlationId = TestData.correlationId,
+                  correlationId = TestData.correlationIdValue,
                   dateCreated = TestData.instant,
                   dateUpdated = None,
                   isPending = true,
@@ -187,15 +188,13 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               TestData.aesIE507Message,
               TestData.eoriNumber,
               ExportOperationType.Standard,
-              Some(TestData.correlationIdHeader)
+              TestData.correlationId
             )
 
           result shouldBe mongoAesIE507Message
         }
 
         "when correlationId is missing" in new Setup {
-          when(idGenerator.generate35Char)
-            .thenReturn(TestData.correlationId)
 
           val mongoAesIE507Message: MongoAesIE507Message =
             MongoAesIE507Message(
@@ -215,7 +214,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               goodsShipment = None,
               metadata = NonEmptyList.one(
                 NotificationEvent(
-                  correlationId = TestData.correlationId,
+                  correlationId = TestData.correlationIdValue,
                   dateCreated = TestData.instant,
                   dateUpdated = None,
                   isPending = true,
@@ -230,7 +229,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               TestData.aesIE507Message,
               TestData.eoriNumber,
               ExportOperationType.Standard,
-              None
+              TestData.correlationId
             )
 
           result shouldBe mongoAesIE507Message

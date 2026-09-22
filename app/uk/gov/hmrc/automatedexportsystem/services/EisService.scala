@@ -20,7 +20,7 @@ import cats.data.EitherT
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.connectors.EisConnector
 import uk.gov.hmrc.automatedexportsystem.errors.EisServiceError
-import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.AesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, EisIE507Request}
 import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
@@ -38,7 +38,7 @@ class EisService @Inject() (
   def submitMessage(
     aesIE507Message:     AesIE507Message,
     eoriNumber:          EoriNumber,
-    maybeCorrelationId:  Option[HttpHeader.CorrelationId],
+    correlationId:       CorrelationId,
     maybeConversationId: Option[HttpHeader.ConversationId]
   )(using hc: HeaderCarrier): EitherT[Future, EisServiceError, Either[EisErrorResponse, Unit]] =
     val eisBearerToken: String = appConfig.eisToken
@@ -50,7 +50,7 @@ class EisService @Inject() (
         aesIE507Message,
         eoriNumber,
         authorization,
-        maybeCorrelationId,
+        correlationId,
         maybeConversationId
       )
 

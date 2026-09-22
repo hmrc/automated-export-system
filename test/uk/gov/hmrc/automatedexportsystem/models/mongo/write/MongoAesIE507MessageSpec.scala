@@ -134,7 +134,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         ),
         metadata = NonEmptyList.one(
           NotificationEvent(
-            correlationId = "correlationId",
+            correlationId = "correlationIdValue",
             dateCreated = Instant.ofEpochMilli(instant),
             dateUpdated = Some(Instant.ofEpochMilli(instant)),
             isPending = false,
@@ -230,7 +230,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |    } ]
           |  },
           |  "metadata" : [ {
-          |    "correlationId" : "correlationId",
+          |    "correlationId" : "correlationIdValue",
           |    "dateCreated" : {
           |      "$$date" : {
           |        "$$numberLong" : "$instant"
@@ -271,7 +271,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         goodsShipment = None,
         metadata = NonEmptyList.one(
           NotificationEvent(
-            correlationId = "correlationId",
+            correlationId = "correlationIdValue",
             dateCreated = Instant.ofEpochMilli(instant),
             dateUpdated = Some(Instant.ofEpochMilli(instant)),
             isPending = false,
@@ -315,7 +315,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |    "referenceNumber" : "referenceNumber"
           |  },
           |  "metadata" : [ {
-          |    "correlationId" : "correlationId",
+          |    "correlationId" : "correlationIdValue",
           |    "dateCreated" : {
           |      "$$date" : {
           |        "$$numberLong" : "$instant"
@@ -436,7 +436,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         ),
         metadata = NonEmptyList.one(
           NotificationEvent(
-            correlationId = "correlationId",
+            correlationId = "correlationIdValue",
             dateCreated = Instant.ofEpochMilli(instant),
             dateUpdated = Some(Instant.ofEpochMilli(instant)),
             isPending = false,
@@ -504,7 +504,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |    } ]
           |  },
           |  "metadata" : [ {
-          |    "correlationId" : "correlationId",
+          |    "correlationId" : "correlationIdValue",
           |    "dateCreated" : {
           |      "$$date" : {
           |        "$$numberLong" : "$instant"
@@ -570,7 +570,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
         ),
         metadata = NonEmptyList.one(
           NotificationEvent(
-            correlationId = "correlationId",
+            correlationId = "correlationIdValue",
             dateCreated = Instant.ofEpochMilli(instant),
             dateUpdated = Some(Instant.ofEpochMilli(instant)),
             isPending = false,
@@ -624,7 +624,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |    }
           |  },
           |  "metadata" : [ {
-          |    "correlationId" : "correlationId",
+          |    "correlationId" : "correlationIdValue",
           |    "dateCreated" : {
           |      "$$date" : {
           |        "$$numberLong" : "$instant"

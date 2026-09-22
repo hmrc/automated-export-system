@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.automatedexportsystem.services
 
-import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.AesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.IE507.eis.{EisIE507Body, EisIE507Header, EisIE507Message, MessageIdentification}
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisIE507Request, EisIE507RequestHeaders}
@@ -33,13 +33,10 @@ class EisIE507Factory @Inject() (clock: Clock, idGenerator: IdGenerator):
     aesIE507Message:     AesIE507Message,
     eori:                EoriNumber,
     authorization:       HttpHeader.Authorization,
-    maybeCorrelationId:  Option[HttpHeader.CorrelationId],
+    correlationId:       CorrelationId,
     maybeConversationId: Option[HttpHeader.ConversationId]
   ): EisIE507Request =
     val instantNow: Instant = Instant.now(clock)
-
-    val correlationId: HttpHeader.CorrelationId =
-      maybeCorrelationId.getOrElse(HttpHeader.CorrelationId(idGenerator.generate35Char))
 
     val conversationId: HttpHeader.ConversationId =
       maybeConversationId.getOrElse(HttpHeader.ConversationId(idGenerator.generate35Char))
@@ -51,7 +48,7 @@ class EisIE507Factory @Inject() (clock: Clock, idGenerator: IdGenerator):
       )
 
     val headers: EisIE507RequestHeaders =
-      EisIE507RequestHeaders(correlationId, conversationId, authorization, dateHeader)
+      EisIE507RequestHeaders(HttpHeader.CorrelationId(correlationId.value), conversationId, authorization, dateHeader)
 
     val messageHeader: EisIE507Header =
       EisIE507Header(

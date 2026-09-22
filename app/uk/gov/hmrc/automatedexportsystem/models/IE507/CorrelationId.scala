@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
+package uk.gov.hmrc.automatedexportsystem.models.IE507
 
-import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.AesIE507Message
+import play.api.libs.json.{Format, Json}
 
-final case class AesIE507Request[T](
-  message:       AesIE507Message,
-  eori:          EoriNumber,
-  request:       Request[T],
-  correlationId: CorrelationId
-) extends WrappedRequest(request)
+final case class CorrelationId(value: String) extends AnyVal
+
+object CorrelationId:
+  given mongoFormat: Format[CorrelationId] = Json.valueFormat[CorrelationId]

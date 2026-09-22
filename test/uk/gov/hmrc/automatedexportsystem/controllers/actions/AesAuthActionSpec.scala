@@ -28,7 +28,6 @@ import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.helpers.{AllMocks, BaseSpec}
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 
-import java.util.UUID
 import scala.concurrent.Future
 
 class AesAuthActionSpec extends BaseSpec with AllMocks {
@@ -36,7 +35,7 @@ class AesAuthActionSpec extends BaseSpec with AllMocks {
   trait Setup {
     implicit val appConfig: AppConfig = mockAppConfig
 
-    val uuid: UUID = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val correlationId: String = "6fb33641-6dc7-4a4f-adef-06238c13a31"
 
     val idGenerator: IdGenerator = mock[IdGenerator]
 
@@ -54,7 +53,7 @@ class AesAuthActionSpec extends BaseSpec with AllMocks {
       when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any()))
         .thenReturn(Future.successful(enrolments))
 
-      when(idGenerator.generate).thenReturn(uuid)
+      when(idGenerator.generate35Char).thenReturn(correlationId)
 
       val action: Action[AnyContent] = stubControllerComponents().actionBuilder.apply { (_: Request[AnyContent]) =>
         Results.Ok(Json.obj("EORINumber" -> eori))
@@ -68,7 +67,7 @@ class AesAuthActionSpec extends BaseSpec with AllMocks {
 
       status(result) shouldBe OK
 
-      Helpers.header("x-correlation-id", result) shouldBe Some(uuid.toString)
+      Helpers.header("x-correlation-id", result) shouldBe Some(correlationId.toString)
 
       val json:      JsValue = contentAsJson(result)
       val eoriValue: String  = (json \ "EORINumber").as[String]
@@ -88,7 +87,7 @@ class AesAuthActionSpec extends BaseSpec with AllMocks {
       }
 
       val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(POST, "/dummy-uri")
-        .withHeaders("x-correlation-id" -> uuid.toString)
+        .withHeaders("x-correlation-id" -> correlationId.toString)
 
       val essentialAction: EssentialAction = authenticatedAction.apply(action)
       val result:          Future[Result]  = call(essentialAction, request)
@@ -106,7 +105,7 @@ class AesAuthActionSpec extends BaseSpec with AllMocks {
       when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any()))
         .thenReturn(Future.successful(enrolments))
 
-      when(idGenerator.generate).thenReturn(uuid)
+      when(idGenerator.generate35Char).thenReturn(correlationId)
 
       val action: Action[AnyContent] = stubControllerComponents().actionBuilder.apply { (_: Request[AnyContent]) =>
         Results.Ok(Json.obj("EORINumber" -> eori))
@@ -120,7 +119,7 @@ class AesAuthActionSpec extends BaseSpec with AllMocks {
 
       status(result) shouldBe UNAUTHORIZED
 
-      Helpers.header("x-correlation-id", result) shouldBe Some(uuid.toString)
+      Helpers.header("x-correlation-id", result) shouldBe Some(correlationId.toString)
     }
   }
 
