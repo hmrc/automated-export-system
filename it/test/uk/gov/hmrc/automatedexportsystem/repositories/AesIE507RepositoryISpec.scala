@@ -33,9 +33,8 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperati
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.{Accepted, Awaiting}
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -71,7 +70,9 @@ class AesIE507RepositoryISpec
     val mrn: Mrn = Mrn("24GB12345678901234")
 
     val correlationId: String = "12345678-1234-1234-1234-12345678901"
-    val notificationEvent                                          = NotificationEvent(TestData.correlationId, instant, None, true, Awaiting, None)
+
+    val notificationEvent = NotificationEvent(TestData.correlationId, instant, None, true, Awaiting, None)
+
     def mongoAesIE507MessageSummary(message: MongoAesIE507Message) =
       MongoAesIE507MessageSummary(
         submissionId = message.submissionId,
@@ -80,7 +81,7 @@ class AesIE507RepositoryISpec
         ducr = message.goodsShipment.map(_.consignment.referenceNumberUCR),
         updatedAt = message.updatedAt,
         status = message.metadata.toList
-          .maxBy(event => event.dateUpdated.getOrElse(event.dateCreated))
+          .maxBy(event => (event.dateUpdated, event.dateCreated))
           .status
       )
 
@@ -185,7 +186,16 @@ class AesIE507RepositoryISpec
             Seq.fill(2)(arbitrary[MongoAesIE507Message].sample).flatten
 
           val mongoAesIE507MessagesMatchingEori: Seq[MongoAesIE507Message] =
-            Seq.fill(2)(arbitrary[MongoAesIE507Message].withEoriAndStatus(TestData.eoriNumber, Accepted).sample).flatten
+            Seq
+              .fill(2)(
+                arbitrary[MongoAesIE507Message]
+                  .withEoriAndStatus(
+                    TestData.eoriNumber,
+                    NotificationEventStatus.Accepted
+                  )
+                  .sample
+              )
+              .flatten
 
           val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
             mongoAesIE507MessagesDifferentEori ++ mongoAesIE507MessagesMatchingEori
@@ -316,7 +326,6 @@ class AesIE507RepositoryISpec
         val targetEvent =
           generatedMessage.metadata.head.copy(
             correlationId = targetCorrelationId,
-            dateUpdated = None,
             isPending = true,
             status = NotificationEventStatus.Awaiting,
             errors = None
@@ -357,6 +366,14 @@ class AesIE507RepositoryISpec
 
         result shouldBe SingleUpdateStatus.Updated("updateNotification")
 
+        val updatedTargetEvent: NotificationEvent =
+          targetEvent.copy(
+            dateUpdated = updatedAt,
+            status = NotificationEventStatus.Accepted,
+            isPending = false,
+            errors = None
+          )
+
         val updatedMessage =
           repository
             .getMessageByNotification(
@@ -374,11 +391,7 @@ class AesIE507RepositoryISpec
         val unchangedOther =
           updatedMessage.metadata.toList.find(_.correlationId == otherCorrelationId).value
 
-        updatedTarget.dateUpdated shouldBe Some(updatedAt)
-        updatedTarget.isPending   shouldBe false
-        updatedTarget.status      shouldBe NotificationEventStatus.Accepted
-        updatedTarget.errors      shouldBe None
-
+        updatedTarget  shouldBe updatedTargetEvent
         unchangedOther shouldBe otherEvent
       }
 

@@ -50,7 +50,7 @@ class AesIE507Factory @Inject() (clock: Clock, idGenerator: IdGenerator) extends
       NotificationEvent(
         correlationId = correlationId.value,
         dateCreated = instantNow,
-        dateUpdated = None,
+        dateUpdated = instantNow,
         isPending = true,
         status = NotificationEventStatus.Awaiting,
         errors = None

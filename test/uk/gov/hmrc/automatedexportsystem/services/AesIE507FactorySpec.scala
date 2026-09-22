@@ -92,7 +92,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
                 NotificationEvent(
                   correlationId = TestData.correlationIdValue,
                   dateCreated = TestData.instant,
-                  dateUpdated = None,
+                  dateUpdated = TestData.instant,
                   isPending = true,
                   status = NotificationEventStatus.Awaiting,
                   errors = None
@@ -135,7 +135,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
                 NotificationEvent(
                   correlationId = TestData.correlationIdValue,
                   dateCreated = TestData.instant,
-                  dateUpdated = None,
+                  dateUpdated = TestData.instant,
                   isPending = true,
                   status = NotificationEventStatus.Awaiting,
                   errors = None
@@ -175,7 +175,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
                 NotificationEvent(
                   correlationId = TestData.correlationIdValue,
                   dateCreated = TestData.instant,
-                  dateUpdated = None,
+                  dateUpdated = TestData.instant,
                   isPending = true,
                   status = NotificationEventStatus.Awaiting,
                   errors = None
@@ -216,7 +216,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
                 NotificationEvent(
                   correlationId = TestData.correlationIdValue,
                   dateCreated = TestData.instant,
-                  dateUpdated = None,
+                  dateUpdated = TestData.instant,
                   isPending = true,
                   status = NotificationEventStatus.Awaiting,
                   errors = None

@@ -30,12 +30,11 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, Subm
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
+import uk.gov.hmrc.automatedexportsystem.models.notification.*
 import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.Awaiting
-import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
-import uk.gov.hmrc.automatedexportsystem.models.notification.{AesDigitalNotification, NotificationStatus}
 
 import java.time.*
 import java.util.UUID
@@ -96,7 +95,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
       NotificationEvent(
         correlationId = correlationIdValue,
         dateCreated = instant,
-        dateUpdated = None,
+        dateUpdated = instant,
         isPending = true,
         status = NotificationEventStatus.Awaiting,
         errors = None
@@ -104,14 +103,15 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
     val notificationEvent2: NotificationEvent =
       notificationEvent1.copy(
-        dateUpdated = Some(instant.plusMillis(1)),
+        dateUpdated = instant.plusMillis(1),
         isPending = false,
         status = NotificationEventStatus.Accepted
       )
 
     val notificationEvent3: NotificationEvent =
       notificationEvent1.copy(
-        dateCreated = instant.plusMillis(2),
+        dateCreated = instant.plusMillis(1),
+        dateUpdated = instant.plusMillis(1),
         isPending = false,
         status = NotificationEventStatus.Rejected,
         errors = Some(
@@ -248,10 +248,8 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         "when one submission with the given EORI and submissionId is found in the mongodb collection" - {
 
           "and there are multiple NotificationEvent in the submission, will select the most recent" in {
-            val mongoAesIE507Messages: Seq[MongoAesIE507Message] = Seq(TestData.mongoAesIE507Message)
-
             when(aesIE507Repository.getMessage(TestData.eoriNumber, TestData.submissionId))
-              .thenReturn(EitherT(Future.successful(Right(mongoAesIE507Messages.head))))
+              .thenReturn(EitherT(Future.successful(Right(TestData.mongoAesIE507Message))))
 
             val submission: Submission =
               Submission(
