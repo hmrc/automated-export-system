@@ -180,41 +180,74 @@ class SubmissionServiceImpl @Inject() (
     val context: String =
       s"EORI: ${notification.eori}, MRN: ${notification.mrn}, correlationId: ${notification.correlationId}"
 
-    for
-      submission <- aesIE507Repository
-                      .getMessageByNotification(
-                        eori,
-                        mrn,
-                        notification.correlationId
-                      )
-                      .leftMap(
-                        SubmissionService
-                          .MongoErrorMapper(context)
-                          .withRetrieveMongoError
-                          .apply
-                      )
+    val submissionStatus: EitherT[Future, SubmissionServiceError, NotificationEventStatus] =
+      aesIE507Repository
+        .getMessageByNotification(
+          eori,
+          mrn,
+          notification.correlationId
+        )
+        .map(message =>
+          notificationEventStatus(
+            message.exportOperation.exportOperationType,
+            notification.status
+          )
+        )
+        .leftMap(
+          SubmissionService
+            .MongoErrorMapper(context)
+            .withRetrieveMongoError
+            .apply
+        )
 
-      status: NotificationEventStatus = notificationEventStatus(
-                                          submission.exportOperation.exportOperationType,
-                                          notification.status
-                                        )
+    submissionStatus.flatMap(status =>
+      aesIE507Repository
+        .updateNotification(
+          eori,
+          mrn,
+          notification.correlationId,
+          Instant.now(clock),
+          status,
+          notification.notificationErrors
+        )
+        .leftFlatMap {
+          case MongoError.DocumentNotFound(_) =>
+            val notificationEvent: NotificationEvent =
+              NotificationEvent(
+                notification.correlationId,
+                dateCreated = Instant.now(clock),
+                dateUpdated = Instant.now(clock),
+                isPending = false,
+                status,
+                notification.notificationErrors
+              )
 
-      result <- aesIE507Repository
-                  .updateNotification(
-                    eori,
-                    mrn,
-                    notification.correlationId,
-                    Instant.now(clock),
-                    status,
-                    notification.notificationErrors
-                  )
-                  .leftMap(
-                    SubmissionService
-                      .MongoErrorMapper(context)
-                      .withUpdateMongoError
-                      .apply
-                  )
-    yield result
+            aesIE507Repository
+              .pushNotificationAfterDiversion(
+                eori,
+                mrn,
+                notification.correlationId,
+                notificationEvent
+              )
+              .leftMap(
+                SubmissionService
+                  .MongoErrorMapper(context)
+                  .withUpdateMongoError
+                  .apply
+              )
+          case me =>
+            EitherT(
+              Future.successful(
+                Left(
+                  SubmissionService
+                    .MongoErrorMapper(context)
+                    .withUpdateMongoError
+                    .apply(me)
+                )
+              )
+            )
+        }
+    )
 
   private def notificationEventStatus(
     exportOperationType: ExportOperationType,
