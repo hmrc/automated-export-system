@@ -58,8 +58,19 @@ class EisConnector @Inject() (
         .withBody(eisIE507Request.message.toXmlRoot)
         .execute
         .recover { case NonFatal(t) =>
-          logger.error(s"Error encountered on POST request to $submitUrl", t)
+          logger.warn(
+            s"EIS request failed " +
+              s"method=POST " +
+              s"url=$submitUrl",
+            t
+          )
 
-          Left(ConnectorError.UnexpectedError("POST", submitUrl.toString, t))
+          Left(
+            ConnectorError.UnexpectedError(
+              "POST",
+              submitUrl.toString,
+              t
+            )
+          )
         }
     )
