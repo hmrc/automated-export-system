@@ -47,7 +47,7 @@ class ValidatedNotificationRequestAction @Inject() (
       request.headers
         .get("Authorization")
         .toRight {
-          logUnauthorizedError("Authorization header is missing")
+          logUnauthorizedError("reason=authorization-header-missing")
 
           RequestError.MissingAuthorizationHeader
         }
@@ -55,7 +55,7 @@ class ValidatedNotificationRequestAction @Inject() (
           val notificationBearerToken: String = appConfig.notificationToken
 
           if token != notificationBearerToken then
-            logUnauthorizedError(s"Authorization Bearer token is invalid: $token")
+            logUnauthorizedError("reason=invalid-authorization-token")
 
             Left(RequestError.InvalidAuthorizationToken)
           else Right(ValidatedNotificationRequest(request))
