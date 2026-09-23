@@ -28,6 +28,7 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, Subm
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.eis.EisErrorResponse
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
 import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
@@ -155,8 +156,15 @@ class SubmissionController @Inject() (
         val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] =
           for
             cancellationMessage <- submissionService.getCancellationMessage(eoriNumber, submissionId).leftWiden[AesError]
-            _                   <- submissionService.cancelSubmission(eoriNumber, submissionId, correlationId).leftWiden[AesError]
-            eisResult <- eisService.submitMessage(cancellationMessage, eoriNumber, correlationId, maybeConversationIdHeader).leftWiden[AesError]
+            cancellationStatus  <- submissionService.cancelSubmission(eoriNumber, submissionId, correlationId).leftWiden[AesError]
+            eisResult           <- (cancellationStatus match
+                           case SingleUpdateStatus.Updated(_) =>
+                             eisService
+                               .submitMessage(cancellationMessage, eoriNumber, correlationId, maybeConversationIdHeader)
+                               .leftWiden[AesError]
+                           case _ =>
+                             EitherT.rightT[Future, AesError](Right(()): Either[EisErrorResponse, Unit])
+                         ): EitherT[Future, AesError, Either[EisErrorResponse, Unit]]
           yield eisResult
 
         result.fold(
