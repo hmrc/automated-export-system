@@ -46,16 +46,22 @@ class IE507StubController @Inject() (
       val hasMissingRequiredHeaders =
         RequiredHeaders.exists(request.headers.get(_).isEmpty)
 
+      val correlationId =
+        request.headers.get("x-correlation-id").getOrElse("missing")
+
       if (hasMissingAuthorizationHeader) {
-        logger.warn("IE507 request rejected: missing authorization header")
+        logger.warn(
+          s"IE507 request rejected: reason=missing-authorization-header " +
+            s"correlationId=$correlationId"
+        )
         Unauthorized
       } else if (hasMissingRequiredHeaders)
-        logger.warn("IE507 request rejected: missing required header")
+        logger.warn(
+          s"IE507 request rejected: reason=missing-required-header " +
+            s"correlationId=$correlationId"
+        )
         BadRequest("Missing required headers")
       else {
-
-        val correlationId =
-          request.headers.get("x-correlation-id").getOrElse("")
 
         NoContent.withHeaders(
           "x-correlation-id" -> correlationId,
