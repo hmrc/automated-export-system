@@ -21,11 +21,11 @@ import uk.gov.hmrc.automatedexportsystem.errors.{AesErrorMapper, MongoError, Sub
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
-import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
-import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.Awaiting
 import uk.gov.hmrc.automatedexportsystem.models.notification.{AesDigitalNotification, NotificationEvent, NotificationEventStatus, NotificationStatus}
+import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
+import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
@@ -146,6 +146,30 @@ class SubmissionServiceImpl @Inject() (
       )
   }
 
+  def submitMessage(
+    message:             AesIE507Message,
+    exportOperationType: ExportOperationType,
+    eoriNumber:          EoriNumber,
+    correlationId:       CorrelationId
+  ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
+    val mongoMessage: MongoAesIE507Message =
+      aesIE507Factory.mongoMessage(message, eoriNumber, exportOperationType, correlationId)
+
+    aesIE507Repository
+      .submit(mongoMessage)
+      .leftMap(me =>
+        val context: String =
+          Seq(
+            Some(s"EORI: ${eoriNumber.value}"),
+            message.submissionId.map(submissionId => s"submissionId: ${submissionId.value}")
+          ).flatten.mkString(", ")
+
+        SubmissionService
+          .MongoErrorMapper(context)
+          .withUpsertMongoError
+          .apply(me)
+      )
+
   def updateNotification(
     notification: AesDigitalNotification
   ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
@@ -170,10 +194,10 @@ class SubmissionServiceImpl @Inject() (
                           .apply
                       )
 
-      status = notificationEventStatus(
-                 submission.exportOperation.exportOperationType,
-                 notification.status
-               )
+      status: NotificationEventStatus = notificationEventStatus(
+                                          submission.exportOperation.exportOperationType,
+                                          notification.status
+                                        )
 
       result <- aesIE507Repository
                   .updateNotification(
@@ -211,30 +235,6 @@ class SubmissionServiceImpl @Inject() (
 
       case (_, NotificationStatus.Diversion) =>
         NotificationEventStatus.Awaiting
-
-  def submitMessage(
-    message:             AesIE507Message,
-    exportOperationType: ExportOperationType,
-    eoriNumber:          EoriNumber,
-    correlationId:       CorrelationId
-  ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
-    val mongoMessage: MongoAesIE507Message =
-      aesIE507Factory.mongoMessage(message, eoriNumber, exportOperationType, correlationId)
-
-    aesIE507Repository
-      .submit(mongoMessage)
-      .leftMap(me =>
-        val context: String =
-          Seq(
-            Some(s"EORI: ${eoriNumber.value}"),
-            message.submissionId.map(submissionId => s"submissionId: ${submissionId.value}")
-          ).flatten.mkString(", ")
-
-        SubmissionService
-          .MongoErrorMapper(context)
-          .withUpsertMongoError
-          .apply(me)
-      )
 end SubmissionServiceImpl
 
 object SubmissionService:
