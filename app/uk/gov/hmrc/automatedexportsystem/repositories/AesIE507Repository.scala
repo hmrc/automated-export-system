@@ -358,7 +358,7 @@ class AesIE507RepositoryImpl @Inject() (
       if context.isEmpty then ""
       else context.map { case (k, v) => s"$k: $v" }.mkString(", ", ", ", "")
 
-    logger.error(
+    logger.warn(
       s"Write was unacknowledged when attempting '$operation' operation. " +
         s"write concern: ${collection.writeConcern}$contextString]"
     )
@@ -387,9 +387,9 @@ class AesIE507RepositoryImpl @Inject() (
             if context.isEmpty then ""
             else context.map { case (k, v) => s"$k=$v" }.mkString(" ", " ", "")
 
-          logger.error(
-            s"$operationName failed after ${appConfig.mongoRetryAttempts + 1} attempts$ctx: " +
-              s"${ex.getClass.getSimpleName}: ${ex.getMessage}"
+          logger.warn(
+            s"$operationName failed after ${appConfig.mongoRetryAttempts + 1} attempts$ctx",
+            ex
           )
 
           Left(MongoError.UnexpectedError(ex))
