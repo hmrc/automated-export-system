@@ -57,29 +57,29 @@ class SubmissionControllerITSpec extends BaseISpec:
     val id2:             UUID          = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
     val instant:         Instant       = Instant.parse("2026-08-03T00:00:00.000Z")
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
-    val correlationId:   String        = "correlationIdValue"
     val rfc1123DateTime: String        = "Mon, 3 Aug 2026 00:00:00 GMT"
     val bearerToken:     String        = "Bearer token"
 
     val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId)
     val authorizationHeader: HttpHeader.Authorization = HttpHeader.Authorization(bearerToken)
     val dateHeader:          HttpHeader.Date          = HttpHeader.Date(rfc1123DateTime)
+    val notificationEvent = NotificationEvent(correlationId, instant, None, true, Awaiting, None)
 
     val authSuccessPayload: String =
       s"""{
-        |  "allEnrolments": [
-        |    {
-        |      "key": "HMRC-CUS-ORG",
-        |      "identifiers": [
-        |        {
-        |          "key": "EORINumber",
-        |          "value": "$eori"
-        |        }
-        |      ],
-        |      "state": "Activated"
-        |    }
-        |  ]
-        |}""".stripMargin
+         |  "allEnrolments": [
+         |    {
+         |      "key": "HMRC-CUS-ORG",
+         |      "identifiers": [
+         |        {
+         |          "key": "EORINumber",
+         |          "value": "$eori"
+         |        }
+         |      ],
+         |      "state": "Activated"
+         |    }
+         |  ]
+         |}""".stripMargin
 
     val mongoAesIE507Message1: MongoAesIE507Message =
       MongoAesIE507Message(
@@ -1144,10 +1144,10 @@ class SubmissionControllerITSpec extends BaseISpec:
 
             val submissionRetrieveFailureXml: Elem =
               <errorResponse>
-                  <status>500</status>
-                  <code>INTERNAL_SERVER_ERROR</code>
-                  <message>Submission retrieval failed. EORI: GB123456789000</message>
-                </errorResponse>
+                <status>500</status>
+                <code>INTERNAL_SERVER_ERROR</code>
+                <message>Submission retrieval failed. EORI: GB123456789000</message>
+              </errorResponse>
 
             Helpers.running(app) {
               val result:        Future[Result] = Helpers.route(app, request).value
@@ -1287,10 +1287,10 @@ class SubmissionControllerITSpec extends BaseISpec:
 
             val submissionNotFoundXml: Elem =
               <errorResponse>
-                  <status>404</status>
-                  <code>NOT_FOUND</code>
-                  <message>Submission not found. EORI: {eori}, submissionId: {id1}</message>
-                </errorResponse>
+                <status>404</status>
+                <code>NOT_FOUND</code>
+                <message>Submission not found. EORI: {eori}, submissionId: {id1}</message>
+              </errorResponse>
 
             val result:        Future[Result] = Helpers.route(app, request).value
             val resultContent: String         = Helpers.contentAsString(result)
@@ -1340,10 +1340,10 @@ class SubmissionControllerITSpec extends BaseISpec:
 
             val submissionRetrieveFailureXml: Elem =
               <errorResponse>
-                  <status>500</status>
-                  <code>INTERNAL_SERVER_ERROR</code>
-                  <message>Submission retrieval failed. EORI: {eori}, submissionId: {id1}</message>
-                </errorResponse>
+                <status>500</status>
+                <code>INTERNAL_SERVER_ERROR</code>
+                <message>Submission retrieval failed. EORI: {eori}, submissionId: {id1}</message>
+              </errorResponse>
 
             Helpers.running(app) {
               val result:        Future[Result] = Helpers.route(app, request).value
@@ -1454,7 +1454,6 @@ class SubmissionControllerITSpec extends BaseISpec:
               stubFor(
                 eisPostRequestMappingBuilder(cancellationMessageXml)
                   .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId))
-                  .withHeader(CustomHeaderNames.X_CONVERSATION_ID, equalTo(conversationId))
                   .willReturn(
                     aResponse()
                       .withStatus(202)
@@ -1525,7 +1524,6 @@ class SubmissionControllerITSpec extends BaseISpec:
               stubFor(
                 eisPostRequestMappingBuilder(cancellationMessageXml)
                   .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId))
-                  .withHeader(CustomHeaderNames.X_CONVERSATION_ID, equalTo(conversationId))
                   .willReturn(
                     aResponse()
                       .withStatus(202)
