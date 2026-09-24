@@ -24,8 +24,8 @@ import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
-import uk.gov.hmrc.automatedexportsystem.models.notification.{AesDigitalNotification, NotificationStatus}
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.Awaiting
+import uk.gov.hmrc.automatedexportsystem.models.notification.{AesDigitalNotification, NotificationEvent, NotificationEventStatus, NotificationStatus}
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
@@ -43,11 +43,20 @@ trait SubmissionService:
 
   def getSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, Submission]
 
-  def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, SingleUpdateStatus]
+  def cancelSubmission(
+    eoriNumber:    EoriNumber,
+    submissionId:  SubmissionId,
+    correlationId: CorrelationId
+  ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus]
 
   def updateNotification(
     notification: AesDigitalNotification
   ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus]
+
+  def getCancellationMessage(
+    eoriNumber:   EoriNumber,
+    submissionId: SubmissionId
+  ): EitherT[Future, SubmissionServiceError, AesIE507Message]
 
 @Singleton
 class SubmissionServiceImpl @Inject() (
@@ -96,15 +105,46 @@ class SubmissionServiceImpl @Inject() (
         .apply
     )
 
-  def cancelSubmission(eoriNumber: EoriNumber, submissionId: SubmissionId): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
+  def getCancellationMessage(
+    eoriNumber:   EoriNumber,
+    submissionId: SubmissionId
+  ): EitherT[Future, SubmissionServiceError, AesIE507Message] =
     aesIE507Repository
-      .cancel(eoriNumber, submissionId, Instant.now(clock))
+      .getMessage(eoriNumber, submissionId)
+      .map { mongoMessage =>
+        AesIE507Message(
+          submissionId = Some(mongoMessage.submissionId),
+          exportOperation = mongoMessage.exportOperation.copy(
+            exportOperationType = ExportOperationType.Cancel
+          ),
+          customsOfficeOfExitActual = mongoMessage.customsOfficeOfExitActual,
+          goodsShipment = mongoMessage.goodsShipment
+        )
+      }
+      .leftMap(
+        SubmissionService
+          .MongoErrorMapper(
+            context = s"EORI: ${eoriNumber.value}, submissionId: ${submissionId.value}"
+          )
+          .withRetrieveMongoError
+          .apply
+      )
+
+  def cancelSubmission(
+    eoriNumber:    EoriNumber,
+    submissionId:  SubmissionId,
+    correlationId: CorrelationId
+  ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] = {
+    val notificationEvent = NotificationEvent(correlationId.value, Instant.now(clock), None, true, Awaiting, None)
+    aesIE507Repository
+      .cancel(eoriNumber, submissionId, notificationEvent, Instant.now(clock))
       .leftMap(
         SubmissionService
           .MongoErrorMapper(s"EORI: ${eoriNumber.value}, submissionId: ${submissionId.value}")
           .withUpdateMongoError
           .apply
       )
+  }
 
   def updateNotification(
     notification: AesDigitalNotification

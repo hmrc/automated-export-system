@@ -34,12 +34,12 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
+import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProjections, SingleUpdateStatus}
-import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import org.mongodb.scala.bson
+import play.api.libs.json.Json
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
@@ -72,7 +72,12 @@ trait AesIE507Repository:
 
   def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, SingleUpdateStatus]
 
-  def cancel(eori: EoriNumber, submissionId: SubmissionId, updatedAt: Instant): EitherT[Future, MongoError, SingleUpdateStatus]
+  def cancel(
+    eori:                          EoriNumber,
+    submissionId:                  SubmissionId,
+    cancellationNotificationEvent: NotificationEvent,
+    updatedAt:                     Instant
+  ): EitherT[Future, MongoError, SingleUpdateStatus]
 
 @Singleton
 class AesIE507RepositoryImpl @Inject() (
@@ -290,9 +295,10 @@ class AesIE507RepositoryImpl @Inject() (
     }
 
   def cancel(
-    eori:         EoriNumber,
-    submissionId: SubmissionId,
-    updatedAt:    Instant
+    eori:                          EoriNumber,
+    submissionId:                  SubmissionId,
+    cancellationNotificationEvent: NotificationEvent,
+    updatedAt:                     Instant
   ): EitherT[Future, MongoError, SingleUpdateStatus] =
     val operationName: String = "cancel"
 
@@ -301,8 +307,9 @@ class AesIE507RepositoryImpl @Inject() (
       Filters.eq("submissionId", submissionId.value.toString)
     )
 
-    val exportOperationTypeCancel: Int = ExportOperationType.Cancel.status
-
+    val exportOperationTypeCancel: Int    = ExportOperationType.Cancel.status
+    val notificationEventJson:     String =
+      Json.stringify(Json.toJson(cancellationNotificationEvent)(using NotificationEvent.mongoFormat))
     val update: Seq[Bson] =
       Seq(
         Document(s"""{
@@ -314,8 +321,15 @@ class AesIE507RepositoryImpl @Inject() (
           |          "$$updatedAt"
           |      ]
           |    },
-          |    "exportOperation.exportOperationType": $exportOperationTypeCancel
-          |  }
+          |    "exportOperation.exportOperationType": $exportOperationTypeCancel,
+          |     "metadata": {
+          |          "$$cond": [
+          |             { "$$ne": ["$$exportOperation.exportOperationType", $exportOperationTypeCancel] },
+          |             { "$$concatArrays": ["$$metadata", [$notificationEventJson]] },
+          |              "$$metadata"
+          |          ]
+          |        }
+          |     }
           |}""".stripMargin)
       )
 

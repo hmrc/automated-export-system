@@ -33,10 +33,9 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperati
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.Accepted
+import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.{Accepted, Awaiting}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
-import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
+import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -72,7 +71,7 @@ class AesIE507RepositoryISpec
     val mrn: Mrn = Mrn("24GB12345678901234")
 
     val correlationId: String = "12345678-1234-1234-1234-12345678901"
-
+    val notificationEvent                                          = NotificationEvent(TestData.correlationId, instant, None, true, Awaiting, None)
     def mongoAesIE507MessageSummary(message: MongoAesIE507Message) =
       MongoAesIE507MessageSummary(
         submissionId = message.submissionId,
@@ -558,14 +557,17 @@ class AesIE507RepositoryISpec
               mongoAesIE507MessagesMatchingEoriAndId.map(m =>
                 m.copy(
                   exportOperation = m.exportOperation.copy(exportOperationType = ExportOperationType.Cancel),
-                  updatedAt = TestData.instant
+                  updatedAt = TestData.instant,
+                  metadata = m.metadata.concatNel(
+                    NonEmptyList.one(TestData.notificationEvent)
+                  )
                 )
               )
 
             repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
             val singleUpdateStatus: SingleUpdateStatus =
-              repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.instant).value.futureValue.value
+              repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent, TestData.instant).value.futureValue.value
 
             singleUpdateStatus shouldBe SingleUpdateStatus.Updated("cancel")
 
@@ -601,7 +603,7 @@ class AesIE507RepositoryISpec
             repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
 
             val singleUpdateStatus: SingleUpdateStatus =
-              repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.instant).value.futureValue.value
+              repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent, TestData.instant).value.futureValue.value
 
             singleUpdateStatus shouldBe SingleUpdateStatus.AlreadyUpToDate("cancel")
 
@@ -622,7 +624,7 @@ class AesIE507RepositoryISpec
           repository.collection.insertMany(mongoAesIE507MessagesDifferentId).head().futureValue
 
           val result: MongoError =
-            repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.instant).value.futureValue.left.value
+            repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent, TestData.instant).value.futureValue.left.value
 
           result shouldBe MongoError.DocumentNotFound(
             s"No document found for submissionId: ${TestData.submissionId.value}"
