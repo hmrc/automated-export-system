@@ -136,37 +136,6 @@ class SubmissionServiceImpl @Inject() (
     correlationId: CorrelationId
   ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] = {
     val notificationEvent = NotificationEvent(correlationId.value, Instant.now(clock), None, true, Awaiting, None)
-  def getCancellationMessage(
-    eoriNumber:   EoriNumber,
-    submissionId: SubmissionId
-  ): EitherT[Future, SubmissionServiceError, AesIE507Message] =
-    aesIE507Repository
-      .getMessage(eoriNumber, submissionId)
-      .map { mongoMessage =>
-        AesIE507Message(
-          submissionId = Some(mongoMessage.submissionId),
-          exportOperation = mongoMessage.exportOperation.copy(
-            exportOperationType = ExportOperationType.Cancel
-          ),
-          customsOfficeOfExitActual = mongoMessage.customsOfficeOfExitActual,
-          goodsShipment = mongoMessage.goodsShipment
-        )
-      }
-      .leftMap(
-        SubmissionService
-          .MongoErrorMapper(
-            context = s"EORI: ${eoriNumber.value}, submissionId: ${submissionId.value}"
-          )
-          .withRetrieveMongoError
-          .apply
-      )
-
-  def cancelSubmission(
-    eoriNumber:    EoriNumber,
-    submissionId:  SubmissionId,
-    correlationId: CorrelationId
-  ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] = {
-    val notificationEvent = NotificationEvent(correlationId.value, Instant.now(clock), None, true, Awaiting, None)
     aesIE507Repository
       .cancel(eoriNumber, submissionId, notificationEvent, Instant.now(clock))
       .leftMap(
