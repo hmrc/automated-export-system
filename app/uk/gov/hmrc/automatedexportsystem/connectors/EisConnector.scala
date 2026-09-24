@@ -61,10 +61,10 @@ class EisConnector @Inject() (
           logger.warn(
             s"EIS request failed " +
               s"method=POST " +
-              s"url=$submitUrl",
+              s"url=$submitUrl " +
+              s"correlationId=${eisIE507Request.headers.correlationId.value}",
             t
           )
-
           Left(
             ConnectorError.UnexpectedError(
               "POST",

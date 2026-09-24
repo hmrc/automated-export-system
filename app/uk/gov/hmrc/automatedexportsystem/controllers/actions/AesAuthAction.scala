@@ -49,8 +49,8 @@ class AesAuthAction @Inject() (
   }
 
   private def correlationIdContext(
-                                    requestHeader: RequestHeader
-                                  ): String =
+    requestHeader: RequestHeader
+  ): String =
     requestHeader.headers
       .get(AuthConstants.CorrelationIdHeader)
       .filter(_.trim.nonEmpty)
