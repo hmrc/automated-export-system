@@ -27,7 +27,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.automatedexportsystem.errors.{MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.*
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
-import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
@@ -61,23 +60,22 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
     val eoriNumber:   EoriNumber   = EoriNumber("eoriNumber")
     val submissionId: SubmissionId =
       SubmissionId(UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317"))
-    val correlationId: String        = "correlationId"
-    val instant:       Instant       = Instant.parse("2026-08-12T00:00:00.000Z")
-    val dateTime:      LocalDateTime = LocalDateTime.parse("2026-08-12T00:00:00")
+    val correlationIdValue: String        = "correlationIdValue"
+    val correlationId:      CorrelationId = CorrelationId(correlationIdValue)
+    val instant:            Instant       = Instant.parse("2026-08-12T00:00:00.000Z")
+    val dateTime:           LocalDateTime = LocalDateTime.parse("2026-08-12T00:00:00")
 
     val mrn: Mrn = Mrn("mrn")
 
     val notification: AesDigitalNotification =
       AesDigitalNotification(
-        correlationId = correlationId,
+        correlationId = correlationIdValue,
         eori = eoriNumber.value,
         mrn = mrn.value,
         dateCreated = dateTime,
         status = NotificationStatus.Accepted,
         notificationErrors = None
       )
-
-    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId)
 
     val aesIE507Message: AesIE507Message =
       AesIE507Message(
@@ -96,7 +94,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
     val notificationEvent1: NotificationEvent =
       NotificationEvent(
-        correlationId = correlationId,
+        correlationId = correlationIdValue,
         dateCreated = instant,
         dateUpdated = None,
         isPending = true,
@@ -329,7 +327,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
               TestData.aesIE507Message,
               TestData.eoriNumber,
               ExportOperationType.Standard,
-              Some(TestData.correlationIdHeader)
+              TestData.correlationId
             )
           )
             .thenReturn(TestData.mongoAesIE507Message)
@@ -343,7 +341,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
                 TestData.aesIE507Message,
                 ExportOperationType.Standard,
                 TestData.eoriNumber,
-                Some(TestData.correlationIdHeader)
+                TestData.correlationId
               )
               .value
               .futureValue
@@ -361,7 +359,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
               TestData.aesIE507Message,
               TestData.eoriNumber,
               ExportOperationType.Standard,
-              Some(TestData.correlationIdHeader)
+              TestData.correlationId
             )
           )
             .thenReturn(TestData.mongoAesIE507Message)
@@ -375,7 +373,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
                 TestData.aesIE507Message,
                 ExportOperationType.Standard,
                 TestData.eoriNumber,
-                Some(TestData.correlationIdHeader)
+                TestData.correlationId
               )
               .value
               .futureValue
@@ -393,7 +391,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
               TestData.aesIE507Message,
               TestData.eoriNumber,
               ExportOperationType.Standard,
-              Some(TestData.correlationIdHeader)
+              TestData.correlationId
             )
           )
             .thenReturn(TestData.mongoAesIE507Message)
@@ -413,7 +411,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
                 TestData.aesIE507Message,
                 ExportOperationType.Standard,
                 TestData.eoriNumber,
-                Some(TestData.correlationIdHeader)
+                TestData.correlationId
               )
               .value
               .futureValue
@@ -432,21 +430,21 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
         "when a submission with the given EORI and submissionId is found in the mongodb collection" - {
 
           "and the submission is not cancelled yet" in {
-            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent1, instant))
               .thenReturn(EitherT(Future.successful(Right(SingleUpdateStatus.Updated("cancel")))))
 
             val result: SingleUpdateStatus =
-              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
+              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId).value.futureValue.value
 
             result shouldBe SingleUpdateStatus.Updated("cancel")
           }
 
           "and the submission is already cancelled" in {
-            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+            when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent1, instant))
               .thenReturn(EitherT(Future.successful(Right(SingleUpdateStatus.AlreadyUpToDate("cancel")))))
 
             val result: SingleUpdateStatus =
-              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.value
+              submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId).value.futureValue.value
 
             result shouldBe SingleUpdateStatus.AlreadyUpToDate("cancel")
           }
@@ -456,7 +454,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
       "should return an error" - {
 
         "when there is no submission with the given submissionId found in the mongodb collection" in {
-          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent1, instant))
             .thenReturn(EitherT(Future.successful(Left(MongoError.DocumentNotFound("")))))
 
           val error: SubmissionServiceError =
@@ -466,13 +464,13 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             )
 
           val result: SubmissionServiceError =
-            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
+            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId).value.futureValue.left.value
 
           result shouldBe error
         }
 
         "when the update operation returns an unexpected error" in {
-          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, instant))
+          when(aesIE507Repository.cancel(TestData.eoriNumber, TestData.submissionId, TestData.notificationEvent1, instant))
             .thenReturn(EitherT(Future.successful(Left(MongoError.UnexpectedError(Exception())))))
 
           val error: SubmissionServiceError =
@@ -482,7 +480,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             )
 
           val result: SubmissionServiceError =
-            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId).value.futureValue.left.value
+            submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId).value.futureValue.left.value
 
           result shouldBe error
         }
@@ -511,7 +509,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.getMessageByNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId
+              TestData.correlationIdValue
             )
           )
             .thenReturn(mongoMessage.toEitherTRight[MongoError])
@@ -520,7 +518,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.updateNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId,
+              TestData.correlationIdValue,
               instant,
               NotificationEventStatus.Accepted,
               None
@@ -556,7 +554,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.getMessageByNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId
+              TestData.correlationIdValue
             )
           )
             .thenReturn(mongoMessage.toEitherTRight[MongoError])
@@ -565,7 +563,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.updateNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId,
+              TestData.correlationIdValue,
               instant,
               NotificationEventStatus.Amended,
               None
@@ -601,7 +599,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.getMessageByNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId
+              TestData.correlationIdValue
             )
           )
             .thenReturn(mongoMessage.toEitherTRight[MongoError])
@@ -610,7 +608,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.updateNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId,
+              TestData.correlationIdValue,
               instant,
               NotificationEventStatus.Cancelled,
               None
@@ -639,7 +637,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.getMessageByNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId
+              TestData.correlationIdValue
             )
           )
             .thenReturn(TestData.mongoAesIE507Message.toEitherTRight[MongoError])
@@ -648,7 +646,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.updateNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId,
+              TestData.correlationIdValue,
               instant,
               NotificationEventStatus.Rejected,
               None
@@ -677,7 +675,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.getMessageByNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId
+              TestData.correlationIdValue
             )
           )
             .thenReturn(TestData.mongoAesIE507Message.toEitherTRight[MongoError])
@@ -686,7 +684,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.updateNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId,
+              TestData.correlationIdValue,
               instant,
               NotificationEventStatus.Awaiting,
               None
@@ -716,7 +714,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.getMessageByNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId
+              TestData.correlationIdValue
             )
           )
             .thenReturn(mongoError.toEitherTLeft[MongoAesIE507Message])
@@ -731,7 +729,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
           result shouldBe SubmissionServiceError.SubmissionOperationFailure(
             s"Submission retrieval failed. EORI: ${TestData.eoriNumber.value}, " +
-              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationId}"
+              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationIdValue}"
           )
         }
 
@@ -741,7 +739,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.getMessageByNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId
+              TestData.correlationIdValue
             )
           )
             .thenReturn(TestData.mongoAesIE507Message.toEitherTRight[MongoError])
@@ -753,7 +751,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.updateNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId,
+              TestData.correlationIdValue,
               instant,
               NotificationEventStatus.Accepted,
               None
@@ -771,7 +769,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
           result shouldBe SubmissionServiceError.SubmissionOperationFailure(
             s"Submission update failed. EORI: ${TestData.eoriNumber.value}, " +
-              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationId}"
+              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationIdValue}"
           )
         }
 
@@ -784,7 +782,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
             aesIE507Repository.getMessageByNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              TestData.correlationId
+              TestData.correlationIdValue
             )
           )
             .thenReturn(mongoError.toEitherTLeft[MongoAesIE507Message])
@@ -799,7 +797,7 @@ class SubmissionServiceSpec extends AnyFreeSpecLike, Matchers, EitherValues, Sca
 
           result shouldBe SubmissionServiceError.SubmissionNotFound(
             s"Submission not found. EORI: ${TestData.eoriNumber.value}, " +
-              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationId}"
+              s"MRN: ${TestData.mrn.value}, correlationId: ${TestData.correlationIdValue}"
           )
         }
       }

@@ -33,9 +33,6 @@ class NotificationControllerISpec extends BaseISpec with MongoAesIE507MessageGen
 
   private val endpoint = "/automated-export-system/notification"
 
-  private val correlationId =
-    "8f3c2a19-7d2b-4b74-a9f0-123456789012"
-
   private val eoriNumber =
     EoriNumber("GB123456789000")
 

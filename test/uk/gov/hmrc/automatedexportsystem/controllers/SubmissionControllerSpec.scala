@@ -49,15 +49,16 @@ import scala.xml.{Elem, NodeSeq}
 
 class SubmissionControllerSpec extends BaseSpec, AllMocks:
   object TestData:
-    val instant:        Instant       = Instant.parse("2026-08-03T00:00:00Z")
-    val id:             UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
-    val submissionId:   SubmissionId  = SubmissionId(id)
-    val eoriNumber:     EoriNumber    = EoriNumber("GB123456789000")
-    val dateTime:       LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
-    val correlationId:  String        = "correlationId"
-    val conversationId: String        = "conversationId"
+    val instant:            Instant       = Instant.parse("2026-08-03T00:00:00Z")
+    val id:                 UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val submissionId:       SubmissionId  = SubmissionId(id)
+    val eoriNumber:         EoriNumber    = EoriNumber("GB123456789000")
+    val dateTime:           LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
+    val correlationIdValue: String        = "correlationIdValue"
+    val correlationId:      CorrelationId = CorrelationId(correlationIdValue)
+    val conversationId:     String        = "conversationId"
 
-    val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationId)
+    val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationIdValue)
     val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
 
     val submissionSummary1: SubmissionSummary =
@@ -144,7 +145,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
     def eisErrorResponse(status: Int): EisErrorResponse =
       EisErrorResponse(
         timestamp = instant,
-        correlationId = correlationId,
+        correlationId = correlationIdValue,
         errorCode = status,
         errorMessage = "errorMessage",
         source = "source",
@@ -164,9 +165,9 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
     val xmlValidationActionRefiner: XmlValidationActionRefiner[AesIE507XmlValidationService] =
       XmlValidationActionRefiner(xmlValidationService)
 
-    val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner()
-
     val idGenerator: IdGenerator = mock[IdGenerator]
+    when(idGenerator.generate35Char).thenReturn(TestData.correlationIdValue)
+    val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner()
 
     val aesAuthAction: AesAuthAction =
       new AesAuthAction(mockAuthConnector, idGenerator)(ec, materializer):
@@ -175,7 +176,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
             next(rh.addAttr(AesAuthAttr.Eori, "GB123456789000"))
           }
 
-    val aesAuthRequestRefiner: AesAuthRequestRefiner = new AesAuthRequestRefiner
+    val aesAuthRequestRefiner: AesAuthRequestRefiner = new AesAuthRequestRefiner(idGenerator)
 
     val xmlBodyParsers: XmlBodyParsers = XmlBodyParsers(controllerComponents.parsers)
 
@@ -210,7 +211,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
             "and the submission is successfully submitted to EIS" in new Setup {
               val request: FakeRequest[NodeSeq] =
                 FakeRequest()
-                  .withHeaders(CustomHeaderNames.X_CORRELATION_ID -> TestData.correlationId)
+                  .withHeaders(CustomHeaderNames.X_CORRELATION_ID -> TestData.correlationIdValue)
                   .withBody(TestData.aesIE507MessageValidXml)
 
               when(xmlValidationService.validate(TestData.aesIE507MessageValidXml))
@@ -221,7 +222,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   TestData.aesIE507Message,
                   ExportOperationType.Standard,
                   TestData.eoriNumber,
-                  Some(TestData.correlationIdHeader)
+                  TestData.correlationId
                 )
               )
                 .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
@@ -230,7 +231,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 eisService.submitMessage(
                   eqTo(TestData.aesIE507Message),
                   EoriNumber(eqTo(TestData.eoriNumber.value)),
-                  eqTo(Some(TestData.correlationIdHeader)),
+                  CorrelationId(eqTo(TestData.correlationIdValue)),
                   eqTo(None)
                 )(using any())
               ).thenReturn(Right(()).toEitherTRight[EisServiceError])
@@ -263,7 +264,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                     TestData.aesIE507Message,
                     ExportOperationType.Standard,
                     TestData.eoriNumber,
-                    None
+                    TestData.correlationId
                   )
                 )
                   .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
@@ -272,7 +273,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   eisService.submitMessage(
                     eqTo(TestData.aesIE507Message),
                     EoriNumber(eqTo(TestData.eoriNumber.value)),
-                    eqTo(None),
+                    CorrelationId(eqTo(TestData.correlationIdValue)),
                     eqTo(None)
                   )(using any())
                 ).thenReturn(
@@ -285,7 +286,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 val eisErrorResponseXml: Elem =
                   <errorDetail xmlns="http://www.hmrc.gsi.gov.uk/eis">
                     <timestamp>{TestData.instant}</timestamp>
-                    <correlationId>{TestData.correlationId}</correlationId>
+                    <correlationId>{TestData.correlationIdValue}</correlationId>
                     <errorCode>{Helpers.INTERNAL_SERVER_ERROR}</errorCode>
                     <errorMessage>errorMessage</errorMessage>
                     <source>source</source>
@@ -317,7 +318,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                     TestData.aesIE507Message,
                     ExportOperationType.Standard,
                     TestData.eoriNumber,
-                    None
+                    TestData.correlationId
                   )
                 )
                   .thenReturn(SingleUpdateStatus.Upserted("submitUpsert").toEitherTRight[MongoError])
@@ -326,7 +327,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   eisService.submitMessage(
                     eqTo(TestData.aesIE507Message),
                     EoriNumber(eqTo(TestData.eoriNumber.value)),
-                    eqTo(None),
+                    CorrelationId(eqTo(TestData.correlationIdValue)),
                     eqTo(None)
                   )(using any())
                 ).thenReturn(
@@ -339,7 +340,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 val eisErrorResponseXml: Elem =
                   <errorDetail xmlns="http://www.hmrc.gsi.gov.uk/eis">
                     <timestamp>{TestData.instant}</timestamp>
-                    <correlationId>{TestData.correlationId}</correlationId>
+                    <correlationId>{TestData.correlationIdValue}</correlationId>
                     <errorCode>{Helpers.BAD_REQUEST}</errorCode>
                     <errorMessage>errorMessage</errorMessage>
                     <source>source</source>
@@ -414,7 +415,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   TestData.aesIE507Message,
                   ExportOperationType.Standard,
                   TestData.eoriNumber,
-                  None
+                  TestData.correlationId
                 )
               )
                 .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
@@ -450,7 +451,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                 TestData.aesIE507Message,
                 ExportOperationType.Standard,
                 TestData.eoriNumber,
-                None
+                TestData.correlationId
               )
             )
               .thenReturn(
@@ -466,7 +467,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               eisService.submitMessage(
                 eqTo(TestData.aesIE507Message),
                 EoriNumber(eqTo(TestData.eoriNumber.value)),
-                eqTo(None),
+                CorrelationId(eqTo(TestData.correlationIdValue)),
                 eqTo(None)
               )(using any[HeaderCarrier])
             ).thenReturn(error.toEitherTLeft[Either[EisErrorResponse, Unit]])
@@ -936,7 +937,20 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
             "when there is a submission found with that EORI and submissionId" - {
 
               "and the submission is not cancelled yet" in new Setup {
-                when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
+
+                when(submissionService.getCancellationMessage(TestData.eoriNumber, TestData.submissionId))
+                  .thenReturn(TestData.aesIE507Message.toEitherTRight[SubmissionServiceError])
+
+                when(
+                  eisService.submitMessage(
+                    eqTo(TestData.aesIE507Message),
+                    EoriNumber(eqTo(TestData.eoriNumber.value)),
+                    CorrelationId(eqTo(TestData.correlationIdValue)),
+                    eqTo(None)
+                  )(using any())
+                ).thenReturn(Right(()).toEitherTRight[EisServiceError])
+
+                when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId))
                   .thenReturn(SingleUpdateStatus.Updated("cancel").toEitherTRight[SubmissionServiceError])
 
                 val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
@@ -949,8 +963,20 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               }
 
               "and the submission is already cancelled" in new Setup {
-                when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
+                when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId, TestData.correlationId))
                   .thenReturn(SingleUpdateStatus.AlreadyUpToDate("cancel").toEitherTRight[SubmissionServiceError])
+
+                when(submissionService.getCancellationMessage(TestData.eoriNumber, TestData.submissionId))
+                  .thenReturn(TestData.aesIE507Message.toEitherTRight[SubmissionServiceError])
+
+                when(
+                  eisService.submitMessage(
+                    eqTo(TestData.aesIE507Message),
+                    EoriNumber(eqTo(TestData.eoriNumber.value)),
+                    CorrelationId(eqTo(TestData.correlationIdValue)),
+                    eqTo(None)
+                  )(using any())
+                ).thenReturn(Right(()).toEitherTRight[EisServiceError])
 
                 val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
@@ -969,9 +995,8 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
               val error: SubmissionServiceError = SubmissionServiceError.SubmissionNotFound(
                 s"Submission not found. EORI: ${TestData.eoriNumber.value}, submissionId: ${TestData.id}"
               )
-
-              when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
-                .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
+              when(submissionService.getCancellationMessage(TestData.eoriNumber, TestData.submissionId))
+                .thenReturn(EitherT.leftT[Future, AesIE507Message](error))
 
               val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
@@ -1002,8 +1027,8 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
                   s"and submissionId: ${TestData.submissionId.value}"
               )
 
-              when(submissionService.cancelSubmission(TestData.eoriNumber, TestData.submissionId))
-                .thenReturn(error.toEitherTLeft[SingleUpdateStatus])
+              when(submissionService.getCancellationMessage(TestData.eoriNumber, TestData.submissionId))
+                .thenReturn(EitherT.leftT[Future, AesIE507Message](error))
 
               val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 

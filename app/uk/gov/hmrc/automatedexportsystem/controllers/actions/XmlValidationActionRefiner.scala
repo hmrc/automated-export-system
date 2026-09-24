@@ -44,7 +44,7 @@ class XmlValidationActionRefiner[T <: XmlValidationService] @Inject() (xmlValida
           },
           _ =>
             val eori = request.eori
-            ValidatedXmlRequest(xml, request, eori)
+            ValidatedXmlRequest(xml, request, eori, request.correlationId)
         )
         .value
 

@@ -38,7 +38,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
   object TestData:
     val instant:         Instant       = Instant.parse("2026-08-29T00:00:00.000Z")
     val eoriNumber:      EoriNumber    = EoriNumber("eoriNumber")
-    val correlationId:   String        = "correlationId"
+    val correlationId:   String        = "correlationIdValue"
     val conversationId:  String        = "conversationId"
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-29T00:00:00")
     val rfc1123DateTime: String        = "Sat, 29 Aug 2026 00:00:00 GMT"

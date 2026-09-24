@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
+package uk.gov.hmrc.automatedexportsystem.helpers
 
-import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
-
-import scala.xml.NodeSeq
-
-final case class AesXmlPayloadRequest[T](
-  xml:           NodeSeq,
-  request:       Request[T],
-  eori:          EoriNumber,
-  correlationId: CorrelationId
-) extends WrappedRequest(request)
-    with XmlRequest
+trait TestIds:
+  val correlationId:  String = "8f3c2a19-7d2b-4b74-a9f0-123456789012"
+  val conversationId: String = "8f3c2a19-7d2b-4b74-a9f0-123456789012"

@@ -30,7 +30,7 @@ import play.api.mvc.{AnyContent, Request, Result}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.AesXmlPayloadRequest
 import uk.gov.hmrc.automatedexportsystem.errors.{SchemaError, XmlFailedValidationError, XmlSchemaValidationError}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
 import uk.gov.hmrc.automatedexportsystem.services.XmlValidationService
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,7 +44,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
   val xmlValidationActionRefiner: XmlValidationActionRefiner[XmlValidationService] =
     XmlValidationActionRefiner(xmlValidationService)
 
-  val eori = EoriNumber("some-eori")
+  val eori          = EoriNumber("some-eori")
+  val correlationId = CorrelationId("correlationId")
 
   "XmlValidationActionRefiner" - {
 
@@ -60,9 +61,8 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
           val xml: Elem =
             <element>validate me</element>
 
-          val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
-
-          val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori)
+          val request:              FakeRequest[AnyContent]          = FakeRequest(Helpers.POST, "/dummy/path")
+          val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori, correlationId)
 
           when(xmlValidationService.validate(xml)).thenReturn(EitherT(Future.successful(Right(()))))
 
@@ -80,7 +80,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
-            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori)
+            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori, correlationId)
 
             val schemaError: SchemaError = SchemaError.SchemaNotFoundError("/schemas/dummy.xsd")
 
@@ -109,7 +109,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
-            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori)
+            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori, correlationId)
 
             val schemaError: SchemaError = SchemaError.SchemaParseError(SchemaError.XsdStructureError(1, 1, "Bad parse error"))
 
@@ -138,7 +138,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
-            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori)
+            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori, correlationId)
 
             val xmlFailedValidationError: XmlFailedValidationError =
               XmlFailedValidationError(
@@ -181,7 +181,7 @@ class XmlValidationActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherVa
 
             val request: FakeRequest[AnyContent] = FakeRequest(Helpers.POST, "/dummy/path")
 
-            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori)
+            val aesXmlPayloadRequest: AesXmlPayloadRequest[AnyContent] = AesXmlPayloadRequest(xml, request, eori, correlationId)
 
             val xmlFailedValidationError: XmlFailedValidationError =
               XmlFailedValidationError(

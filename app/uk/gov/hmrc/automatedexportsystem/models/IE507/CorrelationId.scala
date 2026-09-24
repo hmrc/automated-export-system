@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
+package uk.gov.hmrc.automatedexportsystem.models.IE507
 
-import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
+import play.api.libs.json.{Format, Json}
 
-import scala.xml.NodeSeq
+final case class CorrelationId(value: String) extends AnyVal
 
-final case class AesXmlPayloadRequest[T](
-  xml:           NodeSeq,
-  request:       Request[T],
-  eori:          EoriNumber,
-  correlationId: CorrelationId
-) extends WrappedRequest(request)
-    with XmlRequest
+object CorrelationId:
+  given mongoFormat: Format[CorrelationId] = Json.valueFormat[CorrelationId]

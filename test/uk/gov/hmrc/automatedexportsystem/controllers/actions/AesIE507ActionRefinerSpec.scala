@@ -25,14 +25,13 @@ import play.api.mvc.Results.Status
 import play.api.mvc.{AnyContent, AnyContentAsEmpty, Request, Result}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.ValidatedXmlRequest
-import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
 class AesIE507ActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValues, DefaultAwaitTimeout:
-  given ec: ExecutionContext = ExecutionContext.global
-
+  given ec:                  ExecutionContext      = ExecutionContext.global
   val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner()
 
   object TestData:
@@ -41,7 +40,8 @@ class AesIE507ActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValues,
 
     val eoriNumber: EoriNumber = EoriNumber("eoriNumber")
 
-    val aesIE507MessageValidXml: Elem =
+    val correlationId:           CorrelationId = CorrelationId("correlationId")
+    val aesIE507MessageValidXml: Elem          =
       <Message>
         <ExportOperation>
           <type>1</type>
@@ -90,7 +90,7 @@ class AesIE507ActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValues,
           val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(Helpers.GET, "/dummy/path")
 
           val validatedXmlRequest: ValidatedXmlRequest[AnyContent] =
-            ValidatedXmlRequest(TestData.aesIE507MessageValidXml, request, TestData.eoriNumber)
+            ValidatedXmlRequest(TestData.aesIE507MessageValidXml, request, TestData.eoriNumber, TestData.correlationId)
 
           val result: Future[Result] =
             aesIE507ActionRefiner.invokeBlock(validatedXmlRequest, TestData.successfulBlock)
@@ -103,7 +103,7 @@ class AesIE507ActionRefinerSpec extends AnyFreeSpecLike, Matchers, EitherValues,
           val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(Helpers.GET, "/dummy/path")
 
           val validatedXmlRequest: ValidatedXmlRequest[AnyContent] =
-            ValidatedXmlRequest(TestData.aesIE507MessageInvalidXml, request, TestData.eoriNumber)
+            ValidatedXmlRequest(TestData.aesIE507MessageInvalidXml, request, TestData.eoriNumber, TestData.correlationId)
 
           val result: Future[Result] =
             aesIE507ActionRefiner.invokeBlock(validatedXmlRequest, TestData.successfulBlock)

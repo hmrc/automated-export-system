@@ -46,14 +46,15 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
         goodsShipment = None
       )
 
-    val instant:        Instant       = Instant.parse("2026-08-24T00:00:00.000Z")
-    val eoriNumber:     EoriNumber    = EoriNumber("eoriNumber")
-    val correlationId:  String        = "correlationId"
-    val conversationId: String        = "conversationId"
-    val dateTime:       LocalDateTime = LocalDateTime.parse("2026-08-24T00:00:00")
+    val instant:            Instant       = Instant.parse("2026-08-24T00:00:00.000Z")
+    val eoriNumber:         EoriNumber    = EoriNumber("eoriNumber")
+    val correlationIdValue: String        = "correlationId"
+    val correlationId:      CorrelationId = CorrelationId(correlationIdValue)
+    val conversationId:     String        = "conversationId"
+    val dateTime:           LocalDateTime = LocalDateTime.parse("2026-08-24T00:00:00")
 
     val authorizationHeader:  HttpHeader.Authorization  = HttpHeader.Authorization("Bearer token")
-    val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationId)
+    val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationIdValue)
     val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
     val dateHeader:           HttpHeader.Date           = HttpHeader.Date("Mon, 24 Aug 2026 00:00:00 GMT")
   end TestData
@@ -83,7 +84,7 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
                 header = EisIE507Header(
                   eoriNumber = TestData.eoriNumber,
                   preparationDateAndTime = TestData.dateTime,
-                  messageIdentification = MessageIdentification(TestData.correlationId)
+                  messageIdentification = MessageIdentification(TestData.correlationIdValue)
                 ),
                 body = EisIE507Body(
                   exportOperation = ExportOperation(
@@ -104,7 +105,7 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
             TestData.aesIE507Message,
             TestData.eoriNumber,
             TestData.authorizationHeader,
-            Some(TestData.correlationIdHeader),
+            TestData.correlationId,
             Some(TestData.conversationIdHeader)
           )
 
@@ -115,7 +116,7 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
           val eisIE507Request: EisIE507Request =
             EisIE507Request(
               headers = EisIE507RequestHeaders(
-                correlationId = HttpHeader.CorrelationId("generated-correlation-id"),
+                correlationId = HttpHeader.CorrelationId("correlationId"),
                 conversationId = HttpHeader.ConversationId("generated-conversation-id"),
                 authorization = TestData.authorizationHeader,
                 date = TestData.dateHeader
@@ -124,7 +125,7 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
                 header = EisIE507Header(
                   eoriNumber = TestData.eoriNumber,
                   preparationDateAndTime = TestData.dateTime,
-                  messageIdentification = MessageIdentification("generated-correlation-id")
+                  messageIdentification = MessageIdentification(TestData.correlationIdValue)
                 ),
                 body = EisIE507Body(
                   exportOperation = ExportOperation(
@@ -142,13 +143,13 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
             )
 
           when(idGenerator.generate35Char)
-            .thenReturn("generated-correlation-id", "generated-conversation-id")
+            .thenReturn("generated-conversation-id")
 
           val result: EisIE507Request = eisIE507Factory.request(
             TestData.aesIE507Message,
             TestData.eoriNumber,
             TestData.authorizationHeader,
-            maybeCorrelationId = None,
+            TestData.correlationId,
             maybeConversationId = None
           )
 

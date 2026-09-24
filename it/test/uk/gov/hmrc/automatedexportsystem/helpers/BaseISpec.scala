@@ -24,9 +24,12 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.Binding
+import play.api.inject.bind
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 import play.api.test.*
+import uk.gov.hmrc.automatedexportsystem.util.IdGenerator
 import uk.gov.hmrc.http.test.WireMockSupport
+import org.mockito.Mockito.when
 
 trait BaseISpec
     extends AnyFreeSpecLike
@@ -38,7 +41,8 @@ trait BaseISpec
     with OptionValues
     with EitherValues
     with MockitoSugar
-    with WireMockSupport:
+    with WireMockSupport
+    with TestIds:
   def config: Map[String, Any] =
     Map(
       "microservice.services.auth.host" -> "localhost",
@@ -49,8 +53,11 @@ trait BaseISpec
 
   def bindingOverrides: Seq[Binding[?]] = Seq.empty
 
+  val idGenerator: IdGenerator = mock[IdGenerator]
+  when(idGenerator.generate35Char).thenReturn(correlationId, conversationId)
   lazy val guiceApplicationBuilder: GuiceApplicationBuilder =
     GuiceApplicationBuilder()
+      .overrides(bind[IdGenerator].toInstance(idGenerator))
       .configure(config)
       .overrides(bindingOverrides)
 
