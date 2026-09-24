@@ -167,7 +167,7 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
 
     val idGenerator: IdGenerator = mock[IdGenerator]
     when(idGenerator.generate35Char).thenReturn(TestData.correlationIdValue)
-    val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner(idGenerator)
+    val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner()
 
     val aesAuthAction: AesAuthAction =
       new AesAuthAction(mockAuthConnector, idGenerator)(ec, materializer):

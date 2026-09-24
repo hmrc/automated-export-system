@@ -17,13 +17,14 @@
 package uk.gov.hmrc.automatedexportsystem.controllers.actions.request
 
 import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.EoriNumber
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
 
 import scala.xml.NodeSeq
 
 final case class ValidatedXmlRequest[T](
-  xml:     NodeSeq,
-  request: Request[T],
-  eori:    EoriNumber
+  xml:           NodeSeq,
+  request:       Request[T],
+  eori:          EoriNumber,
+  correlationId: CorrelationId
 ) extends WrappedRequest(request)
     with XmlRequest

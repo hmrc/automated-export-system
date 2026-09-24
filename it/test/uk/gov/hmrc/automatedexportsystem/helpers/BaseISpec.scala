@@ -41,7 +41,8 @@ trait BaseISpec
     with OptionValues
     with EitherValues
     with MockitoSugar
-    with WireMockSupport:
+    with WireMockSupport
+    with TestIds:
   def config: Map[String, Any] =
     Map(
       "microservice.services.auth.host" -> "localhost",
@@ -52,9 +53,7 @@ trait BaseISpec
 
   def bindingOverrides: Seq[Binding[?]] = Seq.empty
 
-  val correlationId:  String      = "8f3c2a19-7d2b-4b74-a9f0-123456789012"
-  val conversationId: String      = "8f3c2a19-7d2b-4b74-a9f0-123456789012"
-  val idGenerator:    IdGenerator = mock[IdGenerator]
+  val idGenerator: IdGenerator = mock[IdGenerator]
   when(idGenerator.generate35Char).thenReturn(correlationId, conversationId)
   lazy val guiceApplicationBuilder: GuiceApplicationBuilder =
     GuiceApplicationBuilder()

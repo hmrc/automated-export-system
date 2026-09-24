@@ -155,13 +155,13 @@ class SubmissionController @Inject() (
 
         val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] =
           for
-            cancellationMessage <- submissionService.getCancellationMessage(eoriNumber, submissionId).leftWiden[AesError]
-            cancellationStatus  <- submissionService.cancelSubmission(eoriNumber, submissionId, correlationId).leftWiden[AesError]
+            cancellationMessage <- submissionService.getCancellationMessage(eoriNumber, submissionId).leftMap(error => error: AesError)
+            cancellationStatus  <- submissionService.cancelSubmission(eoriNumber, submissionId, correlationId).leftMap(error => error: AesError)
             eisResult           <- (cancellationStatus match
                            case SingleUpdateStatus.Updated(_) =>
                              eisService
                                .submitMessage(cancellationMessage, eoriNumber, correlationId, maybeConversationIdHeader)
-                               .leftWiden[AesError]
+                               .leftMap(error => error: AesError)
                            case _ =>
                              EitherT.rightT[Future, AesError](Right(()): Either[EisErrorResponse, Unit])
                          ): EitherT[Future, AesError, Either[EisErrorResponse, Unit]]
