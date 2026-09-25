@@ -29,7 +29,7 @@ import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
@@ -69,9 +69,16 @@ class AesIE507RepositoryISpec
 
     val mrn: Mrn = Mrn("mrn")
 
-    val correlationId: String = "correlationId"
+    val correlationId: CorrelationId = CorrelationId("correlationId")
 
-    val notificationEvent = NotificationEvent(TestData.correlationId, instant, None, true, Awaiting, None)
+    val notificationEvent = NotificationEvent(
+      correlationId,
+      instant,
+      instant,
+      true,
+      NotificationEventStatus.Awaiting,
+      None
+    )
 
     def mongoAesIE507MessageSummary(message: MongoAesIE507Message) =
       MongoAesIE507MessageSummary(
@@ -448,12 +455,12 @@ class AesIE507RepositoryISpec
               val generatedMessage: MongoAesIE507Message =
                 arbitrary[MongoAesIE507Message].sample.value
 
-              val targetCorrelationId = "12345678-1234-1234-1234-12345678901"
-              val otherCorrelationId  = "98765432-4321-4321-4321-10987654321"
+              val otherCorrelationId: CorrelationId =
+                CorrelationId("otherCorrelationId")
 
               val targetEvent =
                 generatedMessage.metadata.head.copy(
-                  correlationId = targetCorrelationId,
+                  correlationId = TestData.correlationId,
                   isPending = true,
                   status = NotificationEventStatus.Awaiting,
                   errors = None
@@ -483,7 +490,7 @@ class AesIE507RepositoryISpec
                   .updateNotification(
                     TestData.eoriNumber,
                     TestData.mrn,
-                    targetCorrelationId,
+                    TestData.correlationId,
                     updatedAt,
                     NotificationEventStatus.Accepted,
                     None
@@ -507,14 +514,14 @@ class AesIE507RepositoryISpec
                   .getMessageByNotification(
                     TestData.eoriNumber,
                     TestData.mrn,
-                    targetCorrelationId
+                    TestData.correlationId
                   )
                   .value
                   .futureValue
                   .value
 
               val updatedTarget =
-                updatedMessage.metadata.toList.find(_.correlationId == targetCorrelationId).value
+                updatedMessage.metadata.toList.find(_.correlationId == TestData.correlationId).value
 
               val unchangedOther =
                 updatedMessage.metadata.toList.find(_.correlationId == otherCorrelationId).value
@@ -524,14 +531,12 @@ class AesIE507RepositoryISpec
             }
 
             "when there are notification errors" in {
-              val generatedMessage =
+              val generatedMessage: MongoAesIE507Message =
                 arbitrary[MongoAesIE507Message].sample.value
-
-              val targetCorrelationId = "12345678-1234-1234-1234-12345678901"
 
               val targetEvent =
                 generatedMessage.metadata.head.copy(
-                  correlationId = targetCorrelationId,
+                  correlationId = TestData.correlationId,
                   errors = None,
                   isPending = true
                 )
@@ -562,7 +567,7 @@ class AesIE507RepositoryISpec
                 .updateNotification(
                   TestData.eoriNumber,
                   TestData.mrn,
-                  targetCorrelationId,
+                  TestData.correlationId,
                   updatedAt,
                   NotificationEventStatus.Rejected,
                   Some(NonEmptyList.one(notificationError))
@@ -576,7 +581,7 @@ class AesIE507RepositoryISpec
                   .getMessageByNotification(
                     TestData.eoriNumber,
                     TestData.mrn,
-                    targetCorrelationId
+                    TestData.correlationId
                   )
                   .value
                   .futureValue
@@ -600,7 +605,7 @@ class AesIE507RepositoryISpec
             .updateNotification(
               TestData.eoriNumber,
               TestData.mrn,
-              "missing-correlation-id",
+              CorrelationId("missing-correlation-id"),
               Instant.now(),
               NotificationEventStatus.Accepted,
               None
@@ -666,7 +671,7 @@ class AesIE507RepositoryISpec
 
         result shouldBe MongoError.DocumentNotFound(
           s"No document found for EORI: ${TestData.eoriNumber.value}, " +
-            s"MRN: ${TestData.mrn.value}, with a notification event with correlationId: ${TestData.correlationId}"
+            s"MRN: ${TestData.mrn.value}, with a notification event with correlationId: ${TestData.correlationId.value}"
         )
       }
     }
@@ -836,7 +841,7 @@ class AesIE507RepositoryISpec
 
             nonDivertedPushError shouldBe MongoError.DocumentNotFound(
               s"No document found for EORI: ${TestData.eoriNumber.value}, MRN: ${TestData.mrn.value}, where" +
-                s" the most recent notification event with correlationId: ${TestData.correlationId} is diverted"
+                s" the most recent notification event with correlationId: ${TestData.correlationId.value} is diverted"
             )
 
             val result: MongoAesIE507Message =
@@ -885,7 +890,7 @@ class AesIE507RepositoryISpec
 
           result shouldBe MongoError.DocumentNotFound(
             s"No document found for EORI: ${TestData.eoriNumber.value}, MRN: ${TestData.mrn.value}, where" +
-              s" the most recent notification event with correlationId: ${TestData.correlationId} is diverted"
+              s" the most recent notification event with correlationId: ${TestData.correlationId.value} is diverted"
           )
         }
       }

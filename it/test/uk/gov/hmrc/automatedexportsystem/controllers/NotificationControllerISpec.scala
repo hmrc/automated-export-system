@@ -22,7 +22,7 @@ import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerator
 import uk.gov.hmrc.automatedexportsystem.helpers.BaseISpec
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507RepositoryImpl
@@ -33,23 +33,15 @@ class NotificationControllerISpec extends BaseISpec with MongoAesIE507MessageGen
   object TestData:
     val endpoint = "/automated-export-system/notification"
 
-    val eoriNumber =
-      EoriNumber("GB123456789000")
-
-    val mrn =
-      Mrn("25GB1234567890ABCDE")
+    val eoriNumber:    EoriNumber    = EoriNumber("GB123456789000")
+    val mrn:           Mrn           = Mrn("25GB1234567890ABCDE")
+    val correlationId: CorrelationId = CorrelationId("correlationId")
 
     val validPayload: Elem =
       <notification>
-        <correlationId>
-          {correlationId}
-        </correlationId>
-        <eori>
-          {eoriNumber.value}
-        </eori>
-        <mrn>
-          {mrn.value}
-        </mrn>
+        <correlationId>{correlationId.value}</correlationId>
+        <eori>{eoriNumber.value}</eori>
+        <mrn>{mrn.value}</mrn>
         <dateCreated>2026-08-12T10:15:30</dateCreated>
         <status>1</status>
       </notification>

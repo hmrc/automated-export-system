@@ -32,7 +32,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{EoriNumber, ExportOperationType, Mrn}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProjections, SingleUpdateStatus}
@@ -68,13 +68,13 @@ trait AesIE507Repository:
   def getMessageByNotification(
     eori:          EoriNumber,
     mrn:           Mrn,
-    correlationId: String
+    correlationId: CorrelationId
   ): EitherT[Future, MongoError, MongoAesIE507Message]
 
   def updateNotification(
     eori:          EoriNumber,
     mrn:           Mrn,
-    correlationId: String,
+    correlationId: CorrelationId,
     updatedAt:     Instant,
     status:        NotificationEventStatus,
     errors:        Option[NonEmptyList[NotificationError]]
@@ -83,7 +83,7 @@ trait AesIE507Repository:
   def pushNotificationAfterDiversion(
     eori:              EoriNumber,
     mrn:               Mrn,
-    correlationId:     String,
+    correlationId:     CorrelationId,
     notificationEvent: NotificationEvent
   ): EitherT[Future, MongoError, SingleUpdateStatus]
 
@@ -218,9 +218,9 @@ class AesIE507RepositoryImpl @Inject() (
       Filters.eq("submissionId", submissionId.value.toString)
     )
 
-    val exportOperationTypeCancel: Int    = ExportOperationType.Cancel.status
+    val exportOperationTypeCancel: Int = ExportOperationType.Cancel.status
 
-    val notificationEventJson:     String =
+    val notificationEventJson: String =
       Json.stringify(Json.toJson(cancellationNotificationEvent)(using NotificationEvent.mongoFormat))
     val update: Seq[Bson] =
       Seq(
@@ -274,14 +274,14 @@ class AesIE507RepositoryImpl @Inject() (
   def getMessageByNotification(
     eori:          EoriNumber,
     mrn:           Mrn,
-    correlationId: String
+    correlationId: CorrelationId
   ): EitherT[Future, MongoError, MongoAesIE507Message] =
     retryOperation(
       operationName = "getMessageByNotification",
       context = Map(
         "eoriNumber"    -> eori.value,
         "mrn"           -> mrn.value,
-        "correlationId" -> correlationId
+        "correlationId" -> correlationId.value
       )
     ) {
       collection
@@ -289,7 +289,7 @@ class AesIE507RepositoryImpl @Inject() (
           Filters.and(
             Filters.eq("eoriNumber", eori.value),
             Filters.eq("exportOperation.mrn", mrn.value),
-            Filters.eq("metadata.correlationId", correlationId)
+            Filters.eq("metadata.correlationId", correlationId.value)
           )
         )
         .headOption()
@@ -297,7 +297,7 @@ class AesIE507RepositoryImpl @Inject() (
           _.toRight(
             MongoError.DocumentNotFound(
               s"No document found for EORI: ${eori.value}, MRN: ${mrn.value}, with" +
-                s" a notification event with correlationId: $correlationId"
+                s" a notification event with correlationId: ${correlationId.value}"
             )
           )
         )
@@ -306,7 +306,7 @@ class AesIE507RepositoryImpl @Inject() (
   def updateNotification(
     eori:          EoriNumber,
     mrn:           Mrn,
-    correlationId: String,
+    correlationId: CorrelationId,
     updatedAt:     Instant,
     status:        NotificationEventStatus,
     errors:        Option[NonEmptyList[NotificationError]]
@@ -317,7 +317,7 @@ class AesIE507RepositoryImpl @Inject() (
       Filters.and(
         Filters.eq("eoriNumber", eori.value),
         Filters.eq("exportOperation.mrn", mrn.value),
-        Filters.eq("metadata.correlationId", correlationId),
+        Filters.eq("metadata.correlationId", correlationId.value),
         Filters.eq("metadata.isPending", true)
       )
 
@@ -339,7 +339,7 @@ class AesIE507RepositoryImpl @Inject() (
       context = Map(
         "eoriNumber"    -> eori.value,
         "mrn"           -> mrn.value,
-        "correlationId" -> correlationId
+        "correlationId" -> correlationId.value
       )
     ) {
       collection
@@ -352,7 +352,7 @@ class AesIE507RepositoryImpl @Inject() (
             context = Map(
               "eoriNumber"    -> eori.value,
               "mrn"           -> mrn.value,
-              "correlationId" -> correlationId
+              "correlationId" -> correlationId.value
             )
           )(acknowledgedUpdateResult =>
             val matchedCount:  Long = acknowledgedUpdateResult.getMatchedCount
@@ -362,7 +362,7 @@ class AesIE507RepositoryImpl @Inject() (
               Left(
                 MongoError.DocumentNotFound(
                   s"No document found for EORI: ${eori.value}, MRN: ${mrn.value}, with" +
-                    s" a notification event with correlationId: $correlationId"
+                    s" a notification event with correlationId: ${correlationId.value}"
                 )
               )
             else if modifiedCount == 0 then Right(SingleUpdateStatus.AlreadyUpToDate(operationName))
@@ -374,7 +374,7 @@ class AesIE507RepositoryImpl @Inject() (
   def pushNotificationAfterDiversion(
     eori:              EoriNumber,
     mrn:               Mrn,
-    correlationId:     String,
+    correlationId:     CorrelationId,
     notificationEvent: NotificationEvent
   ): EitherT[Future, MongoError, SingleUpdateStatus] =
     val operationName: String = "pushNotification"
@@ -394,7 +394,7 @@ class AesIE507RepositoryImpl @Inject() (
             |            "$$filter": {
             |              "input": "$$metadata",
             |              "cond": {
-            |                "$$eq": [ "$$$$this.correlationId", "$correlationId" ]
+            |                "$$eq": [ "$$$$this.correlationId", "${correlationId.value}" ]
             |              }
             |            }
             |          }
@@ -423,7 +423,7 @@ class AesIE507RepositoryImpl @Inject() (
       context = Map(
         "eoriNumber"    -> eori.value,
         "mrn"           -> mrn.value,
-        "correlationId" -> correlationId
+        "correlationId" -> correlationId.value
       )
     ) {
       collection
@@ -436,7 +436,7 @@ class AesIE507RepositoryImpl @Inject() (
             context = Map(
               "eoriNumber"    -> eori.value,
               "mrn"           -> mrn.value,
-              "correlationId" -> correlationId
+              "correlationId" -> correlationId.value
             )
           )(acknowledgedUpdateResult =>
             val matchedCount:  Long = acknowledgedUpdateResult.getMatchedCount
@@ -446,7 +446,7 @@ class AesIE507RepositoryImpl @Inject() (
               Left(
                 MongoError.DocumentNotFound(
                   s"No document found for EORI: ${eori.value}, MRN: ${mrn.value}, where" +
-                    s" the most recent notification event with correlationId: $correlationId is diverted"
+                    s" the most recent notification event with correlationId: ${correlationId.value} is diverted"
                 )
               )
             else if modifiedCount == 0 then Right(SingleUpdateStatus.AlreadyUpToDate(operationName))

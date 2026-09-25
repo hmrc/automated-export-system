@@ -34,7 +34,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
   object TestData:
     val id:            UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
     val eoriNumber:    EoriNumber    = EoriNumber("eoriNumber")
-    val correlationId: String        = "correlationId"
+    val correlationId: CorrelationId = CorrelationId("correlationId")
     val dateTime:      LocalDateTime = LocalDateTime.parse("2026-08-11T00:00:00")
     val instant:       Instant       = Instant.parse("2026-08-11T00:00:00Z")
 

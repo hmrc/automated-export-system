@@ -18,12 +18,13 @@ package uk.gov.hmrc.automatedexportsystem.models.notification
 
 import cats.data.NonEmptyList
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.CorrelationId
 import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationError
 
 import java.time.Instant
 
 final case class NotificationEvent(
-  correlationId: String,
+  correlationId: CorrelationId,
   dateCreated:   Instant,
   dateUpdated:   Instant,
   isPending:     Boolean,

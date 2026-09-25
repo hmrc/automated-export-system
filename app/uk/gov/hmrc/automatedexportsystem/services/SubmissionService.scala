@@ -22,7 +22,6 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, Subm
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.Awaiting
 import uk.gov.hmrc.automatedexportsystem.models.notification.{AesDigitalNotification, NotificationEvent, NotificationEventStatus, NotificationStatus}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{Submission, SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
@@ -135,7 +134,14 @@ class SubmissionServiceImpl @Inject() (
     submissionId:  SubmissionId,
     correlationId: CorrelationId
   ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] = {
-    val notificationEvent = NotificationEvent(correlationId.value, Instant.now(clock), None, true, Awaiting, None)
+    val notificationEvent = NotificationEvent(
+      correlationId,
+      dateCreated = Instant.now(clock),
+      dateUpdated = Instant.now(clock),
+      isPending = true,
+      NotificationEventStatus.Awaiting,
+      None
+    )
     aesIE507Repository
       .cancel(eoriNumber, submissionId, notificationEvent, Instant.now(clock))
       .leftMap(
@@ -174,18 +180,20 @@ class SubmissionServiceImpl @Inject() (
     notification: AesDigitalNotification
   ): EitherT[Future, SubmissionServiceError, SingleUpdateStatus] =
 
-    val eori: EoriNumber = EoriNumber(notification.eori)
-    val mrn:  Mrn        = Mrn(notification.mrn)
+    val eori:          EoriNumber    = EoriNumber(notification.eori)
+    val mrn:           Mrn           = Mrn(notification.mrn)
+    val correlationId: CorrelationId = CorrelationId(notification.correlationId)
 
     val context: String =
-      s"EORI: ${notification.eori}, MRN: ${notification.mrn}, correlationId: ${notification.correlationId}"
+      s"EORI: ${notification.eori}, MRN: ${notification.mrn}, " +
+        s"correlationId: ${notification.correlationId}"
 
     val submissionStatus: EitherT[Future, SubmissionServiceError, NotificationEventStatus] =
       aesIE507Repository
         .getMessageByNotification(
           eori,
           mrn,
-          notification.correlationId
+          correlationId
         )
         .map(message =>
           notificationEventStatus(
@@ -205,7 +213,7 @@ class SubmissionServiceImpl @Inject() (
         .updateNotification(
           eori,
           mrn,
-          notification.correlationId,
+          correlationId,
           Instant.now(clock),
           status,
           notification.notificationErrors
@@ -214,7 +222,7 @@ class SubmissionServiceImpl @Inject() (
           case MongoError.DocumentNotFound(_) =>
             val notificationEvent: NotificationEvent =
               NotificationEvent(
-                notification.correlationId,
+                correlationId,
                 dateCreated = Instant.now(clock),
                 dateUpdated = Instant.now(clock),
                 isPending = false,
@@ -226,7 +234,7 @@ class SubmissionServiceImpl @Inject() (
               .pushNotificationAfterDiversion(
                 eori,
                 mrn,
-                notification.correlationId,
+                correlationId,
                 notificationEvent
               )
               .leftMap(
