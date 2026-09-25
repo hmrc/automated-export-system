@@ -100,7 +100,7 @@ trait AesIE507Generators extends BaseGenerators:
 
   given containerIdentificationNumberArb: Arbitrary[ContainerIdentificationNumber] =
     Arbitrary {
-      arbitrary[String].map(ContainerIdentificationNumber.apply)
+      Gen.asciiPrintableStr.map(ContainerIdentificationNumber.apply)
     }
 
   given numberOfSealsArb: Arbitrary[NumberOfSeals] =
