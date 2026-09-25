@@ -48,10 +48,25 @@ class AesAuthAction @Inject() (
     val CorrelationIdHeader = "x-correlation-id"
   }
 
+  private def correlationIdContext(
+    requestHeader: RequestHeader
+  ): String =
+    requestHeader.headers
+      .get(AuthConstants.CorrelationIdHeader)
+      .filter(_.trim.nonEmpty)
+      .map(id => s" correlationId=$id")
+      .getOrElse("")
+
   def apply[T](next: Action[T]): EssentialAction =
     EssentialAction { requestHeader =>
       val accumulator: Accumulator[ByteString, Result] =
         if (!hasAuthorizationHeader(requestHeader)) {
+
+          logger.warn(
+            s"Authentication failed. reason=authorization-header-missing " +
+              s"path=${requestHeader.path}" +
+              correlationIdContext(requestHeader)
+          )
           Accumulator.done(unauthorisedResult)
         } else {
           implicit val headerCarrier: HeaderCarrier = hc(requestHeader)
@@ -90,14 +105,20 @@ class AesAuthAction @Inject() (
           extractEori(enrolments) match {
             case Some(eori) => Right(eori)
             case None       =>
-              logger.warn(s"EORI missing for authorised request [path=${requestHeader.path}]")
+              logger.warn(
+                s"Authentication failed. reason=eori-missing " +
+                  s"path=${requestHeader.path}" +
+                  correlationIdContext(requestHeader)
+              )
               Left(unauthorisedResult)
           }
         }
       }
       .recover { case NonFatal(e) =>
         logger.warn(
-          s"Authorisation failed [path=${requestHeader.path}, message=${e.getMessage}]",
+          s"Authentication failed. reason=authorisation-exception " +
+            s"path=${requestHeader.path}" +
+            correlationIdContext(requestHeader),
           e
         )
         Left(unauthorisedResult)

@@ -57,7 +57,7 @@ class XmlBasedHttpReads[E, S](connectorClass: Class[_]):
   ): Unit =
     val message: String = s"$method request to $url error in $connectorClass: $details"
 
-    exception.fold(logger.error(message))(logger.error(message, _))
+    exception.fold(logger.warn(message))(logger.warn(message, _))
 
   private def loadXmlString(xml: String): Either[Throwable, NodeSeq] =
     if xml.trim.isEmpty then Right(NodeSeq.Empty)
