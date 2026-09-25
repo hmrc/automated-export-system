@@ -44,14 +44,12 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
     val eoriNumber:         EoriNumber    = EoriNumber("eoriNumber")
     val correlationIdValue: String        = "correlationId"
     val correlationId:      CorrelationId = CorrelationId(correlationIdValue)
-    val conversationId:     String        = "conversationId"
     val bearerToken:        String        = "Bearer token"
     val dateTime:           LocalDateTime = LocalDateTime.parse("2026-08-29T00:00:00")
 
-    val correlationIdHeader:  HttpHeader.CorrelationId  = HttpHeader.CorrelationId(correlationIdValue)
-    val conversationIdHeader: HttpHeader.ConversationId = HttpHeader.ConversationId(conversationId)
-    val authorizationHeader:  HttpHeader.Authorization  = HttpHeader.Authorization(bearerToken)
-    val dateHeader:           HttpHeader.Date           = HttpHeader.Date("date")
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationIdValue)
+    val authorizationHeader: HttpHeader.Authorization = HttpHeader.Authorization(bearerToken)
+    val dateHeader:          HttpHeader.Date          = HttpHeader.Date("date")
 
     val aesIE507Message: AesIE507Message =
       AesIE507Message(
@@ -72,7 +70,6 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
       EisIE507Request(
         headers = EisIE507RequestHeaders(
           correlationIdHeader,
-          conversationIdHeader,
           authorizationHeader,
           dateHeader
         ),
@@ -134,8 +131,7 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
               TestData.aesIE507Message,
               TestData.eoriNumber,
               TestData.authorizationHeader,
-              TestData.correlationId,
-              Some(TestData.conversationIdHeader)
+              TestData.correlationId
             )
           ).thenReturn(TestData.eisIE507Request)
 
@@ -146,8 +142,7 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
             .submitMessage(
               TestData.aesIE507Message,
               TestData.eoriNumber,
-              TestData.correlationId,
-              Some(TestData.conversationIdHeader)
+              TestData.correlationId
             )
             .value
             .futureValue
@@ -167,8 +162,7 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
               TestData.aesIE507Message,
               TestData.eoriNumber,
               TestData.authorizationHeader,
-              TestData.correlationId,
-              Some(TestData.conversationIdHeader)
+              TestData.correlationId
             )
           ).thenReturn(TestData.eisIE507Request)
 
@@ -179,8 +173,7 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
             .submitMessage(
               TestData.aesIE507Message,
               TestData.eoriNumber,
-              TestData.correlationId,
-              Some(TestData.conversationIdHeader)
+              TestData.correlationId
             )
             .value
             .futureValue
@@ -200,8 +193,7 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
               TestData.aesIE507Message,
               TestData.eoriNumber,
               TestData.authorizationHeader,
-              TestData.correlationId,
-              Some(TestData.conversationIdHeader)
+              TestData.correlationId
             )
           ).thenReturn(TestData.eisIE507Request)
 
@@ -222,8 +214,7 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
             .submitMessage(
               TestData.aesIE507Message,
               TestData.eoriNumber,
-              TestData.correlationId,
-              Some(TestData.conversationIdHeader)
+              TestData.correlationId
             )
             .value
             .futureValue

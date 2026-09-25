@@ -27,7 +27,6 @@ import uk.gov.hmrc.automatedexportsystem.errors.{AesError, ResponseCode}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType}
 import uk.gov.hmrc.automatedexportsystem.models.eis.EisErrorResponse
-import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.services.{AesIE507XmlValidationService, EisService, SubmissionService}
@@ -80,20 +79,13 @@ class SubmissionController @Inject() (
             eoriNumber,
             correlationId
           )
-          .flatMap(_ =>
-            val maybeConversationIdHeader: Option[HttpHeader.ConversationId] =
-              request.headers
-                .get(CustomHeaderNames.X_CONVERSATION_ID)
-                .map(HttpHeader.ConversationId.apply)
-
-            eisService
-              .submitMessage(
-                aesIE507Message,
-                eoriNumber,
-                correlationId,
-                maybeConversationIdHeader
-              )
-          )
+          .flatMap { _ =>
+            eisService.submitMessage(
+              aesIE507Message,
+              eoriNumber,
+              correlationId
+            )
+          }
 
       result.fold(
         error => error.toErrorResponse.toResult,
@@ -148,11 +140,6 @@ class SubmissionController @Inject() (
         val correlationId: CorrelationId = aesAuthRequest.correlationId
         val submissionId:  SubmissionId  = SubmissionId(id)
 
-        val maybeConversationIdHeader: Option[HttpHeader.ConversationId] =
-          aesAuthRequest.headers
-            .get(CustomHeaderNames.X_CONVERSATION_ID)
-            .map(HttpHeader.ConversationId.apply)
-
         val result: EitherT[Future, AesError, Either[EisErrorResponse, Unit]] =
           for
             cancellationMessage <- submissionService.getCancellationMessage(eoriNumber, submissionId).leftMap(error => error: AesError)
@@ -160,7 +147,7 @@ class SubmissionController @Inject() (
             eisResult           <- (cancellationStatus match
                            case SingleUpdateStatus.Updated(_) =>
                              eisService
-                               .submitMessage(cancellationMessage, eoriNumber, correlationId, maybeConversationIdHeader)
+                               .submitMessage(cancellationMessage, eoriNumber, correlationId)
                                .leftMap(error => error: AesError)
                            case _ =>
                              EitherT.rightT[Future, AesError](Right(()): Either[EisErrorResponse, Unit])
