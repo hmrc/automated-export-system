@@ -34,7 +34,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
   object TestData:
     val id:            UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
     val eoriNumber:    EoriNumber    = EoriNumber("eoriNumber")
-    val correlationId: String        = "correlationId"
+    val correlationId: CorrelationId = CorrelationId("correlationId")
     val dateTime:      LocalDateTime = LocalDateTime.parse("2026-08-11T00:00:00")
     val instant:       Instant       = Instant.parse("2026-08-11T00:00:00Z")
 
@@ -429,7 +429,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
       NotificationEvent(
         correlationId = correlationId,
         dateCreated = instant,
-        dateUpdated = None,
+        dateUpdated = instant,
         isPending = false,
         status = NotificationEventStatus.Awaiting,
         errors = None
@@ -437,7 +437,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
 
     val notificationEvent2: NotificationEvent =
       notificationEvent1.copy(
-        dateUpdated = Some(instant.plusMillis(1)),
+        dateUpdated = instant.plusMillis(1),
         status = NotificationEventStatus.Accepted
       )
 
@@ -450,7 +450,7 @@ class SubmissionSpec extends AnyFreeSpecLike, Matchers:
 
     val notificationEvent4: NotificationEvent =
       notificationEvent3.copy(
-        dateUpdated = Some(instant.plusMillis(3)),
+        dateUpdated = instant.plusMillis(3),
         errors = notificationEvent3.errors.map(errors => errors :+ notificationError2)
       )
 

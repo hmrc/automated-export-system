@@ -36,9 +36,8 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
     val uuid:                UUID                     = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
     val instant:             Instant                  = Instant.parse("2026-08-24T00:00:00.000Z")
     val eoriNumber:          EoriNumber               = EoriNumber("eoriNumber")
-    val correlationIdValue:  String                   = "correlationIdValue"
-    val correlationId:       CorrelationId            = CorrelationId(correlationIdValue)
-    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationIdValue)
+    val correlationId:       CorrelationId            = CorrelationId("correlationId")
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId.value)
 
     val aesIE507Message: AesIE507Message =
       AesIE507Message(
@@ -60,7 +59,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
     val clock: Clock = Clock.fixed(TestData.instant, ZoneOffset.UTC)
 
     val idGenerator: IdGenerator = mock[IdGenerator]
-    when(idGenerator.generate35Char).thenReturn(TestData.correlationIdValue)
+    when(idGenerator.generate35Char).thenReturn(TestData.correlationId.value)
 
     val aesIE507Factory: AesIE507Factory = AesIE507Factory(clock, idGenerator)
   end Setup
@@ -90,9 +89,9 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               goodsShipment = None,
               metadata = NonEmptyList.one(
                 NotificationEvent(
-                  correlationId = TestData.correlationIdValue,
+                  correlationId = TestData.correlationId,
                   dateCreated = TestData.instant,
-                  dateUpdated = None,
+                  dateUpdated = TestData.instant,
                   isPending = true,
                   status = NotificationEventStatus.Awaiting,
                   errors = None
@@ -133,9 +132,9 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               goodsShipment = None,
               metadata = NonEmptyList.one(
                 NotificationEvent(
-                  correlationId = TestData.correlationIdValue,
+                  correlationId = TestData.correlationId,
                   dateCreated = TestData.instant,
-                  dateUpdated = None,
+                  dateUpdated = TestData.instant,
                   isPending = true,
                   status = NotificationEventStatus.Awaiting,
                   errors = None
@@ -173,9 +172,9 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               goodsShipment = None,
               metadata = NonEmptyList.one(
                 NotificationEvent(
-                  correlationId = TestData.correlationIdValue,
+                  correlationId = TestData.correlationId,
                   dateCreated = TestData.instant,
-                  dateUpdated = None,
+                  dateUpdated = TestData.instant,
                   isPending = true,
                   status = NotificationEventStatus.Awaiting,
                   errors = None
@@ -214,9 +213,9 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
               goodsShipment = None,
               metadata = NonEmptyList.one(
                 NotificationEvent(
-                  correlationId = TestData.correlationIdValue,
+                  correlationId = TestData.correlationId,
                   dateCreated = TestData.instant,
-                  dateUpdated = None,
+                  dateUpdated = TestData.instant,
                   isPending = true,
                   status = NotificationEventStatus.Awaiting,
                   errors = None

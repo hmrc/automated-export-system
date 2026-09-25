@@ -48,9 +48,9 @@ class AesIE507Factory @Inject() (clock: Clock, idGenerator: IdGenerator) extends
 
     val notificationEvent: NotificationEvent =
       NotificationEvent(
-        correlationId = correlationId.value,
+        correlationId = correlationId,
         dateCreated = instantNow,
-        dateUpdated = None,
+        dateUpdated = instantNow,
         isPending = true,
         status = NotificationEventStatus.Awaiting,
         errors = None

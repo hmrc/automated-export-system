@@ -44,14 +44,13 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
         goodsShipment = None
       )
 
-    val instant:            Instant       = Instant.parse("2026-08-24T00:00:00.000Z")
-    val eoriNumber:         EoriNumber    = EoriNumber("eoriNumber")
-    val correlationIdValue: String        = "correlationId"
-    val correlationId:      CorrelationId = CorrelationId(correlationIdValue)
-    val dateTime:           LocalDateTime = LocalDateTime.parse("2026-08-24T00:00:00")
+    val instant:       Instant       = Instant.parse("2026-08-24T00:00:00.000Z")
+    val eoriNumber:    EoriNumber    = EoriNumber("eoriNumber")
+    val correlationId: CorrelationId = CorrelationId("correlationId")
+    val dateTime:      LocalDateTime = LocalDateTime.parse("2026-08-24T00:00:00")
 
     val authorizationHeader: HttpHeader.Authorization = HttpHeader.Authorization("Bearer token")
-    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationIdValue)
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId.value)
     val dateHeader:          HttpHeader.Date          = HttpHeader.Date("Mon, 24 Aug 2026 00:00:00 GMT")
   end TestData
 
@@ -77,7 +76,7 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
                 header = EisIE507Header(
                   eoriNumber = TestData.eoriNumber,
                   preparationDateAndTime = TestData.dateTime,
-                  messageIdentification = MessageIdentification(TestData.correlationIdValue)
+                  messageIdentification = MessageIdentification(TestData.correlationId.value)
                 ),
                 body = EisIE507Body(
                   exportOperation = ExportOperation(
@@ -116,7 +115,7 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
                 header = EisIE507Header(
                   eoriNumber = TestData.eoriNumber,
                   preparationDateAndTime = TestData.dateTime,
-                  messageIdentification = MessageIdentification(TestData.correlationIdValue)
+                  messageIdentification = MessageIdentification(TestData.correlationId.value)
                 ),
                 body = EisIE507Body(
                   exportOperation = ExportOperation(
