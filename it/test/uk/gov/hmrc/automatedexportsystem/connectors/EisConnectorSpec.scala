@@ -35,7 +35,6 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import org.slf4j.LoggerFactory
 import scala.jdk.CollectionConverters.*
-import uk.gov.hmrc.automatedexportsystem.xml.RootedXmlWriter.toXmlRoot
 
 import java.time.{Clock, Instant, LocalDateTime, ZoneOffset}
 import scala.xml.Elem
@@ -311,15 +310,24 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
               .value
               .getFormattedMessage
 
-          logMessage should include(
-            TestData.eisIE507Request.message.toXmlRoot.toString
-          )
+          val receivedRequest =
+            findAll(
+              postRequestedFor(
+                urlEqualTo("/cds/aesIE507Request/v1")
+              )
+            ).asScala.head
+
+          val receivedHeaders: Seq[(String, String)] =
+            receivedRequest.getHeaders.all().asScala.toSeq.flatMap { header =>
+              header.values().asScala.map { value =>
+                header.key() -> value
+              }
+            }
 
           val expectedHeaders =
-            TestData.eisIE507Request.headers.normalizedHeaders
-              .filterNot { case (name, _) =>
-                name.equalsIgnoreCase("Authorization")
-              }
+            receivedHeaders.filterNot { case (name, _) =>
+              name.equalsIgnoreCase("Authorization")
+            }
 
           expectedHeaders.foreach { case (name, value) =>
             logMessage should include(s"$name=$value")

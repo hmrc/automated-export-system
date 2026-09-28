@@ -29,6 +29,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, StringContextOps}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.net.URL
+import java.nio.charset.StandardCharsets
 import javax.inject.Singleton
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -54,22 +55,37 @@ class EisConnector @Inject() (
     val headers = eisIE507Request.headers.normalizedHeaders
     val payload = eisIE507Request.message.toXmlRoot
 
-    val headersToLog: Seq[(String, String)] =
-      headers.filterNot { case (name, _) =>
-        name.equalsIgnoreCase("Authorization")
-      }
-
-    logger.debug(
-      s"Submitting request to EIS/stubs. " +
-        s"Headers: ${headersToLog.map { case (name, value) => s"$name=$value" }.mkString(", ")}. " +
-        s"Payload: $payload"
-    )
-
     EitherT(
       httpClient
         .post(submitUrl)
         .setHeader(headers*)
         .withBody(payload)
+        .transform { request =>
+          val clientHeaders: Seq[(String, String)] =
+            request.headers.toSeq.flatMap { case (name, values) =>
+              values.map(value => name -> value)
+            }
+
+          val transportHeaders: Seq[(String, String)] =
+            Seq(
+              "Content-Length" -> payload.toString.getBytes(StandardCharsets.UTF_8).length.toString,
+              "Host"           -> submitUrl.getAuthority
+            )
+
+          val headersToLog: Seq[(String, String)] =
+            (clientHeaders ++ transportHeaders)
+              .filterNot { case (name, _) =>
+                name.equalsIgnoreCase("Authorization")
+              }
+
+          logger.debug(
+            s"Submitting request to EIS/stubs. " +
+              s"Headers: ${headersToLog.map { case (name, value) => s"$name=$value" }.mkString(", ")}. " +
+              s"Payload: $payload"
+          )
+
+          request
+        }
         .execute
         .recover { case NonFatal(t) =>
           logger.error(s"Error encountered on POST request to $submitUrl", t)
