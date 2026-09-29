@@ -100,7 +100,7 @@ trait AesIE507Generators extends BaseGenerators:
 
   given containerIdentificationNumberArb: Arbitrary[ContainerIdentificationNumber] =
     Arbitrary {
-      arbitrary[String].map(ContainerIdentificationNumber.apply)
+      Gen.asciiPrintableStr.map(ContainerIdentificationNumber.apply)
     }
 
   given numberOfSealsArb: Arbitrary[NumberOfSeals] =
@@ -313,6 +313,11 @@ trait AesIE507Generators extends BaseGenerators:
     }
 
 trait MongoAesIE507MessageGenerator extends AesIE507Generators:
+  given correlationIdArb: Arbitrary[CorrelationId] =
+    Arbitrary {
+      Gen.alphaNumStr.map(CorrelationId.apply)
+    }
+
   given notificationEventStatusArb: Arbitrary[NotificationEventStatus] =
     Arbitrary {
       Gen.oneOf(NotificationEventStatus.values.toSeq)
@@ -331,9 +336,8 @@ trait MongoAesIE507MessageGenerator extends AesIE507Generators:
   def notificationEventArb(after: Instant = Instant.EPOCH): Arbitrary[NotificationEvent] =
     Arbitrary {
       for
-        correlationId              <- Gen.alphaNumStr
+        correlationId              <- arbitrary[CorrelationId]
         (dateCreated, dateUpdated) <- chronologicalInstantsArb(after.getEpochSecond).arbitrary
-        dateUpdated                <- Gen.option(Gen.const(dateUpdated))
         isPending                  <- arbitrary[Boolean]
         status                     <- arbitrary[NotificationEventStatus]
         errors                     <- arbitrary[Option[NonEmptyList[NotificationError]]]

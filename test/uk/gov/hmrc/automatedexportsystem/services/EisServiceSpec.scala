@@ -39,15 +39,14 @@ import scala.concurrent.ExecutionContext
 
 class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValues, MockitoSugar:
   object TestData:
-    val id:                 UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
-    val instant:            Instant       = Instant.parse("2026-08-29T00:00:00.000Z")
-    val eoriNumber:         EoriNumber    = EoriNumber("eoriNumber")
-    val correlationIdValue: String        = "correlationId"
-    val correlationId:      CorrelationId = CorrelationId(correlationIdValue)
-    val bearerToken:        String        = "Bearer token"
-    val dateTime:           LocalDateTime = LocalDateTime.parse("2026-08-29T00:00:00")
+    val id:            UUID          = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+    val instant:       Instant       = Instant.parse("2026-08-29T00:00:00.000Z")
+    val eoriNumber:    EoriNumber    = EoriNumber("eoriNumber")
+    val correlationId: CorrelationId = CorrelationId("correlationId")
+    val bearerToken:   String        = "Bearer token"
+    val dateTime:      LocalDateTime = LocalDateTime.parse("2026-08-29T00:00:00")
 
-    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationIdValue)
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId.value)
     val authorizationHeader: HttpHeader.Authorization = HttpHeader.Authorization(bearerToken)
     val dateHeader:          HttpHeader.Date          = HttpHeader.Date("date")
 
@@ -78,7 +77,7 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
             messageSender = MessageSender(eoriNumber.value),
             messageRecipient = MessageRecipient("NECA.XI"),
             preparationDateAndTime = dateTime,
-            messageIdentification = MessageIdentification(correlationIdValue),
+            messageIdentification = MessageIdentification(correlationId.value),
             messageType = MessageType("CC507C")
           ),
           body = EisIE507Body(
@@ -99,7 +98,7 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
     val eisErrorResponse: EisErrorResponse =
       EisErrorResponse(
         timestamp = instant,
-        correlationId = correlationIdValue,
+        correlationId = correlationId.value,
         errorCode = 123,
         errorMessage = "errorMessage",
         source = "source",

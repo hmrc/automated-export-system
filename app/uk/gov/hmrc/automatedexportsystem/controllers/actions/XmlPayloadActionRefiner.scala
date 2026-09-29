@@ -53,7 +53,7 @@ sealed trait XmlPayloadActionRefiner[
 class AesXmlPayloadActionRefiner @Inject() ()(using protected val ec: ExecutionContext)
     extends XmlPayloadActionRefiner[AesAuthRequest, AesXmlPayloadRequest]:
   protected def createXmlRequest[A](request: AesAuthRequest[A], xml: NodeSeq): AesXmlPayloadRequest[A] =
-    AesXmlPayloadRequest(xml, request.request, request.eori, request.correlationId)
+    AesXmlPayloadRequest(xml, request, request.eori, request.correlationId)
 
 @Singleton
 class NotificationXmlPayloadActionRefiner @Inject() ()(using protected val ec: ExecutionContext)
@@ -62,4 +62,4 @@ class NotificationXmlPayloadActionRefiner @Inject() ()(using protected val ec: E
     request: ValidatedNotificationRequest[A],
     xml:     NodeSeq
   ): NotificationXmlPayloadRequest[A] =
-    NotificationXmlPayloadRequest(xml, request.request)
+    NotificationXmlPayloadRequest(xml, request)

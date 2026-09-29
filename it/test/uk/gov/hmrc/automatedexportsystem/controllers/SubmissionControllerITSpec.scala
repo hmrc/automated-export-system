@@ -39,7 +39,6 @@ import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, EisIE507R
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
-import uk.gov.hmrc.automatedexportsystem.models.notification.NotificationEventStatus.Awaiting
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.models.responses.{SubmissionSummary, SubmissionSummaryList}
 import uk.gov.hmrc.automatedexportsystem.repositories.{AesIE507Repository, AesIE507RepositoryImpl}
@@ -59,11 +58,19 @@ class SubmissionControllerITSpec extends BaseISpec:
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
     val rfc1123DateTime: String        = "Mon, 3 Aug 2026 00:00:00 GMT"
     val bearerToken:     String        = "Bearer token"
+    val correlationId:   CorrelationId = CorrelationId("correlationId")
 
-    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId)
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId.value)
     val authorizationHeader: HttpHeader.Authorization = HttpHeader.Authorization(bearerToken)
     val dateHeader:          HttpHeader.Date          = HttpHeader.Date(rfc1123DateTime)
-    val notificationEvent = NotificationEvent(correlationId, instant, None, true, Awaiting, None)
+    val notificationEvent = NotificationEvent(
+      correlationId,
+      instant,
+      instant,
+      true,
+      NotificationEventStatus.Awaiting,
+      None
+    )
 
     val authSuccessPayload: String =
       s"""{
@@ -181,7 +188,7 @@ class SubmissionControllerITSpec extends BaseISpec:
           NotificationEvent(
             correlationId = correlationId,
             dateCreated = instant,
-            dateUpdated = None,
+            dateUpdated = instant,
             isPending = true,
             status = NotificationEventStatus.Awaiting,
             errors = None
@@ -209,7 +216,7 @@ class SubmissionControllerITSpec extends BaseISpec:
           NotificationEvent(
             correlationId = correlationId,
             dateCreated = instant,
-            dateUpdated = None,
+            dateUpdated = instant,
             isPending = true,
             status = NotificationEventStatus.Awaiting,
             errors = None
@@ -224,7 +231,7 @@ class SubmissionControllerITSpec extends BaseISpec:
         ducr = Some(ReferenceNumberUcr("referenceNumberUcr")),
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = Awaiting
+        status = NotificationEventStatus.Awaiting
       )
 
     val submissionSummary2: SubmissionSummary =
@@ -234,7 +241,7 @@ class SubmissionControllerITSpec extends BaseISpec:
         ducr = None,
         officeOfExitCode = ReferenceNumber("referenceNumber"),
         updatedAt = dateTime,
-        status = Awaiting
+        status = NotificationEventStatus.Awaiting
       )
 
     val submissionSummaryList: SubmissionSummaryList =
@@ -354,7 +361,7 @@ class SubmissionControllerITSpec extends BaseISpec:
           <messageSender>{eori}</messageSender>
           <messageRecipient>NECA.XI</messageRecipient>
           <preparationDateAndTime>2026-08-03T00:00:00</preparationDateAndTime>
-          <messageIdentification>{correlationId}</messageIdentification>
+          <messageIdentification>{correlationId.value}</messageIdentification>
           <messageType>CC507C</messageType>
         </Header>
         <Body>
@@ -484,7 +491,7 @@ class SubmissionControllerITSpec extends BaseISpec:
           <messageSender>{eori}</messageSender>
           <messageRecipient>NECA.XI</messageRecipient>
           <preparationDateAndTime>2026-08-03T00:00:00</preparationDateAndTime>
-          <messageIdentification>{correlationId}</messageIdentification>
+          <messageIdentification>{correlationId.value}</messageIdentification>
           <messageType>CC507C</messageType>
         </Header>
         <Body>
@@ -502,7 +509,7 @@ class SubmissionControllerITSpec extends BaseISpec:
 
     def eisPostRequestMappingBuilder(eisIE507MessageXml: Elem): MappingBuilder =
       post(urlEqualTo("/cds/aesIE507Request/v1"))
-        .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId))
+        .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId.value))
         .withHeader(Helpers.X_FORWARDED_HOST, equalTo("automated-export-system"))
         .withHeader(CustomHeaderNames.X_MESSAGE_TYPE, equalTo("aesIE507Request"))
         .withHeader(Helpers.CONTENT_TYPE, equalTo(Helpers.XML))
@@ -561,7 +568,7 @@ class SubmissionControllerITSpec extends BaseISpec:
               FakeRequest(Helpers.POST, "/automated-export-system/message")
                 .withHeaders(
                   Helpers.AUTHORIZATION              -> "Bearer valid-token-123",
-                  CustomHeaderNames.X_CORRELATION_ID -> correlationId
+                  CustomHeaderNames.X_CORRELATION_ID -> correlationId.value
                 )
                 .withBody(requestXml)
 
@@ -600,7 +607,7 @@ class SubmissionControllerITSpec extends BaseISpec:
               FakeRequest(Helpers.POST, "/automated-export-system/message")
                 .withHeaders(
                   Helpers.AUTHORIZATION              -> "Bearer valid-token-123",
-                  CustomHeaderNames.X_CORRELATION_ID -> correlationId
+                  CustomHeaderNames.X_CORRELATION_ID -> correlationId.value
                 )
                 .withBody(requestXml)
 
@@ -659,7 +666,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                 FakeRequest(Helpers.POST, "/automated-export-system/message")
                   .withHeaders(
                     Helpers.AUTHORIZATION              -> "Bearer valid-token-123",
-                    CustomHeaderNames.X_CORRELATION_ID -> correlationId
+                    CustomHeaderNames.X_CORRELATION_ID -> correlationId.value
                   )
                   .withBody(requestXml)
 
@@ -713,7 +720,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                 FakeRequest(Helpers.POST, "/automated-export-system/message")
                   .withHeaders(
                     Helpers.AUTHORIZATION              -> "Bearer valid-token-123",
-                    CustomHeaderNames.X_CORRELATION_ID -> correlationId
+                    CustomHeaderNames.X_CORRELATION_ID -> correlationId.value
                   )
                   .withBody(requestXml)
 
@@ -945,7 +952,7 @@ class SubmissionControllerITSpec extends BaseISpec:
               FakeRequest(Helpers.POST, "/automated-export-system/message")
                 .withHeaders(
                   Helpers.AUTHORIZATION              -> "Bearer valid-token-123",
-                  CustomHeaderNames.X_CORRELATION_ID -> correlationId
+                  CustomHeaderNames.X_CORRELATION_ID -> correlationId.value
                 )
                 .withBody(requestXml)
 
@@ -1005,7 +1012,7 @@ class SubmissionControllerITSpec extends BaseISpec:
               FakeRequest(Helpers.POST, "/automated-export-system/message")
                 .withHeaders(
                   Helpers.AUTHORIZATION              -> "Bearer valid-token-123",
-                  CustomHeaderNames.X_CORRELATION_ID -> correlationId
+                  CustomHeaderNames.X_CORRELATION_ID -> correlationId.value
                 )
                 .withBody(requestXml)
 
@@ -1374,7 +1381,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                     <messageSender>GB123456789000</messageSender>
                     <messageRecipient>NECA.XI</messageRecipient>
                     <preparationDateAndTime>2026-08-03T00:00:00</preparationDateAndTime>
-                    <messageIdentification>8f3c2a19-7d2b-4b74-a9f0-123456789012</messageIdentification>
+                    <messageIdentification>{correlationId.value}</messageIdentification>
                     <messageType>CC507C</messageType>
                   </Header>
                   <Body>
@@ -1442,6 +1449,8 @@ class SubmissionControllerITSpec extends BaseISpec:
                     </GoodsShipment>
                   </Body>
                 </n:CC507C>
+              end cancellationMessageXml
+
               stubFor(
                 post(urlEqualTo("/auth/authorise"))
                   .willReturn(
@@ -1451,9 +1460,10 @@ class SubmissionControllerITSpec extends BaseISpec:
                       .withBody(authSuccessPayload)
                   )
               )
+
               stubFor(
                 eisPostRequestMappingBuilder(cancellationMessageXml)
-                  .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId))
+                  .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId.value))
                   .willReturn(
                     aResponse()
                       .withStatus(202)
@@ -1464,7 +1474,10 @@ class SubmissionControllerITSpec extends BaseISpec:
 
               val request: FakeRequest[AnyContentAsEmpty.type] =
                 FakeRequest(Helpers.GET, s"/automated-export-system/cancel/$id1")
-                  .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token-123")
+                  .withHeaders(
+                    Helpers.AUTHORIZATION              -> "Bearer valid-token-123",
+                    CustomHeaderNames.X_CORRELATION_ID -> correlationId.value
+                  )
 
               val result: Future[Result] = Helpers.route(app, request).value
 
@@ -1523,7 +1536,7 @@ class SubmissionControllerITSpec extends BaseISpec:
 
               stubFor(
                 eisPostRequestMappingBuilder(cancellationMessageXml)
-                  .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId))
+                  .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId.value))
                   .willReturn(
                     aResponse()
                       .withStatus(202)
@@ -1625,7 +1638,10 @@ class SubmissionControllerITSpec extends BaseISpec:
 
             val request: FakeRequest[AnyContentAsEmpty.type] =
               FakeRequest(Helpers.GET, s"/automated-export-system/cancel/$id1")
-                .withHeaders(Helpers.AUTHORIZATION -> "Bearer valid-token-123")
+                .withHeaders(
+                  Helpers.AUTHORIZATION              -> "Bearer valid-token-123",
+                  CustomHeaderNames.X_CORRELATION_ID -> correlationId.value
+                )
 
             val submissionUpdateFailureXml: Elem =
               <errorResponse>

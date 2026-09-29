@@ -38,12 +38,12 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
   object TestData:
     val instant:         Instant       = Instant.parse("2026-08-29T00:00:00.000Z")
     val eoriNumber:      EoriNumber    = EoriNumber("eoriNumber")
-    val correlationId:   String        = "correlationIdValue"
+    val correlationId:   CorrelationId = CorrelationId("correlationId")
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-29T00:00:00")
     val rfc1123DateTime: String        = "Sat, 29 Aug 2026 00:00:00 GMT"
     val bearerToken:     String        = "Bearer token"
 
-    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId)
+    val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId.value)
     val authorizationHeader: HttpHeader.Authorization = HttpHeader.Authorization(bearerToken)
     val dateHeader:          HttpHeader.Date          = HttpHeader.Date(rfc1123DateTime)
 
@@ -74,7 +74,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
             messageSender = MessageSender(eoriNumber.value),
             messageRecipient = MessageRecipient("NECA.XI"),
             preparationDateAndTime = dateTime,
-            messageIdentification = MessageIdentification(correlationId),
+            messageIdentification = MessageIdentification(correlationId.value),
             messageType = MessageType("CC507C")
           ),
           body = EisIE507Body(
@@ -95,14 +95,10 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
     val eisIE507MessageXml: Elem =
       <n:CC507C xmlns:n="http://ecs.dgtaxud.ec">
         <Header>
-          <messageSender>
-            {eoriNumber.value}
-          </messageSender>
+          <messageSender>{eoriNumber.value}</messageSender>
           <messageRecipient>NECA.XI</messageRecipient>
           <preparationDateAndTime>2026-08-29T00:00:00</preparationDateAndTime>
-          <messageIdentification>
-            {correlationId}
-          </messageIdentification>
+          <messageIdentification>{correlationId.value}</messageIdentification>
           <messageType>CC507C</messageType>
         </Header>
         <Body>
@@ -121,7 +117,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
     def eisErrorResponseXml(status: Int): Elem =
       <error>
         <timestamp>{instant}</timestamp>
-        <correlationId>{correlationId}</correlationId>
+        <correlationId>{correlationId.value}</correlationId>
         <errorCode>{status}</errorCode>
         <errorMessage>errorMessage</errorMessage>
         <source>source</source>
@@ -135,7 +131,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
     val eisErrorResponseInvalidXml: Elem =
       <error>
         <timestamp>instant</timestamp>
-        <correlationId>{correlationId}</correlationId>
+        <correlationId>{correlationId.value}</correlationId>
         <errorCode>status</errorCode>
         <errorMessage>errorMessage</errorMessage>
         <sourceFaultDetail>
@@ -153,7 +149,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
 
   def eisPostRequestMappingBuilder: MappingBuilder =
     post(urlEqualTo("/cds/aesIE507Request/v1"))
-      .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(TestData.correlationId))
+      .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(TestData.correlationId.value))
       .withHeader(Helpers.X_FORWARDED_HOST, equalTo("automated-export-system"))
       .withHeader(CustomHeaderNames.X_MESSAGE_TYPE, equalTo("aesIE507Request"))
       .withHeader(Helpers.CONTENT_TYPE, equalTo(Helpers.XML))
@@ -210,7 +206,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
           val eisErrorResponse: EisErrorResponse =
             EisErrorResponse(
               timestamp = TestData.instant,
-              correlationId = TestData.correlationId,
+              correlationId = TestData.correlationId.value,
               errorCode = Helpers.BAD_REQUEST,
               errorMessage = "errorMessage",
               source = "source",
@@ -246,7 +242,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
           val eisErrorResponse: EisErrorResponse =
             EisErrorResponse(
               timestamp = TestData.instant,
-              correlationId = TestData.correlationId,
+              correlationId = TestData.correlationId.value,
               errorCode = Helpers.INTERNAL_SERVER_ERROR,
               errorMessage = "errorMessage",
               source = "source",

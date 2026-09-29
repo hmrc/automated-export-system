@@ -41,6 +41,7 @@ class AesAuthRequestRefiner @Inject() (idGenerator: IdGenerator)(using protected
               .get(CustomHeaderNames.X_CORRELATION_ID)
               .map(CorrelationId.apply)
               .getOrElse(CorrelationId(idGenerator.generate35Char))
+
           Right(AesAuthRequest(EoriNumber(eori), correlationId, request))
         case None =>
           logger.warn(s"Missing authenticated EORI in request attrs [path=${request.path}]")
