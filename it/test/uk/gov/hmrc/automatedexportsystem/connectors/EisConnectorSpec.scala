@@ -30,6 +30,11 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.eis.*
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, EisIE507Request, EisIE507RequestHeaders, SourceFaultDetail}
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.http.HeaderCarrier
+import ch.qos.logback.classic.{Level, Logger}
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
+import org.slf4j.LoggerFactory
+import scala.jdk.CollectionConverters.*
 
 import java.time.{Clock, Instant, LocalDateTime, ZoneOffset}
 import scala.xml.Elem
@@ -256,6 +261,80 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
             )
 
           result shouldBe Left(eisErrorResponse)
+        }
+      }
+
+      "should log the submitted payload and headers without authorization" in {
+        stubFor(
+          eisPostRequestMappingBuilder
+            .willReturn(
+              aResponse()
+                .withStatus(Helpers.NO_CONTENT)
+            )
+        )
+
+        val connectorLogger: Logger =
+          LoggerFactory
+            .getLogger(classOf[EisConnector])
+            .asInstanceOf[Logger]
+
+        val originalLevel: Level =
+          connectorLogger.getLevel
+
+        val listAppender =
+          new ListAppender[ILoggingEvent]()
+
+        listAppender.start()
+        connectorLogger.addAppender(listAppender)
+        connectorLogger.setLevel(Level.DEBUG)
+
+        try {
+          eisConnector
+            .submitMessage(TestData.eisIE507Request)
+            .value
+            .futureValue
+            .value shouldBe Right(())
+
+          val logMessage: String =
+            listAppender.list.asScala
+              .find(event =>
+                event.getLevel == Level.DEBUG &&
+                  event.getFormattedMessage.startsWith(
+                    "Submitting request to EIS/stubs"
+                  )
+              )
+              .value
+              .getFormattedMessage
+
+          val receivedRequest =
+            findAll(
+              postRequestedFor(
+                urlEqualTo("/cds/aesIE507Request/v1")
+              )
+            ).asScala.head
+
+          val receivedHeaders: Seq[(String, String)] =
+            receivedRequest.getHeaders.all().asScala.toSeq.flatMap { header =>
+              header.values().asScala.map { value =>
+                header.key() -> value
+              }
+            }
+
+          val expectedHeaders =
+            receivedHeaders.filterNot { case (name, _) =>
+              name.equalsIgnoreCase("Authorization")
+            }
+
+          expectedHeaders.foreach { case (name, value) =>
+            logMessage should include(s"$name=$value")
+          }
+
+          logMessage.toLowerCase should not include "authorization"
+          logMessage             should not include TestData.bearerToken
+        } finally {
+          connectorLogger.detachAppender(listAppender)
+          connectorLogger.setLevel(originalLevel)
+          listAppender.stop()
         }
       }
 
