@@ -40,9 +40,10 @@ class EisService @Inject() (
     eoriNumber:      EoriNumber,
     correlationId:   CorrelationId
   )(using hc: HeaderCarrier): EitherT[Future, EisServiceError, Either[EisErrorResponse, Unit]] =
-    val eisBearerToken: String = appConfig.eisToken
+    val eisToken: String = appConfig.eisToken
 
-    val authorization: HttpHeader.Authorization = HttpHeader.Authorization(eisBearerToken)
+    val authorization: HttpHeader.Authorization =
+      HttpHeader.Authorization(s"Bearer $eisToken")
 
     val eisIE507Request: EisIE507Request =
       eisIE507Factory.request(
