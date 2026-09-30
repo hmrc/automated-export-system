@@ -33,7 +33,6 @@ class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures 
 
   given HeaderCarrier = HeaderCarrier()
 
-  // to prevent failing test while WireMock initializes
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(
       timeout = Span(5, Seconds),
@@ -47,10 +46,6 @@ class CodeListConnectorSpec extends AnyWordSpec with Matchers with ScalaFutures 
     super.beforeAll()
     wireMockServer.start()
     configureFor("localhost", wireMockServer.port())
-
-    println()
-    println(s"WireMock started on port ${wireMockServer.port()}")
-    println()
   }
 
   override def beforeEach(): Unit = {

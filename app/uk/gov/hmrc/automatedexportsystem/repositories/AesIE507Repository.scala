@@ -138,9 +138,15 @@ class AesIE507RepositoryImpl @Inject() (
         .map { messageSummaries =>
           NonEmptyList
             .fromList(messageSummaries.toList)
-            .toRight(
-              MongoError.DocumentNotFound(s"No documents found for EORI: ${eori.value}")
-            )
+            .toRight {
+              documentNotFound(
+                operationName = "getMessages",
+                context = Map(
+                  "eoriNumber" -> eori.value
+                ),
+                details = s"No documents found for EORI: ${eori.value}"
+              )
+            }
         }
     }
 
@@ -161,11 +167,16 @@ class AesIE507RepositoryImpl @Inject() (
         )
         .headOption()
         .map(
-          _.toRight(
-            MongoError.DocumentNotFound(
-              s"No document found for EORI: ${eori.value} and submissionId: ${submissionId.value}"
+          _.toRight {
+            documentNotFound(
+              operationName = "getMessage",
+              context = Map(
+                "eoriNumber"   -> eori.value,
+                "submissionId" -> submissionId.value.toString
+              ),
+              details = s"No document found for EORI: ${eori.value} and submissionId: ${submissionId.value}"
             )
-          )
+          }
         )
     }
 
@@ -264,7 +275,17 @@ class AesIE507RepositoryImpl @Inject() (
             val matchedCount:  Long = acknowledgedUpdateResult.getMatchedCount
             val modifiedCount: Long = acknowledgedUpdateResult.getModifiedCount
 
-            if matchedCount == 0 then Left(MongoError.DocumentNotFound(s"No document found for submissionId: ${submissionId.value}"))
+            if matchedCount == 0 then
+              Left(
+                documentNotFound(
+                  operationName = operationName,
+                  context = Map(
+                    "eoriNumber"   -> eori.value,
+                    "submissionId" -> submissionId.value.toString
+                  ),
+                  details = s"No document found for submissionId: ${submissionId.value}"
+                )
+              )
             else if modifiedCount == 0 then Right(SingleUpdateStatus.AlreadyUpToDate(operationName))
             else Right(SingleUpdateStatus.Updated(operationName))
           )
@@ -294,12 +315,18 @@ class AesIE507RepositoryImpl @Inject() (
         )
         .headOption()
         .map(
-          _.toRight(
-            MongoError.DocumentNotFound(
-              s"No document found for EORI: ${eori.value}, MRN: ${mrn.value}, with" +
+          _.toRight {
+            documentNotFound(
+              operationName = "getMessageByNotification",
+              context = Map(
+                "eoriNumber"    -> eori.value,
+                "mrn"           -> mrn.value,
+                "correlationId" -> correlationId.value
+              ),
+              details = s"No document found for EORI: ${eori.value}, MRN: ${mrn.value}, with" +
                 s" a notification event with correlationId: ${correlationId.value}"
             )
-          )
+          }
         )
     }
 
@@ -360,8 +387,14 @@ class AesIE507RepositoryImpl @Inject() (
 
             if matchedCount == 0 then
               Left(
-                MongoError.DocumentNotFound(
-                  s"No document found for EORI: ${eori.value}, MRN: ${mrn.value}, with" +
+                documentNotFound(
+                  operationName = operationName,
+                  context = Map(
+                    "eoriNumber"    -> eori.value,
+                    "mrn"           -> mrn.value,
+                    "correlationId" -> correlationId.value
+                  ),
+                  details = s"No document found for EORI: ${eori.value}, MRN: ${mrn.value}, with" +
                     s" a notification event with correlationId: ${correlationId.value}"
                 )
               )
@@ -444,8 +477,14 @@ class AesIE507RepositoryImpl @Inject() (
 
             if matchedCount == 0 then
               Left(
-                MongoError.DocumentNotFound(
-                  s"No document found for EORI: ${eori.value}, MRN: ${mrn.value}, where" +
+                documentNotFound(
+                  operationName = operationName,
+                  context = Map(
+                    "eoriNumber"    -> eori.value,
+                    "mrn"           -> mrn.value,
+                    "correlationId" -> correlationId.value
+                  ),
+                  details = s"No document found for EORI: ${eori.value}, MRN: ${mrn.value}, where" +
                     s" the most recent notification event with correlationId: ${correlationId.value} is diverted"
                 )
               )
@@ -454,6 +493,21 @@ class AesIE507RepositoryImpl @Inject() (
           )
         )
     }
+
+  private def documentNotFound(
+    operationName: String,
+    context:       Map[String, String],
+    details:       String
+  ): MongoError =
+    val ctx: String =
+      if context.isEmpty then ""
+      else context.map { case (key, value) => s"$key=$value" }.mkString(" ", " ", "")
+
+    logger.info(
+      s"Mongo document not found operation=$operationName$ctx"
+    )
+
+    MongoError.DocumentNotFound(details)
 
   private def getUpdateStatus(
     updateResult: UpdateResult,
@@ -468,7 +522,7 @@ class AesIE507RepositoryImpl @Inject() (
       if context.isEmpty then ""
       else context.map { case (k, v) => s"$k: $v" }.mkString(", ", ", ", "")
 
-    logger.error(
+    logger.warn(
       s"Write was unacknowledged when attempting '$operation' operation. " +
         s"write concern: ${collection.writeConcern}$contextString]"
     )
@@ -483,6 +537,15 @@ class AesIE507RepositoryImpl @Inject() (
   ): EitherT[Future, MongoError, R] =
     def attempt(): Future[Either[MongoError, R]] =
       op.recover { case MongoNonRetryable(me) =>
+        val ctx: String =
+          if context.isEmpty then ""
+          else context.map { case (key, value) => s"$key=$value" }.mkString(" ", " ", "")
+
+        logger.warn(
+          s"$operationName failed with a non-retryable Mongo error$ctx",
+          me
+        )
+
         Left(MongoError.UnexpectedError(me))
       }
 
@@ -497,9 +560,9 @@ class AesIE507RepositoryImpl @Inject() (
             if context.isEmpty then ""
             else context.map { case (k, v) => s"$k=$v" }.mkString(" ", " ", "")
 
-          logger.error(
-            s"$operationName failed after ${appConfig.mongoRetryAttempts + 1} attempts$ctx: " +
-              s"${ex.getClass.getSimpleName}: ${ex.getMessage}"
+          logger.warn(
+            s"$operationName failed after ${appConfig.mongoRetryAttempts + 1} attempts$ctx",
+            ex
           )
 
           Left(MongoError.UnexpectedError(ex))
