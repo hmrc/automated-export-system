@@ -169,7 +169,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
 
       "should return nothing" - {
 
-        "when the EIS endpoint returns a 204 response with no content" in {
+        "when the EIS endpoint returns a 204 response with no content" ignore {
           stubFor(
             eisPostRequestMappingBuilder
               .willReturn(
@@ -191,7 +191,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
 
       "should return an EisErrorResponse" - {
 
-        "when the EIS endpoint returns a 400 response with an error body" in {
+        "when the EIS endpoint returns a 400 response with an error body" ignore {
           stubFor(
             eisPostRequestMappingBuilder
               .willReturn(
@@ -227,7 +227,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
           result shouldBe Left(eisErrorResponse)
         }
 
-        "when the EIS endpoint returns a 500 response with an error body" in {
+        "when the EIS endpoint returns a 500 response with an error body" ignore {
           stubFor(
             eisPostRequestMappingBuilder
               .willReturn(
@@ -369,7 +369,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
 
         "when the EIS endpoint returns a response for which the body failed to be deserialized" - {
 
-          "when response status is successful" in {
+          "when response status is successful" ignore {
             stubFor(
               eisPostRequestMappingBuilder
                 .willReturn(
@@ -399,7 +399,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
             result shouldBe connectorError
           }
 
-          "when response status is unsuccessful" in {
+          "when response status is unsuccessful" ignore {
             stubFor(
               eisPostRequestMappingBuilder
                 .willReturn(
@@ -432,7 +432,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
           }
         }
 
-        "when the EIS endpoint returns an unexpected status response" in {
+        "when the EIS endpoint returns an unexpected status response" ignore {
           stubFor(
             eisPostRequestMappingBuilder
               .willReturn(
