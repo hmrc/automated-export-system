@@ -18,13 +18,24 @@ package uk.gov.hmrc.automatedexportsystem.models.http
 
 import play.api.http.HeaderNames
 
+import java.time.{Clock, Instant, ZoneOffset}
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
 enum HttpHeader(val name: String, val value: String):
   def normalized: (String, String) = (name, value)
 
   case CorrelationId(override val value: String) extends HttpHeader(CustomHeaderNames.X_CORRELATION_ID, value)
   case MessageType(override val value: String) extends HttpHeader(CustomHeaderNames.X_MESSAGE_TYPE, value)
-  case ForwardedHost(override val value: String) extends HttpHeader(HeaderNames.X_FORWARDED_HOST, value)
+  case ForwardedHost(override val value: String) extends HttpHeader(HeaderNames.X_FORWARDED_HOST, "MDTP")
   case ContentType(override val value: String) extends HttpHeader(HeaderNames.CONTENT_TYPE, value)
   case Accept(override val value: String) extends HttpHeader(HeaderNames.ACCEPT, value)
   case Authorization(override val value: String) extends HttpHeader(HeaderNames.AUTHORIZATION, value)
   case Date(override val value: String) extends HttpHeader(HeaderNames.DATE, value)
+
+object HttpHeader:
+  private val httpDateFormatter =
+    DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'UTC'", Locale.ENGLISH).withZone(ZoneOffset.UTC)
+
+  def date(using clock: Clock): HttpHeader =
+    Date(httpDateFormatter.format(Instant.now(clock)))
