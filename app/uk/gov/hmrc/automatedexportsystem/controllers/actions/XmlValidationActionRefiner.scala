@@ -31,7 +31,7 @@ import scala.xml.NodeSeq
 class XmlValidationActionRefiner[T <: XmlValidationService] @Inject() (xmlValidationService: T)(using
   protected val executionContext: ExecutionContext
 ) extends ActionRefiner[AesXmlPayloadRequest, ValidatedXmlRequest]
-  with Logging:
+    with Logging:
   protected def refine[A](request: AesXmlPayloadRequest[A]): Future[Either[Result, ValidatedXmlRequest[A]]] =
     val xml: NodeSeq = request.xml
 

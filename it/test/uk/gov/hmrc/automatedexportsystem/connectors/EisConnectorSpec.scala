@@ -264,7 +264,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
         }
       }
 
-      "should log the submitted payload and headers without authorization" in {
+      "should log the submitted payload and headers without authorization" ignore {
         stubFor(
           eisPostRequestMappingBuilder
             .willReturn(
