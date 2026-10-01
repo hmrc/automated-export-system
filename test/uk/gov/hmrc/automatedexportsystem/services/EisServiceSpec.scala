@@ -17,7 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.services
 
 import helpers.EitherTFutureOps.{toEitherTLeft, toEitherTRight}
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.freespec.AnyFreeSpecLike
@@ -43,12 +43,13 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
     val instant:       Instant       = Instant.parse("2026-08-29T00:00:00.000Z")
     val eoriNumber:    EoriNumber    = EoriNumber("eoriNumber")
     val correlationId: CorrelationId = CorrelationId("correlationId")
-    val bearerToken:   String        = "Bearer token"
+    val eisToken:      String        = "token"
     val dateTime:      LocalDateTime = LocalDateTime.parse("2026-08-29T00:00:00")
 
     val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId.value)
-    val authorizationHeader: HttpHeader.Authorization = HttpHeader.Authorization(bearerToken)
-    val dateHeader:          HttpHeader.Date          = HttpHeader.Date("date")
+    val authorizationHeader: HttpHeader.Authorization =
+      HttpHeader.Authorization(s"Bearer $eisToken")
+    val dateHeader: HttpHeader.Date = HttpHeader.Date("date")
 
     val aesIE507Message: AesIE507Message =
       AesIE507Message(
@@ -123,8 +124,7 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
       "should return nothing" - {
 
         "when EisConnector returns nothing" in {
-          when(appConfig.eisToken).thenReturn(TestData.bearerToken)
-
+          when(appConfig.eisToken).thenReturn(TestData.eisToken)
           when(
             eisIE507Factory.request(
               TestData.aesIE507Message,
@@ -148,13 +148,20 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
             .value
 
           result shouldBe Right(())
+
+          verify(eisIE507Factory).request(
+            TestData.aesIE507Message,
+            TestData.eoriNumber,
+            HttpHeader.Authorization("Bearer token"),
+            TestData.correlationId
+          )
         }
       }
 
       "should return an EisErrorResponse" - {
 
         "when EisConnector returns an EisErrorResponse" in {
-          when(appConfig.eisToken).thenReturn(TestData.bearerToken)
+          when(appConfig.eisToken).thenReturn(TestData.eisToken)
 
           when(
             eisIE507Factory.request(
@@ -185,8 +192,7 @@ class EisServiceSpec extends AnyFreeSpecLike, Matchers, ScalaFutures, EitherValu
       "should return an EisServiceError" - {
 
         "when EisConnector returns a ConnectorError" in {
-          when(appConfig.eisToken).thenReturn(TestData.bearerToken)
-
+          when(appConfig.eisToken).thenReturn(TestData.eisToken)
           when(
             eisIE507Factory.request(
               TestData.aesIE507Message,

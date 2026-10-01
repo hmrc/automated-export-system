@@ -57,7 +57,8 @@ class SubmissionControllerITSpec extends BaseISpec:
     val instant:         Instant       = Instant.parse("2026-08-03T00:00:00.000Z")
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
     val rfc1123DateTime: String        = "Mon, 3 Aug 2026 00:00:00 GMT"
-    val bearerToken:     String        = "Bearer token"
+    val eisToken:        String        = "token"
+    val bearerToken:     String        = s"Bearer $eisToken"
     val correlationId:   CorrelationId = CorrelationId("correlationId")
 
     val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId.value)
@@ -522,7 +523,7 @@ class SubmissionControllerITSpec extends BaseISpec:
   object Setup extends Setup
 
   override def config: Map[String, Any] =
-    super.config ++ Map("microservice.services.eis.bearerToken" -> Setup.bearerToken)
+    super.config ++ Map("microservice.services.eis.bearerToken" -> Setup.eisToken)
 
   override def bindingOverrides: Seq[Binding[_]] =
     super.bindingOverrides ++ Seq(

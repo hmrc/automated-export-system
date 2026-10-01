@@ -30,7 +30,7 @@ import uk.gov.hmrc.automatedexportsystem.models.IE507.eis.*
 import uk.gov.hmrc.automatedexportsystem.models.eis.{EisErrorResponse, EisIE507Request, EisIE507RequestHeaders, SourceFaultDetail}
 import uk.gov.hmrc.automatedexportsystem.models.http.{CustomHeaderNames, HttpHeader}
 import uk.gov.hmrc.http.HeaderCarrier
-import ch.qos.logback.classic.{Level, Logger}
+import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import org.slf4j.LoggerFactory
@@ -273,10 +273,10 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
             )
         )
 
-        val connectorLogger: Logger =
+        val connectorLogger: LogbackLogger =
           LoggerFactory
             .getLogger(classOf[EisConnector])
-            .asInstanceOf[Logger]
+            .asInstanceOf[LogbackLogger]
 
         val originalLevel: Level =
           connectorLogger.getLevel
