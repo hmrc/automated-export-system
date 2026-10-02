@@ -34,7 +34,7 @@ class IE507StubControllerSpec extends BaseSpec:
     ).withHeaders(
       "x-forwarded-host" -> "automated-export-system",
       "x-correlation-id" -> "12345",
-      "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
+      "date"             -> "Mon, 13 Jul 2026 12:00:00 UTC",
       "content-type"     -> "application/xml",
       "accept"           -> "application/xml",
       "authorization"    -> "Bearer test-token",
@@ -76,7 +76,7 @@ class IE507StubControllerSpec extends BaseSpec:
         ).withHeaders(
           "x-forwarded-host" -> "automated-export-system",
           "x-correlation-id" -> "12345",
-          "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
+          "date"             -> "Mon, 13 Jul 2026 12:00:00 UTC",
           "content-type"     -> "application/xml",
           "accept"           -> "application/xml",
           "x-message-type"   -> "aesIE507Request"
@@ -97,7 +97,7 @@ class IE507StubControllerSpec extends BaseSpec:
         ).withHeaders(
           "x-forwarded-host" -> "automated-export-system",
           "x-correlation-id" -> "12345",
-          "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
+          "date"             -> "Mon, 13 Jul 2026 12:00:00 UTC",
           "content-type"     -> "application/xml",
           "accept"           -> "application/xml",
           "authorization"    -> "Bearer test-token"
@@ -118,7 +118,7 @@ class IE507StubControllerSpec extends BaseSpec:
         ).withHeaders(
           "x-forwarded-host" -> "automated-export-system",
           "x-correlation-id" -> "12345",
-          "date"             -> "Mon, 13 Jul 2026 12:00:00 GMT",
+          "date"             -> "Mon, 13 Jul 2026 12:00:00 UTC",
           "content-type"     -> "application/xml",
           "accept"           -> "application/xml",
           "authorization"    -> "",

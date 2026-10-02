@@ -51,7 +51,7 @@ class EisIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
 
     val authorizationHeader: HttpHeader.Authorization = HttpHeader.Authorization("Bearer token")
     val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId.value)
-    val dateHeader:          HttpHeader.Date          = HttpHeader.Date("Mon, 24 Aug 2026 00:00:00 GMT")
+    val dateHeader:          HttpHeader.Date          = HttpHeader.Date("Mon, 24 Aug 2026 00:00:00 UTC")
   end TestData
 
   val clock: Clock = Clock.fixed(TestData.instant, ZoneOffset.UTC)

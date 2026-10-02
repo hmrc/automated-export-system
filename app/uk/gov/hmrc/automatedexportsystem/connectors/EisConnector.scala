@@ -73,10 +73,10 @@ class EisConnector @Inject() (
             )
 
           val headersToLog: Seq[(String, String)] =
-            clientHeaders ++ transportHeaders
-          //   .filterNot { case (name, _) =>
-          //    name.equalsIgnoreCase("Authorization")
-          //   }
+            (clientHeaders ++ transportHeaders)
+              .filterNot { case (name, _) =>
+                name.equalsIgnoreCase("Authorization")
+              }
 
           logger.debug(
             s"Submitting request to EIS/stubs. " +

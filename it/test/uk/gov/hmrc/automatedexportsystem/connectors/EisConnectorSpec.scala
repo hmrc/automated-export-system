@@ -45,7 +45,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
     val eoriNumber:      EoriNumber    = EoriNumber("eoriNumber")
     val correlationId:   CorrelationId = CorrelationId("correlationId")
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-29T00:00:00")
-    val rfc1123DateTime: String        = "Sat, 29 Aug 2026 00:00:00 GMT"
+    val rfc1123DateTime: String        = "Sat, 29 Aug 2026 00:00:00 UTC"
     val bearerToken:     String        = "Bearer token"
 
     val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId.value)
@@ -155,7 +155,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
   def eisPostRequestMappingBuilder: MappingBuilder =
     post(urlEqualTo("/cds/aesIE507Request/v1"))
       .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(TestData.correlationId.value))
-      .withHeader(Helpers.X_FORWARDED_HOST, equalTo("automated-export-system"))
+      .withHeader(Helpers.X_FORWARDED_HOST, equalTo("MDTP"))
       .withHeader(CustomHeaderNames.X_MESSAGE_TYPE, equalTo("aesIE507Request"))
       .withHeader(Helpers.CONTENT_TYPE, equalTo(Helpers.XML))
       .withHeader(Helpers.ACCEPT, equalTo(Helpers.XML))
@@ -169,7 +169,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
 
       "should return nothing" - {
 
-        "when the EIS endpoint returns a 204 response with no content" ignore {
+        "when the EIS endpoint returns a 204 response with no content" in {
           stubFor(
             eisPostRequestMappingBuilder
               .willReturn(
@@ -191,7 +191,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
 
       "should return an EisErrorResponse" - {
 
-        "when the EIS endpoint returns a 400 response with an error body" ignore {
+        "when the EIS endpoint returns a 400 response with an error body" in {
           stubFor(
             eisPostRequestMappingBuilder
               .willReturn(
@@ -227,7 +227,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
           result shouldBe Left(eisErrorResponse)
         }
 
-        "when the EIS endpoint returns a 500 response with an error body" ignore {
+        "when the EIS endpoint returns a 500 response with an error body" in {
           stubFor(
             eisPostRequestMappingBuilder
               .willReturn(
@@ -264,7 +264,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
         }
       }
 
-      "should log the submitted payload and headers without authorization" ignore {
+      "should log the submitted payload and headers without authorization" in {
         stubFor(
           eisPostRequestMappingBuilder
             .willReturn(
@@ -369,7 +369,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
 
         "when the EIS endpoint returns a response for which the body failed to be deserialized" - {
 
-          "when response status is successful" ignore {
+          "when response status is successful" in {
             stubFor(
               eisPostRequestMappingBuilder
                 .willReturn(
@@ -399,7 +399,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
             result shouldBe connectorError
           }
 
-          "when response status is unsuccessful" ignore {
+          "when response status is unsuccessful" in {
             stubFor(
               eisPostRequestMappingBuilder
                 .willReturn(
@@ -432,7 +432,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
           }
         }
 
-        "when the EIS endpoint returns an unexpected status response" ignore {
+        "when the EIS endpoint returns an unexpected status response" in {
           stubFor(
             eisPostRequestMappingBuilder
               .willReturn(

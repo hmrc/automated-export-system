@@ -56,7 +56,7 @@ class SubmissionControllerITSpec extends BaseISpec:
     val id2:             UUID          = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
     val instant:         Instant       = Instant.parse("2026-08-03T00:00:00.000Z")
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
-    val rfc1123DateTime: String        = "Mon, 3 Aug 2026 00:00:00 GMT"
+    val rfc1123DateTime: String        = "Mon, 03 Aug 2026 00:00:00 UTC"
     val eisToken:        String        = "token"
     val bearerToken:     String        = s"Bearer $eisToken"
     val correlationId:   CorrelationId = CorrelationId("correlationId")
@@ -511,7 +511,7 @@ class SubmissionControllerITSpec extends BaseISpec:
     def eisPostRequestMappingBuilder(eisIE507MessageXml: Elem): MappingBuilder =
       post(urlEqualTo("/cds/aesIE507Request/v1"))
         .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId.value))
-        .withHeader(Helpers.X_FORWARDED_HOST, equalTo("automated-export-system"))
+        .withHeader(Helpers.X_FORWARDED_HOST, equalTo("MDTP"))
         .withHeader(CustomHeaderNames.X_MESSAGE_TYPE, equalTo("aesIE507Request"))
         .withHeader(Helpers.CONTENT_TYPE, equalTo(Helpers.XML))
         .withHeader(Helpers.ACCEPT, equalTo(Helpers.XML))
@@ -544,7 +544,7 @@ class SubmissionControllerITSpec extends BaseISpec:
 
         "when the request contains a valid AES IE507 XML body with all optional elements" - {
 
-          "and the submission is successfully submitted to EIS" ignore new Setup {
+          "and the submission is successfully submitted to EIS" in new Setup {
             val requestXml: Elem = aesIE507MessageAllOptionalsXml
 
             stubFor(
@@ -583,7 +583,7 @@ class SubmissionControllerITSpec extends BaseISpec:
 
         "when the request contains an valid AES IE507 XML body without optional elements" - {
 
-          "and the submission is successfully submitted to EIS" ignore new Setup {
+          "and the submission is successfully submitted to EIS" in new Setup {
             val requestXml: Elem = aesIE507MessageNoOptionalsXml
 
             stubFor(
@@ -627,7 +627,7 @@ class SubmissionControllerITSpec extends BaseISpec:
 
           "and EIS returns a EisErrorResponse" - {
 
-            "with a 400 errorCode" ignore new Setup {
+            "with a 400 errorCode" in new Setup {
               val requestXml: Elem = aesIE507MessageAllOptionalsXml
 
               stubFor(
@@ -681,7 +681,7 @@ class SubmissionControllerITSpec extends BaseISpec:
               XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(eisErrorResponseXml)
             }
 
-            "with a 500 errorCode" ignore new Setup {
+            "with a 500 errorCode" in new Setup {
               val requestXml: Elem = aesIE507MessageAllOptionalsXml
 
               stubFor(
@@ -1375,7 +1375,7 @@ class SubmissionControllerITSpec extends BaseISpec:
 
           "when there is a submission found with that EORI and submissionId" - {
 
-            "and the submission is not cancelled yet" ignore new Setup {
+            "and the submission is not cancelled yet" in new Setup {
               val cancellationMessageXml: Elem =
                 <n:CC507C xmlns:n="http://ecs.dgtaxud.ec">
                   <Header>

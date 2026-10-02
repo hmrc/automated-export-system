@@ -19,7 +19,6 @@ package uk.gov.hmrc.automatedexportsystem.controllers
 import cats.Functor
 import cats.data.EitherT
 import cats.syntax.bifunctor.toBifunctorOps
-import play.api.Logging
 import play.api.mvc.{Action, AnyContent, ControllerComponents, EssentialAction}
 import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
@@ -49,8 +48,7 @@ class SubmissionController @Inject() (
   xmlBodyParsers:             XmlBodyParsers,
   submissionService:          SubmissionService,
   eisService:                 EisService
-) extends BackendController(cc)
-    with Logging:
+) extends BackendController(cc):
 
   import SubmissionController.eitherTAesErrorWiden
   import writeables.NodeSeqFormattedWriteables.writeableOfFormattedNodeSeq
