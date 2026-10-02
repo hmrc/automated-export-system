@@ -47,7 +47,7 @@ object EisIE507RequestHeaders:
   ): EisIE507RequestHeaders =
     EisIE507RequestHeaders(
       correlationId,
-      HttpHeader.ForwardedHost("automated-export-system"),
+      HttpHeader.ForwardedHost("MDTP"),
       HttpHeader.MessageType("aesIE507Request"),
       HttpHeader.ContentType(MimeTypes.XML),
       HttpHeader.Accept(MimeTypes.XML),

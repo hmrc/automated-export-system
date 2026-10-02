@@ -24,6 +24,7 @@ import uk.gov.hmrc.automatedexportsystem.models.http.HttpHeader
 
 import java.time.*
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.{Inject, Singleton}
 
 @Singleton
@@ -36,11 +37,11 @@ class EisIE507Factory @Inject() (clock: Clock):
   ): EisIE507Request =
     val instantNow: Instant = Instant.now(clock)
 
+    val httpDateFormatter =
+      DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'UTC'", Locale.ENGLISH).withZone(ZoneOffset.UTC)
+
     val dateHeader: HttpHeader.Date =
-      HttpHeader.Date(
-        DateTimeFormatter.RFC_1123_DATE_TIME
-          .format(instantNow.atOffset(ZoneOffset.UTC))
-      )
+      HttpHeader.Date(httpDateFormatter.format(instantNow))
 
     val headers: EisIE507RequestHeaders =
       EisIE507RequestHeaders(HttpHeader.CorrelationId(correlationId.value), authorization, dateHeader)

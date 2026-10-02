@@ -56,7 +56,7 @@ class SubmissionControllerITSpec extends BaseISpec:
     val id2:             UUID          = UUID.fromString("4b10d823-4585-4f1e-bea5-d4bbe4605d6e")
     val instant:         Instant       = Instant.parse("2026-08-03T00:00:00.000Z")
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-03T00:00:00")
-    val rfc1123DateTime: String        = "Mon, 3 Aug 2026 00:00:00 GMT"
+    val rfc1123DateTime: String        = "Mon, 03 Aug 2026 00:00:00 UTC"
     val eisToken:        String        = "token"
     val bearerToken:     String        = s"Bearer $eisToken"
     val correlationId:   CorrelationId = CorrelationId("correlationId")
@@ -511,7 +511,7 @@ class SubmissionControllerITSpec extends BaseISpec:
     def eisPostRequestMappingBuilder(eisIE507MessageXml: Elem): MappingBuilder =
       post(urlEqualTo("/cds/aesIE507Request/v1"))
         .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(correlationId.value))
-        .withHeader(Helpers.X_FORWARDED_HOST, equalTo("automated-export-system"))
+        .withHeader(Helpers.X_FORWARDED_HOST, equalTo("MDTP"))
         .withHeader(CustomHeaderNames.X_MESSAGE_TYPE, equalTo("aesIE507Request"))
         .withHeader(Helpers.CONTENT_TYPE, equalTo(Helpers.XML))
         .withHeader(Helpers.ACCEPT, equalTo(Helpers.XML))

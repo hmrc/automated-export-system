@@ -21,7 +21,7 @@ import uk.gov.hmrc.automatedexportsystem.controllers.actions.request.{AesXmlPayl
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
 import uk.gov.hmrc.automatedexportsystem.services.XmlValidationService
-import play.api.Logging
+import play.api.Logger
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -30,8 +30,9 @@ import scala.xml.NodeSeq
 @Singleton
 class XmlValidationActionRefiner[T <: XmlValidationService] @Inject() (xmlValidationService: T)(using
   protected val executionContext: ExecutionContext
-) extends ActionRefiner[AesXmlPayloadRequest, ValidatedXmlRequest]
-  with Logging:
+) extends ActionRefiner[AesXmlPayloadRequest, ValidatedXmlRequest]:
+
+  private val logger:                                        Logger                                         = Logger(getClass)
   protected def refine[A](request: AesXmlPayloadRequest[A]): Future[Either[Result, ValidatedXmlRequest[A]]] =
     val xml: NodeSeq = request.xml
 

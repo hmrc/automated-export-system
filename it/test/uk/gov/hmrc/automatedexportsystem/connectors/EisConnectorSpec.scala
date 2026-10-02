@@ -45,7 +45,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
     val eoriNumber:      EoriNumber    = EoriNumber("eoriNumber")
     val correlationId:   CorrelationId = CorrelationId("correlationId")
     val dateTime:        LocalDateTime = LocalDateTime.parse("2026-08-29T00:00:00")
-    val rfc1123DateTime: String        = "Sat, 29 Aug 2026 00:00:00 GMT"
+    val rfc1123DateTime: String        = "Sat, 29 Aug 2026 00:00:00 UTC"
     val bearerToken:     String        = "Bearer token"
 
     val correlationIdHeader: HttpHeader.CorrelationId = HttpHeader.CorrelationId(correlationId.value)
@@ -155,7 +155,7 @@ class EisConnectorSpec extends BaseISpec with TableDrivenPropertyChecks:
   def eisPostRequestMappingBuilder: MappingBuilder =
     post(urlEqualTo("/cds/aesIE507Request/v1"))
       .withHeader(CustomHeaderNames.X_CORRELATION_ID, equalTo(TestData.correlationId.value))
-      .withHeader(Helpers.X_FORWARDED_HOST, equalTo("automated-export-system"))
+      .withHeader(Helpers.X_FORWARDED_HOST, equalTo("MDTP"))
       .withHeader(CustomHeaderNames.X_MESSAGE_TYPE, equalTo("aesIE507Request"))
       .withHeader(Helpers.CONTENT_TYPE, equalTo(Helpers.XML))
       .withHeader(Helpers.ACCEPT, equalTo(Helpers.XML))
