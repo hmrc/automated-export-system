@@ -40,7 +40,7 @@ class AesAuthRequestRefiner @Inject() (idGenerator: IdGenerator)(using protected
             request.headers
               .get(CustomHeaderNames.X_CORRELATION_ID)
               .map(CorrelationId.apply)
-              .getOrElse(CorrelationId(idGenerator.generate35Char))
+              .getOrElse(CorrelationId(idGenerator.generateNoHyphen))
 
           Right(AesAuthRequest(EoriNumber(eori), correlationId, request))
         case None =>

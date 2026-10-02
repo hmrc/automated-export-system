@@ -163,7 +163,9 @@ class SubmissionControllerSpec extends BaseSpec, AllMocks:
       XmlValidationActionRefiner(xmlValidationService)
 
     val idGenerator: IdGenerator = mock[IdGenerator]
-    when(idGenerator.generate35Char).thenReturn(TestData.correlationId.value)
+
+    when(idGenerator.generateNoHyphen).thenReturn(TestData.correlationId.value)
+
     val aesIE507ActionRefiner: AesIE507ActionRefiner = AesIE507ActionRefiner()
 
     val aesAuthAction: AesAuthAction =

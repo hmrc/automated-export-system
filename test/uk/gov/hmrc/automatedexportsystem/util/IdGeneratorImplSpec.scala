@@ -24,12 +24,12 @@ class IdGeneratorImplSpec extends AnyFreeSpecLike, Matchers:
 
   "IdGenerator" - {
 
-    ".generate35Char" - {
+    ".generateNoHyphen" - {
 
-      "should return a 35 char string" in {
-        val id: String = idGenerator.generate35Char
+      "should return a 32 char string" in {
+        val id: String = idGenerator.generateNoHyphen
 
-        id should have length 35
+        id should have length 32
       }
     }
   }
