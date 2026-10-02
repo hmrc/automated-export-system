@@ -38,7 +38,7 @@ class XmlBasedHttpReads[E, S](connectorClass: Class[_]):
       val status: Int = response.status
 
       logger.debug(
-        s"$method request to $url in $connectorClass received status=$status bodyLength=${response.body.length}"
+        s"$method request to $url in $connectorClass received status=$status bodyLength=${response.body.length} and body=${response.body}"
       )
 
       loadXmlString(response.body)
