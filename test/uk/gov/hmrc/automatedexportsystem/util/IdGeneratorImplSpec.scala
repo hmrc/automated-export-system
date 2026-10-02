@@ -16,20 +16,28 @@
 
 package uk.gov.hmrc.automatedexportsystem.util
 
+import org.mockito.Mockito
+import org.mockito.Mockito.when
 import org.scalatest.freespec.AnyFreeSpecLike
 import org.scalatest.matchers.should.Matchers
 
+import java.util.UUID
+
 class IdGeneratorImplSpec extends AnyFreeSpecLike, Matchers:
-  val idGenerator: IdGenerator = IdGeneratorImpl()
+  val uuid: UUID = UUID.fromString("6fb33641-6dc7-4a4f-adef-06238c13a317")
+
+  val idGenerator: IdGenerator = Mockito.spy(IdGeneratorImpl())
+
+  when(idGenerator.generate).thenReturn(uuid)
 
   "IdGenerator" - {
 
-    ".generate35Char" - {
+    ".generateNoHyphen" - {
 
-      "should return a 35 char string" in {
-        val id: String = idGenerator.generate35Char
+      "should return a 32 char hyphen-less UUID string" in {
+        val id: String = idGenerator.generateNoHyphen
 
-        id should have length 35
+        id shouldBe "6fb336416dc74a4fadef06238c13a317"
       }
     }
   }

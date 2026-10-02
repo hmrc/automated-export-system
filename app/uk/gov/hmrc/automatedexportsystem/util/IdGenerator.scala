@@ -25,9 +25,9 @@ import javax.inject.Singleton
 trait IdGenerator:
   def generate: UUID
 
-  def generate35Char: String
+  def generateNoHyphen: String
 @Singleton
 class IdGeneratorImpl extends IdGenerator:
   def generate: UUID = UUID.randomUUID()
 
-  def generate35Char: String = generate.toString.init
+  def generateNoHyphen: String = generate.toString.filter(_ != '-')

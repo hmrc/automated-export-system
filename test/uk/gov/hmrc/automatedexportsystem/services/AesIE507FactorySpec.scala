@@ -59,7 +59,7 @@ class AesIE507FactorySpec extends AnyFreeSpecLike, Matchers, MockitoSugar:
     val clock: Clock = Clock.fixed(TestData.instant, ZoneOffset.UTC)
 
     val idGenerator: IdGenerator = mock[IdGenerator]
-    when(idGenerator.generate35Char).thenReturn(TestData.correlationId.value)
+    when(idGenerator.generateNoHyphen).thenReturn(TestData.correlationId.value)
 
     val aesIE507Factory: AesIE507Factory = AesIE507Factory(clock, idGenerator)
   end Setup

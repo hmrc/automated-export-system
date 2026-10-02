@@ -27,7 +27,7 @@ import scala.concurrent.duration.DurationInt
 
 class AesAuthRequestRefinerSpec extends BaseSpec:
   private val mockIdGenerator = mock[IdGenerator]
-  when(mockIdGenerator.generate35Char).thenReturn("correlationId")
+  when(mockIdGenerator.generateNoHyphen).thenReturn("correlationId")
   private val refiner = new AesAuthRequestRefiner(mockIdGenerator)
   private val eori    = EoriNumber("GB123456789000")
 

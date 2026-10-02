@@ -53,7 +53,7 @@ class AesAuthActionSpec extends BaseSpec with AllMocks {
       when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any()))
         .thenReturn(Future.successful(enrolments))
 
-      when(idGenerator.generate35Char).thenReturn(correlationId)
+      when(idGenerator.generateNoHyphen).thenReturn(correlationId)
 
       val action: Action[AnyContent] = stubControllerComponents().actionBuilder.apply { (_: Request[AnyContent]) =>
         Results.Ok(Json.obj("EORINumber" -> eori))
@@ -105,7 +105,7 @@ class AesAuthActionSpec extends BaseSpec with AllMocks {
       when(mockAuthConnector.authorise[Enrolments](any(), any())(any(), any()))
         .thenReturn(Future.successful(enrolments))
 
-      when(idGenerator.generate35Char).thenReturn(correlationId)
+      when(idGenerator.generateNoHyphen).thenReturn(correlationId)
 
       val action: Action[AnyContent] = stubControllerComponents().actionBuilder.apply { (_: Request[AnyContent]) =>
         Results.Ok(Json.obj("EORINumber" -> eori))
