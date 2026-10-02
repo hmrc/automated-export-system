@@ -35,12 +35,17 @@ final case class EisIE507Header(
 object EisIE507Header:
   given eisIE507HeaderTag: XmlRootTag[EisIE507Header] = XmlRootTag("Header")
 
+  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+  extension (dateTime: LocalDateTime)
+    private def toXmlDateTime(label: String): NodeSeq =
+      dateTime.format(formatter).toXml(label)
+
   given eisIE507HeaderXmlWriter: XmlWriter[EisIE507Header] =
     (o, label) =>
       val children: NodeSeq =
         o.messageSender.toXml("messageSender")
           ++ o.messageRecipient.toXml("messageRecipient")
-          ++ o.preparationDateAndTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).toXml("preparationDateAndTime")
+          ++ o.preparationDateAndTime.toXmlDateTime("preparationDateAndTime")
           ++ o.messageIdentification.toXml("messageIdentification")
           ++ o.messageType.toXml("messageType")
 
