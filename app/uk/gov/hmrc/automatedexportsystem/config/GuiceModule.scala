@@ -19,6 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.config
 import com.google.inject.AbstractModule
 import play.api.libs.concurrent.PekkoGuiceSupport
 import play.api.{Configuration, Environment}
+import uk.gov.hmrc.automatedexportsystem.tasks.UnresolvedNotificationsTask
 
 import java.time.Clock
 import scala.annotation.unused
@@ -28,5 +29,7 @@ class GuiceModule(
   @unused configuration: Configuration
 ) extends AbstractModule
     with PekkoGuiceSupport:
-  override def configure(): Unit =
+  override def configure(): Unit = {
     bind(classOf[Clock]).toInstance(Clock.systemUTC())
+    bind(classOf[UnresolvedNotificationsTask]).asEagerSingleton()
+  }

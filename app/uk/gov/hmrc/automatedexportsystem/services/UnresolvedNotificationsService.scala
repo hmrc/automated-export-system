@@ -83,4 +83,4 @@ class UnresolvedNotificationsService @Inject() (
         "lastDateUpdated" -> unresolvedEvent.dateUpdated.atZone(ZoneOffset.UTC)
       ).map { case (k, v) => s"$k: $v" }.mkString(", ")
 
-    logger.info(s"Unresolved notification event has been resolved. $context")
+    logger.warn(s"Unresolved notification event has been resolved. $context")
