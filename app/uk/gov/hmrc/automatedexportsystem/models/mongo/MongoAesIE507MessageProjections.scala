@@ -20,6 +20,8 @@ import com.mongodb.client.model.Projections
 import org.mongodb.scala.Document
 import org.mongodb.scala.bson.conversions.Bson
 
+import java.time.Instant
+
 object MongoAesIE507MessageProjections:
   val summaryProjection: Bson = Projections.fields(
     Projections.include("submissionId"),
@@ -50,3 +52,29 @@ object MongoAesIE507MessageProjections:
     ),
     Projections.excludeId()
   )
+
+  def unresolvedNotificationsProjection(lastUpdatedBefore: Instant): Bson =
+    Projections.fields(
+      Projections.include("eoriNumber"),
+      Projections.computed("mrn", "$exportOperation.mrn"),
+      Projections.computed(
+        "unresolvedEvents",
+        Document(s"""{
+             |  "$$filter": {
+             |    "input": "$$metadata",
+             |    "cond": {
+             |      "$$and": [
+             |        { "$$eq": [ "$$$$this.isPending", true ] },
+             |        { "$$lte": [
+             |          "$$$$this.dateUpdated",
+             |          { "$$date": {
+             |            "$$numberLong": "${lastUpdatedBefore.toEpochMilli}"
+             |          } }
+             |        ] }
+             |      ]
+             |    }
+             |  }
+             |}""".stripMargin)
+      ),
+      Projections.excludeId()
+    )

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.automatedexportsystem.services
 
 import cats.data.EitherT
+import com.google.inject.ImplementedBy
 import uk.gov.hmrc.automatedexportsystem.errors.{AesErrorMapper, MongoError, SubmissionServiceError}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
@@ -30,6 +31,7 @@ import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@ImplementedBy(classOf[SubmissionServiceImpl])
 trait SubmissionService:
   def submitMessage(
     message:             AesIE507Message,

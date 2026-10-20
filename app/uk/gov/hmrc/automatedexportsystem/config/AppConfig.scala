@@ -19,6 +19,7 @@ package uk.gov.hmrc.automatedexportsystem.config
 import play.api.Configuration
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.FiniteDuration
 
 @Singleton
 class AppConfig @Inject() (config: Configuration):
@@ -33,3 +34,9 @@ class AppConfig @Inject() (config: Configuration):
   lazy val notificationToken: String = config.get[String]("microservice.services.notification.bearerToken")
 
   lazy val eisToken: String = config.get[String]("microservice.services.eis.bearerToken")
+
+  lazy val unresolvedNotificationsSchedulerInterval: FiniteDuration =
+    config.get[FiniteDuration]("scheduler.unresolvedNotifications.intervalInSeconds")
+
+  lazy val unresolvedNotificationsDocumentMaxPendingTime: FiniteDuration =
+    config.get[FiniteDuration]("scheduler.unresolvedNotifications.documentMaxPendingTimeInSeconds")

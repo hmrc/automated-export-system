@@ -31,7 +31,7 @@ import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerato
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
-import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
+import uk.gov.hmrc.automatedexportsystem.models.mongo.read.{MongoAesIE507MessageSummary, MongoAesIE507MessageUnresolvedNotifications}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
@@ -892,6 +892,155 @@ class AesIE507RepositoryISpec
             s"No document found for EORI: ${TestData.eoriNumber.value}, MRN: ${TestData.mrn.value}, where" +
               s" the most recent notification event with correlationId: ${TestData.correlationId.value} is diverted"
           )
+        }
+      }
+    }
+
+    ".getUnresolvedNotificationsMessages" - {
+
+      "should return all documents in the collection with pending notification events that have been last updated before the given time" in {
+        val mongoAesIE507Message1: MongoAesIE507Message =
+          arbitrary[MongoAesIE507Message]
+            .withEori(TestData.eoriNumber)
+            .withMrn(TestData.mrn)
+            .sample
+            .value
+
+        val otherEoriNumber: EoriNumber = EoriNumber("otherEoriNumber")
+        val otherMrn:        Mrn        = Mrn("otherMrn")
+
+        val mongoAesIE507Message2: MongoAesIE507Message =
+          arbitrary[MongoAesIE507Message]
+            .withEori(otherEoriNumber)
+            .withMrn(otherMrn)
+            .sample
+            .value
+
+        val mongoAesIE507Message3: MongoAesIE507Message =
+          arbitrary[MongoAesIE507Message].sample.value
+
+        val unresolvedNotificationEvent1: NotificationEvent =
+          NotificationEvent(
+            correlationId = TestData.correlationId,
+            dateCreated = TestData.instant,
+            dateUpdated = TestData.instant,
+            isPending = true,
+            status = NotificationEventStatus.Awaiting,
+            errors = None
+          )
+
+        val otherCorrelationId: CorrelationId = CorrelationId("otherCorrelationId")
+
+        val unresolvedNotificationEvent2: NotificationEvent =
+          NotificationEvent(
+            correlationId = otherCorrelationId,
+            dateCreated = TestData.instant.minusMillis(2),
+            dateUpdated = TestData.instant.minusMillis(1),
+            isPending = true,
+            status = NotificationEventStatus.Awaiting,
+            errors = None
+          )
+
+        val notificationEvent1: NotificationEvent =
+          NotificationEvent(
+            correlationId = TestData.correlationId,
+            dateCreated = TestData.instant,
+            dateUpdated = TestData.instant.plusMillis(1),
+            isPending = true,
+            status = NotificationEventStatus.Accepted,
+            errors = None
+          )
+
+        val notificationEvent2: NotificationEvent =
+          NotificationEvent(
+            correlationId = otherCorrelationId,
+            dateCreated = TestData.instant.minusMillis(1),
+            dateUpdated = TestData.instant.minusMillis(1),
+            isPending = false,
+            status = NotificationEventStatus.Accepted,
+            errors = None
+          )
+
+        val mongoAesIE507UnresolvedNotificationsMessages: NonEmptyList[MongoAesIE507Message] =
+          NonEmptyList.of(
+            mongoAesIE507Message1.copy(metadata =
+              NonEmptyList.of(
+                notificationEvent1,
+                unresolvedNotificationEvent1,
+                unresolvedNotificationEvent2
+              )
+            ),
+            mongoAesIE507Message2.copy(metadata =
+              NonEmptyList.of(
+                unresolvedNotificationEvent2
+              )
+            )
+          )
+
+        val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
+          mongoAesIE507UnresolvedNotificationsMessages.toList
+            :+ mongoAesIE507Message3.copy(metadata = NonEmptyList.one(notificationEvent2))
+
+        repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
+
+        val mongoAesIE507MessageUnresolvedNotifications1: MongoAesIE507MessageUnresolvedNotifications =
+          MongoAesIE507MessageUnresolvedNotifications(
+            eoriNumber = TestData.eoriNumber,
+            mrn = TestData.mrn,
+            unresolvedEvents = NonEmptyList.of(
+              unresolvedNotificationEvent1,
+              unresolvedNotificationEvent2
+            )
+          )
+
+        val mongoAesIE507MessageUnresolvedNotifications2: MongoAesIE507MessageUnresolvedNotifications =
+          MongoAesIE507MessageUnresolvedNotifications(
+            eoriNumber = otherEoriNumber,
+            mrn = otherMrn,
+            unresolvedEvents = NonEmptyList.of(
+              unresolvedNotificationEvent2
+            )
+          )
+
+        val mongoAesIE507MessagesUnresolvedNotifications: List[MongoAesIE507MessageUnresolvedNotifications] =
+          List(mongoAesIE507MessageUnresolvedNotifications1, mongoAesIE507MessageUnresolvedNotifications2)
+
+        val result: List[MongoAesIE507MessageUnresolvedNotifications] =
+          repository
+            .getUnresolvedNotificationsMessages(TestData.instant)
+            .value
+            .futureValue
+            .value
+            .toList
+
+        result shouldBe mongoAesIE507MessagesUnresolvedNotifications
+      }
+
+      "should return a MongoError" - {
+
+        "when there is no document in the collection with pending notification events" in {
+          val notificationEvent: NotificationEvent =
+            NotificationEvent(
+              correlationId = TestData.correlationId,
+              dateCreated = TestData.instant,
+              dateUpdated = TestData.instant,
+              isPending = false,
+              status = NotificationEventStatus.Awaiting,
+              errors = None
+            )
+
+          val mongoAesIE507Messages: Seq[MongoAesIE507Message] =
+            Seq
+              .fill(3)(arbitrary[MongoAesIE507Message].sample)
+              .flatten
+              .map(_.copy(metadata = NonEmptyList.one(notificationEvent)))
+
+          repository.collection.insertMany(mongoAesIE507Messages).head().futureValue
+
+          val result: MongoError =
+            repository.getUnresolvedNotificationsMessages(TestData.instant).value.futureValue.left.value
+
+          result shouldBe MongoError.DocumentNotFound("No unresolved notifications messages found")
         }
       }
     }

@@ -33,7 +33,7 @@ import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
-import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageSummary
+import uk.gov.hmrc.automatedexportsystem.models.mongo.read.{MongoAesIE507MessageSummary, MongoAesIE507MessageUnresolvedNotifications}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProjections, SingleUpdateStatus}
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
@@ -87,6 +87,10 @@ trait AesIE507Repository:
     notificationEvent: NotificationEvent
   ): EitherT[Future, MongoError, SingleUpdateStatus]
 
+  def getUnresolvedNotificationsMessages(
+    lastUpdatedBefore: Instant
+  ): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageUnresolvedNotifications]]
+
 @Singleton
 class AesIE507RepositoryImpl @Inject() (
   mongoComponent: MongoComponent,
@@ -105,6 +109,9 @@ class AesIE507RepositoryImpl @Inject() (
             .unique(true)
         ),
         IndexModel(
+          Indexes.ascending("metadata.isPending")
+        ),
+        IndexModel(
           Indexes.ascending("updatedAt"),
           IndexOptions().expireAfter(appConfig.documentTtl, TimeUnit.SECONDS)
         ),
@@ -117,6 +124,7 @@ class AesIE507RepositoryImpl @Inject() (
       ),
       extraCodecs = Seq(
         Codecs.playFormatCodec(MongoAesIE507MessageSummary.mongoFormat),
+        Codecs.playFormatCodec(MongoAesIE507MessageUnresolvedNotifications.mongoFormat),
         Codecs.playFormatCodec(NotificationEvent.mongoFormat),
         Codecs.playFormatCodec(NotificationError.mongoFormat)
       )
@@ -179,6 +187,7 @@ class AesIE507RepositoryImpl @Inject() (
           }
         )
     }
+  end getMessage
 
   def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, SingleUpdateStatus] =
     val sid: String = submission.submissionId.value.toString
@@ -215,6 +224,7 @@ class AesIE507RepositoryImpl @Inject() (
           )
         )
     }
+  end submit
 
   def cancel(
     eori:                          EoriNumber,
@@ -291,6 +301,7 @@ class AesIE507RepositoryImpl @Inject() (
           )
         )
     }
+  end cancel
 
   def getMessageByNotification(
     eori:          EoriNumber,
@@ -329,6 +340,7 @@ class AesIE507RepositoryImpl @Inject() (
           }
         )
     }
+  end getMessageByNotification
 
   def updateNotification(
     eori:          EoriNumber,
@@ -344,8 +356,13 @@ class AesIE507RepositoryImpl @Inject() (
       Filters.and(
         Filters.eq("eoriNumber", eori.value),
         Filters.eq("exportOperation.mrn", mrn.value),
-        Filters.eq("metadata.correlationId", correlationId.value),
-        Filters.eq("metadata.isPending", true)
+        Filters.elemMatch(
+          "metadata",
+          Filters.and(
+            Filters.eq("correlationId", correlationId.value),
+            Filters.eq("isPending", true)
+          )
+        )
       )
 
     val errorsUpdate: Bson =
@@ -403,6 +420,7 @@ class AesIE507RepositoryImpl @Inject() (
           )
         )
     }
+  end updateNotification
 
   def pushNotificationAfterDiversion(
     eori:              EoriNumber,
@@ -493,6 +511,49 @@ class AesIE507RepositoryImpl @Inject() (
           )
         )
     }
+  end pushNotificationAfterDiversion
+
+  def getUnresolvedNotificationsMessages(
+    lastUpdatedBefore: Instant
+  ): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageUnresolvedNotifications]] =
+    val operationName: String = "genUnresolvedNotificationsMessages"
+
+    val pipeline: Seq[Bson] =
+      Seq(
+        Aggregates.filter(
+          Filters.elemMatch(
+            "metadata",
+            Filters.and(
+              Filters.eq("isPending", true),
+              Filters.lte("dateUpdated", lastUpdatedBefore)
+            )
+          )
+        ),
+        Aggregates.project(
+          MongoAesIE507MessageProjections.unresolvedNotificationsProjection(lastUpdatedBefore)
+        )
+      )
+
+    retryOperation(
+      operationName,
+      context = Map.empty
+    ) {
+      collection
+        .aggregate[MongoAesIE507MessageUnresolvedNotifications](pipeline)
+        .toFuture()
+        .map(messages =>
+          NonEmptyList
+            .fromList(messages.toList)
+            .toRight(
+              documentNotFound(
+                operationName,
+                context = Map.empty,
+                details = "No unresolved notifications messages found"
+              )
+            )
+        )
+    }
+  end getUnresolvedNotificationsMessages
 
   private def documentNotFound(
     operationName: String,
