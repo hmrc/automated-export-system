@@ -27,6 +27,7 @@ import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
 import org.mongodb.scala.result.UpdateResult
 import org.mongodb.scala.{Document, MongoCollection, MongoException, bson}
+import com.mongodb.{ErrorCategory, MongoWriteException}
 import play.api.Logging
 import play.api.libs.json.Json
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
@@ -190,8 +191,8 @@ class AesIE507RepositoryImpl @Inject() (
   end getMessage
 
   def submit(submission: MongoAesIE507Message): EitherT[Future, MongoError, SingleUpdateStatus] =
-    val sid: String = submission.submissionId.value.toString
-
+    val sid:           String = submission.submissionId.value.toString
+    val eori:          String = submission.eoriNumber.value
     val operationName: String = "submitUpsert"
 
     retryOperation(
@@ -200,7 +201,10 @@ class AesIE507RepositoryImpl @Inject() (
     ) {
       collection
         .replaceOne(
-          Filters.eq("submissionId", sid),
+          Filters.and(
+            Filters.eq("submissionId", sid),
+            Filters.eq("eoriNumber", eori)
+          ),
           submission,
           ReplaceOptions().upsert(true)
         )
@@ -210,7 +214,7 @@ class AesIE507RepositoryImpl @Inject() (
             updateResult,
             operationName,
             context = Map(
-              "eoriNumber"   -> submission.eoriNumber.value,
+              "eoriNumber"   -> eori,
               "submissionId" -> sid
             )
           )(acknowledgedUpdateResult =>
@@ -223,6 +227,14 @@ class AesIE507RepositoryImpl @Inject() (
             Right(updateStatus)
           )
         )
+        .recover {
+          case e: MongoWriteException if e.getError.getCategory == ErrorCategory.DUPLICATE_KEY =>
+            Left(
+              MongoError.DocumentNotFound(
+                s"No match for submissionId: $sid and eori: $eori"
+              )
+            )
+        }
     }
   end submit
 
