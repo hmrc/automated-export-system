@@ -24,7 +24,7 @@ import uk.gov.hmrc.automatedexportsystem.controllers.actions.*
 import uk.gov.hmrc.automatedexportsystem.controllers.parsers.XmlBodyParsers
 import uk.gov.hmrc.automatedexportsystem.errors.{AesError, ResponseCode}
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.{AesIE507Message, SubmissionId}
-import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType}
+import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber}
 import uk.gov.hmrc.automatedexportsystem.models.eis.EisErrorResponse
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
 import uk.gov.hmrc.automatedexportsystem.models.responses.AesErrorResponse.toErrorResponse
@@ -73,7 +73,7 @@ class SubmissionController @Inject() (
         submissionService
           .submitMessage(
             aesIE507Message,
-            ExportOperationType.Standard,
+            aesIE507Message.exportOperation.exportOperationType,
             eoriNumber,
             correlationId
           )
