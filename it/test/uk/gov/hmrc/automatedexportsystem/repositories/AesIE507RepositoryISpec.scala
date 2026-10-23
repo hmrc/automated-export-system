@@ -124,7 +124,9 @@ class AesIE507RepositoryISpec
               .value
 
           val mongoAesIE507MessageReplacement: MongoAesIE507Message =
-            mongoAesIE507Message.copy(updatedAt = mongoAesIE507Message.updatedAt.plusMillis(1))
+            mongoAesIE507Message.copy(
+              updatedAt = mongoAesIE507Message.updatedAt.plusMillis(1)
+            )
 
           repository.collection.insertOne(mongoAesIE507Message).head().futureValue
 
@@ -243,6 +245,31 @@ class AesIE507RepositoryISpec
           val error: MongoError = MongoError.DocumentNotFound(s"No documents found for EORI: ${TestData.eoriNumber.value}")
 
           result shouldBe error
+        }
+
+        "when there is a matching submissionId but different eori in the collection" in {
+          val mongoAesIE507Message: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message]
+              .withSubmissionId(TestData.submissionId)
+              .sample
+              .value
+
+          val differentEori = EoriNumber("different-eori-number")
+          val mongoAesIE507MessageReplacement: MongoAesIE507Message =
+            mongoAesIE507Message.copy(
+              updatedAt = mongoAesIE507Message.updatedAt.plusMillis(1),
+              eoriNumber = differentEori
+            )
+          repository.collection.insertOne(mongoAesIE507Message).head().futureValue
+          val result: Either[MongoError, SingleUpdateStatus] =
+            repository.submit(mongoAesIE507MessageReplacement).value.futureValue
+
+          result shouldBe Left(
+            MongoError.DocumentNotFound(s"No match for submissionId: ${TestData.submissionId.value} and eori: ${differentEori.value}")
+          )
+
+          find(Filters.eq("submissionId", TestData.submissionId.value.toString)).futureValue shouldBe
+            Seq(mongoAesIE507Message)
         }
       }
     }
