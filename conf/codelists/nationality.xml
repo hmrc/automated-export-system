@@ -1,26 +1,1454 @@
 <!--Placeholder XML dummy data !-->
 <codeList>
     <item>
-        <name>GB</name>
-        <description>British</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <name>AD</name>
+        <description>Andorra</description>
+        <startDate>2025-11-01T00:00:00</startDate>
     </item>
 
     <item>
-        <name>IE</name>
-        <description>Irish</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <name>AE</name>
+        <description>United Arab Emirates</description>
+        <startDate>2025-11-01T00:00:00</startDate>
     </item>
 
     <item>
-        <name>FR</name>
-        <description>French</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <name>AF</name>
+        <description>Afghanistan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AG</name>
+        <description>Antigua and Barbuda</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AI</name>
+        <description>Anguilla</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AL</name>
+        <description>Albania</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AM</name>
+        <description>Armenia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AO</name>
+        <description>Angola</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AQ</name>
+        <description>Antarctica</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AR</name>
+        <description>Argentina</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AS</name>
+        <description>American Samoa</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AT</name>
+        <description>Austria</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AU</name>
+        <description>Australia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AW</name>
+        <description>Aruba</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AZ</name>
+        <description>Azerbaijan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BA</name>
+        <description>Bosnia and Herzegovina</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BB</name>
+        <description>Barbados</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BD</name>
+        <description>Bangladesh</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BE</name>
+        <description>Belgium</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BF</name>
+        <description>Burkina Faso</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BG</name>
+        <description>Bulgaria</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BH</name>
+        <description>Bahrain</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BI</name>
+        <description>Burundi</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BJ</name>
+        <description>Benin</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BL</name>
+        <description>Saint Barthélemy</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BM</name>
+        <description>Bermuda</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BN</name>
+        <description>Brunei Darussalam</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BO</name>
+        <description>Bolivia, Plurinational State of</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BQ</name>
+        <description>Bonaire, Sint Eustatius and Saba</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BR</name>
+        <description>Brazil</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BS</name>
+        <description>Bahamas</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BT</name>
+        <description>Bhutan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BV</name>
+        <description>Bouvet Island</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BW</name>
+        <description>Botswana</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BY</name>
+        <description>Belarus</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BZ</name>
+        <description>Belize</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CA</name>
+        <description>Canada</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CC</name>
+        <description>Cocos Islands (or Keeling Islands)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CD</name>
+        <description>Congo, Democratic Republic of</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CF</name>
+        <description>Central African Republic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CG</name>
+        <description>Congo</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CH</name>
+        <description>Switzerland</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CI</name>
+        <description>Côte d&apos;Ivoire</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CK</name>
+        <description>Cook Islands</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CL</name>
+        <description>Chile</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CM</name>
+        <description>Cameroon</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CN</name>
+        <description>China</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CO</name>
+        <description>Colombia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CR</name>
+        <description>Costa Rica</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CU</name>
+        <description>Cuba</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CV</name>
+        <description>Cape Verde</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CW</name>
+        <description>Curaçao</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CX</name>
+        <description>Christmas Island</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CY</name>
+        <description>Cyprus</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CZ</name>
+        <description>Czechia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
     </item>
 
     <item>
         <name>DE</name>
-        <description>German</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <description>Germany</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DJ</name>
+        <description>Djibouti</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DK</name>
+        <description>Denmark</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DM</name>
+        <description>Dominica</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DO</name>
+        <description>Dominican Republic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DZ</name>
+        <description>Algeria</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EC</name>
+        <description>Ecuador</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EE</name>
+        <description>Estonia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EG</name>
+        <description>Egypt</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EH</name>
+        <description>Western Sahara</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ER</name>
+        <description>Eritrea</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ES</name>
+        <description>Spain</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ET</name>
+        <description>Ethiopia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FI</name>
+        <description>Finland</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FJ</name>
+        <description>Fiji</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FK</name>
+        <description>Falkland Islands</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FM</name>
+        <description>Micronesia, Federated States of</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FO</name>
+        <description>Faroe Islands</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FR</name>
+        <description>France</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GA</name>
+        <description>Gabon</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GB</name>
+        <description>United Kingdom</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GD</name>
+        <description>Grenada</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GE</name>
+        <description>Georgia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GH</name>
+        <description>Ghana</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GI</name>
+        <description>Gibraltar</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GL</name>
+        <description>Greenland</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GM</name>
+        <description>Gambia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GN</name>
+        <description>Guinea</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GQ</name>
+        <description>Equatorial Guinea</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GR</name>
+        <description>Greece</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GS</name>
+        <description>South Georgia and South Sandwich</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GT</name>
+        <description>Guatemala</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GU</name>
+        <description>Guam</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GW</name>
+        <description>Guinea-Bissau</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GY</name>
+        <description>Guyana</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HK</name>
+        <description>Hong Kong</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HM</name>
+        <description>Heard Island and McDonald Islands</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HN</name>
+        <description>Honduras</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HR</name>
+        <description>Croatia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HT</name>
+        <description>Haiti</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HU</name>
+        <description>Hungary</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ID</name>
+        <description>Indonesia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IE</name>
+        <description>Ireland</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IL</name>
+        <description>Israel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IN</name>
+        <description>India</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IO</name>
+        <description>British Indian Ocean Territory</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IQ</name>
+        <description>Iraq</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IR</name>
+        <description>Iran, Islamic Republic of</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IS</name>
+        <description>Iceland</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IT</name>
+        <description>Italy</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>JM</name>
+        <description>Jamaica</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>JO</name>
+        <description>Jordan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>JP</name>
+        <description>Japan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KE</name>
+        <description>Kenya</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KG</name>
+        <description>Kyrgyzstan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KH</name>
+        <description>Cambodia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KI</name>
+        <description>Kiribati</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KM</name>
+        <description>Comoros</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KN</name>
+        <description>St Kitts and Nevis</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KP</name>
+        <description>Korea, Democratic People’s Republic of</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KR</name>
+        <description>Korea, Republic of</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KW</name>
+        <description>Kuwait</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KY</name>
+        <description>Cayman Islands</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KZ</name>
+        <description>Kazakhstan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LA</name>
+        <description>Lao People’s Democratic Republic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LB</name>
+        <description>Lebanon</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LC</name>
+        <description>St Lucia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LI</name>
+        <description>Liechtenstein</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LK</name>
+        <description>Sri Lanka</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LR</name>
+        <description>Liberia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LS</name>
+        <description>Lesotho</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LT</name>
+        <description>Lithuania</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LU</name>
+        <description>Luxembourg</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LV</name>
+        <description>Latvia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LY</name>
+        <description>Libya</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MA</name>
+        <description>Morocco</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MD</name>
+        <description>Moldova, Republic of</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ME</name>
+        <description>Montenegro</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MG</name>
+        <description>Madagascar</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MH</name>
+        <description>Marshall Islands</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MK</name>
+        <description>North Macedonia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ML</name>
+        <description>Mali</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MM</name>
+        <description>Myanmar</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MN</name>
+        <description>Mongolia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MO</name>
+        <description>Macao</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MP</name>
+        <description>Northern Mariana Islands</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MR</name>
+        <description>Mauritania</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MS</name>
+        <description>Montserrat</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MT</name>
+        <description>Malta</description>
+        <startDate>2024-02-21T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MU</name>
+        <description>Mauritius</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MV</name>
+        <description>Maldives</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MW</name>
+        <description>Malawi</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MX</name>
+        <description>Mexico</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MY</name>
+        <description>Malaysia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MZ</name>
+        <description>Mozambique</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NA</name>
+        <description>Namibia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NC</name>
+        <description>New Caledonia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NE</name>
+        <description>Niger</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NF</name>
+        <description>Norfolk Island</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NG</name>
+        <description>Nigeria</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NI</name>
+        <description>Nicaragua</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NL</name>
+        <description>Netherlands</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NO</name>
+        <description>Norway</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NP</name>
+        <description>Nepal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NR</name>
+        <description>Nauru</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NU</name>
+        <description>Niue</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NZ</name>
+        <description>New Zealand</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OM</name>
+        <description>Oman</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PA</name>
+        <description>Panama</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PE</name>
+        <description>Peru</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PF</name>
+        <description>French Polynesia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PG</name>
+        <description>Papua New Guinea</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PH</name>
+        <description>Philippines</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PK</name>
+        <description>Pakistan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PL</name>
+        <description>Poland</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PM</name>
+        <description>St Pierre and Miquelon</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PN</name>
+        <description>Pitcairn</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PS</name>
+        <description>Occupied Palestinian Territory</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PT</name>
+        <description>Portugal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PW</name>
+        <description>Palau</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PY</name>
+        <description>Paraguay</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QA</name>
+        <description>Qatar</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QU</name>
+        <description>Countries and territories not specified</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RO</name>
+        <description>Romania</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RS</name>
+        <description>Serbia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RU</name>
+        <description>Russian Federation</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RW</name>
+        <description>Rwanda</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SA</name>
+        <description>Saudi Arabia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SB</name>
+        <description>Solomon Islands</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SC</name>
+        <description>Seychelles</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SD</name>
+        <description>Sudan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SE</name>
+        <description>Sweden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SG</name>
+        <description>Singapore</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SH</name>
+        <description>Saint Helena, Ascension and Tristan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SI</name>
+        <description>Slovenia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SK</name>
+        <description>Slovakia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SL</name>
+        <description>Sierra Leone</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SM</name>
+        <description>San Marino</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SN</name>
+        <description>Senegal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SO</name>
+        <description>Somalia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SR</name>
+        <description>Suriname</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SS</name>
+        <description>South Sudan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ST</name>
+        <description>Sao Tome and Principe</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SV</name>
+        <description>El Salvador</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SX</name>
+        <description>Sint Maarten (Dutch part)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SY</name>
+        <description>Syrian Arab Republic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SZ</name>
+        <description>Eswatini</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TC</name>
+        <description>Turks and Caicos Islands</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TD</name>
+        <description>Chad</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TF</name>
+        <description>French Southern Territories</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TG</name>
+        <description>Togo</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TH</name>
+        <description>Thailand</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TJ</name>
+        <description>Tajikistan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TK</name>
+        <description>Tokelau</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TL</name>
+        <description>Timor-Leste</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TM</name>
+        <description>Turkmenistan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TN</name>
+        <description>Tunisia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TO</name>
+        <description>Tonga</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TR</name>
+        <description>Türkiye</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TT</name>
+        <description>Trinidad and Tobago</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TV</name>
+        <description>Tuvalu</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TW</name>
+        <description>Taiwan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TZ</name>
+        <description>Tanzania, United Republic of</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>UA</name>
+        <description>Ukraine</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>UG</name>
+        <description>Uganda</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>UM</name>
+        <description>United States Minor Outlying Island</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>US</name>
+        <description>United States</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>UY</name>
+        <description>Uruguay</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>UZ</name>
+        <description>Uzbekistan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VA</name>
+        <description>Holy See (the)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VC</name>
+        <description>Saint Vincent and the Grenadines</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VE</name>
+        <description>Venezuela (Bolivarian Republic of)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VG</name>
+        <description>Virgin Islands (British)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VI</name>
+        <description>Virgin Islands, United States</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VN</name>
+        <description>Viet Nam</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VU</name>
+        <description>Vanuatu</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WF</name>
+        <description>Wallis and Futuna</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WS</name>
+        <description>Samoa</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XC</name>
+        <description>Ceuta</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XI</name>
+        <description>United Kingdom (Northern Ireland)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XK</name>
+        <description>Kosovo</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XL</name>
+        <description>Melilla</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XS</name>
+        <description>Serbia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YE</name>
+        <description>Yemen</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZA</name>
+        <description>South Africa</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZM</name>
+        <description>Zambia</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZW</name>
+        <description>Zimbabwe</description>
+        <startDate>2025-11-01T00:00:00</startDate>
     </item>
 </codeList>

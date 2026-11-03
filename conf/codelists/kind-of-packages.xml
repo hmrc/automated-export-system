@@ -1,0 +1,2438 @@
+<!--Placeholder XML dummy data !-->
+<codeList>
+    <item>
+        <name>1A</name>
+        <description>Drum, steel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>1B</name>
+        <description>Drum, aluminium</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>1D</name>
+        <description>Drum, plywood</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>1F</name>
+        <description>Container, flexible</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>1G</name>
+        <description>Drum, fibre</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>1W</name>
+        <description>Drum, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>2C</name>
+        <description>Barrel, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>3A</name>
+        <description>Jerrican, steel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>3H</name>
+        <description>Jerrican, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>43</name>
+        <description>Bag, super bulk</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>44</name>
+        <description>Bag, polybag</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>4A</name>
+        <description>Box, steel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>4B</name>
+        <description>Box, aluminium</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>4C</name>
+        <description>Box, natural wood</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>4D</name>
+        <description>Box, plywood</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>4F</name>
+        <description>Box, reconstituted wood</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>4G</name>
+        <description>Box, fibreboard</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>4H</name>
+        <description>Box, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>5H</name>
+        <description>Bag, woven plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>5L</name>
+        <description>Bag, textile</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>5M</name>
+        <description>Bag, paper</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>6H</name>
+        <description>Composite packaging, plastic receptacle</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>6P</name>
+        <description>Composite packaging, glass receptacle</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>7A</name>
+        <description>Case, car</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>7B</name>
+        <description>Case, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>8A</name>
+        <description>Pallet, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>8B</name>
+        <description>Crate, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>8C</name>
+        <description>Bundle, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AA</name>
+        <description>Intermediate bulk container, rigid plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AB</name>
+        <description>Receptacle, fibre</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AC</name>
+        <description>Receptacle, paper</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AD</name>
+        <description>Receptacle, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AE</name>
+        <description>Aerosol</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AF</name>
+        <description>Pallet, modular, collars 80cm * 60cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AG</name>
+        <description>Pallet, shrinkwrapped</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AH</name>
+        <description>Pallet, 100cm * 110cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AI</name>
+        <description>Clamshell</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AJ</name>
+        <description>Cone</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AL</name>
+        <description>Ball</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AM</name>
+        <description>Ampoule, non-protected</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AP</name>
+        <description>Ampoule, protected</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AT</name>
+        <description>Atomizer</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>AV</name>
+        <description>Capsule</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>B4</name>
+        <description>Belt</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BA</name>
+        <description>Barrel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BB</name>
+        <description>Bobbin</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BC</name>
+        <description>Bottlecrate / bottlerack</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BD</name>
+        <description>Board</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BE</name>
+        <description>Bundle</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BF</name>
+        <description>Balloon, non-protected</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BG</name>
+        <description>Bag</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BH</name>
+        <description>Bunch</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BI</name>
+        <description>Bin</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BJ</name>
+        <description>Bucket</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BK</name>
+        <description>Basket</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BL</name>
+        <description>Bale, compressed</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BM</name>
+        <description>Basin</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BN</name>
+        <description>Bale, non-compressed</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BO</name>
+        <description>Bottle, non-protected, cylindrical</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BP</name>
+        <description>Balloon, protected</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BQ</name>
+        <description>Bottle, protected cylindrical</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BR</name>
+        <description>Bar</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BS</name>
+        <description>Bottle, non-protected, bulbous</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BT</name>
+        <description>Bolt</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BU</name>
+        <description>Butt</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BV</name>
+        <description>Bottle, protected bulbous</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BW</name>
+        <description>Box, for liquids</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BX</name>
+        <description>Box</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BY</name>
+        <description>Board, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>BZ</name>
+        <description>Bars, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CA</name>
+        <description>Can, rectangular</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CB</name>
+        <description>Crate, beer</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CC</name>
+        <description>Churn</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CD</name>
+        <description>Can, with handle and spout</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CE</name>
+        <description>Creel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CF</name>
+        <description>Coffer</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CG</name>
+        <description>Cage</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CH</name>
+        <description>Chest</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CI</name>
+        <description>Canister</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CJ</name>
+        <description>Coffin</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CK</name>
+        <description>Cask</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CL</name>
+        <description>Coil</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CM</name>
+        <description>Card</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CN</name>
+        <description>Container, not otherwise specified as transport equipment</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CO</name>
+        <description>Carboy, non-protected</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CP</name>
+        <description>Carboy, protected</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CQ</name>
+        <description>Cartridge</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CR</name>
+        <description>Crate</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CS</name>
+        <description>Case</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CT</name>
+        <description>Carton</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CU</name>
+        <description>Cup</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CV</name>
+        <description>Cover</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CW</name>
+        <description>Cage, roll</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CX</name>
+        <description>Can, cylindrical</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CY</name>
+        <description>Cylinder</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>CZ</name>
+        <description>Canvas</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DA</name>
+        <description>Crate, multiple layer, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DB</name>
+        <description>Crate, multiple layer, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DC</name>
+        <description>Crate, multiple layer, cardboard</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DG</name>
+        <description>Cage, Commonwealth Handling Equipment Pool (CHEP)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DH</name>
+        <description>Box, Commonwealth Handling Equipment Pool (CHEP), Eurobox</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DI</name>
+        <description>Drum, iron</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DJ</name>
+        <description>Demijohn, non-protected</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DK</name>
+        <description>Crate, bulk, cardboard</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DL</name>
+        <description>Crate, bulk, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DM</name>
+        <description>Crate, bulk, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DN</name>
+        <description>Dispenser</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DP</name>
+        <description>Demijohn, protected</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DR</name>
+        <description>Drum</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DS</name>
+        <description>Tray, one layer no cover, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DT</name>
+        <description>Tray, one layer no cover, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DU</name>
+        <description>Tray, one layer no cover, polystyrene</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DV</name>
+        <description>Tray, one layer no cover, cardboard</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DW</name>
+        <description>Tray, two layers no cover, plastic tray</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DX</name>
+        <description>Tray, two layers no cover, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>DY</name>
+        <description>Tray, two layers no cover, cardboard</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EC</name>
+        <description>Bag, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ED</name>
+        <description>Case, with pallet base</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EE</name>
+        <description>Case, with pallet base, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EF</name>
+        <description>Case, with pallet base, cardboard</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EG</name>
+        <description>Case, with pallet base, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EH</name>
+        <description>Case, with pallet base, metal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EI</name>
+        <description>Case, isothermic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>EN</name>
+        <description>Envelope</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FB</name>
+        <description>Flexibag</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FC</name>
+        <description>Crate, fruit</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FD</name>
+        <description>Crate, framed</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FE</name>
+        <description>Flexitank</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FI</name>
+        <description>Firkin</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FL</name>
+        <description>Flask</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FO</name>
+        <description>Footlocker</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FP</name>
+        <description>Filmpack</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FR</name>
+        <description>Frame</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FT</name>
+        <description>Foodtainer</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FW</name>
+        <description>Cart, flatbed</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>FX</name>
+        <description>Bag, flexible container</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GB</name>
+        <description>Bottle, gas</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GI</name>
+        <description>Girder</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GL</name>
+        <description>Container, gallon</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GR</name>
+        <description>Receptacle, glass</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GU</name>
+        <description>Tray, containing horizontally stacked flat items</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GY</name>
+        <description>Bag, gunny</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>GZ</name>
+        <description>Girders, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HA</name>
+        <description>Basket, with handle, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HB</name>
+        <description>Basket, with handle, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HC</name>
+        <description>Basket, with handle, cardboard</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HG</name>
+        <description>Hogshead</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HN</name>
+        <description>Hanger</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>HR</name>
+        <description>Hamper</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IA</name>
+        <description>Package, display, wooden</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IB</name>
+        <description>Package, display, cardboard</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IC</name>
+        <description>Package, display, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ID</name>
+        <description>Package, display, metal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IE</name>
+        <description>Package, show</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IF</name>
+        <description>Package, flow</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IG</name>
+        <description>Package, paper wrapped</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IH</name>
+        <description>Drum, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IK</name>
+        <description>Package, cardboard, with bottle grip-holes</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IL</name>
+        <description>Tray, rigid, lidded stackable (CEN TS 14482:2002)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IN</name>
+        <description>Ingot</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>IZ</name>
+        <description>Ingots, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>JB</name>
+        <description>Bag, jumbo</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>JC</name>
+        <description>Jerrican, rectangular</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>JG</name>
+        <description>Jug</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>JR</name>
+        <description>Jar</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>JT</name>
+        <description>Jutebag</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>JY</name>
+        <description>Jerrican, cylindrical</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KG</name>
+        <description>Keg</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>KI</name>
+        <description>Kit</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LE</name>
+        <description>Luggage</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LG</name>
+        <description>Log</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LT</name>
+        <description>Lot</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LU</name>
+        <description>Lug</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LV</name>
+        <description>Liftvan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>LZ</name>
+        <description>Logs, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MA</name>
+        <description>Crate, metal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MB</name>
+        <description>Bag, multiply</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MC</name>
+        <description>Crate, milk</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ME</name>
+        <description>Container, metal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MR</name>
+        <description>Receptacle, metal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MS</name>
+        <description>Sack, multi-wall</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MT</name>
+        <description>Mat</description>
+        <startDate>2024-02-21T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MW</name>
+        <description>Receptacle, plastic wrapped</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>MX</name>
+        <description>Matchbox</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NA</name>
+        <description>Not available</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NE</name>
+        <description>Unpacked or unpackaged</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NF</name>
+        <description>Unpacked or unpackaged, single unit</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NG</name>
+        <description>Unpacked or unpackaged, multiple units</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NS</name>
+        <description>Nest</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NT</name>
+        <description>Net</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NU</name>
+        <description>Net, tube, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>NV</name>
+        <description>Net, tube, textile</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>O1</name>
+        <description>Two sided cage on wheels with fixing strap</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>O2</name>
+        <description>Trolley</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>O3</name>
+        <description>Oneway pallet ISO 0 - 1/2 EURO Pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>O4</name>
+        <description>Oneway pallet ISO 1 - 1/1 EURO Pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>O5</name>
+        <description>Oneway pallet ISO 2 - 2/1 EURO Pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>O6</name>
+        <description>Pallet with exceptional dimensions</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>O7</name>
+        <description>Wooden pallet 40 cm x 80 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>O8</name>
+        <description>Plastic pallet SRS 60 cm x 80 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>O9</name>
+        <description>Plastic pallet SRS 80 cm x 120 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OA</name>
+        <description>Pallet, CHEP 40 cm x 60 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OB</name>
+        <description>Pallet, CHEP 80 cm x 120 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OC</name>
+        <description>Pallet, CHEP 100 cm x 120 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OD</name>
+        <description>Pallet, AS 4068-1993</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OE</name>
+        <description>Pallet, ISO T11</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OF</name>
+        <description>Platform, unspecified weight or dimension</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OG</name>
+        <description>Pallet ISO 0 - 1/2 EURO Pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OH</name>
+        <description>Pallet ISO 1 - 1/1 EURO Pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OI</name>
+        <description>Pallet ISO 2 – 2/1 EURO Pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OJ</name>
+        <description>1/4 EURO Pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OK</name>
+        <description>Block</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OL</name>
+        <description>1/8 EURO Pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OM</name>
+        <description>Synthetic pallet ISO 1</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ON</name>
+        <description>Synthetic pallet ISO 2</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OP</name>
+        <description>Wholesaler pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OQ</name>
+        <description>Pallet 80 X 100 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OR</name>
+        <description>Pallet 60 X 100 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OS</name>
+        <description>Oneway pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OT</name>
+        <description>Octabin</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OU</name>
+        <description>Container, outer</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OV</name>
+        <description>Returnable pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OW</name>
+        <description>Large bag, pallet sized</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OX</name>
+        <description>A wheeled pallet with raised rim (81 x 67 x 135)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OY</name>
+        <description>A Wheeled pallet with raised rim (81 x 72 x 135)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>OZ</name>
+        <description>Wheeled pallet with raised rim ( 81 x 60 x 16)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>P1</name>
+        <description>CHEP pallet 60 cm x 80 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>P2</name>
+        <description>Pan</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>P3</name>
+        <description>LPR pallet 60 cm x 80 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>P4</name>
+        <description>LPR pallet 80 cm x 120 cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PA</name>
+        <description>Packet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PB</name>
+        <description>Pallet, box Combined open-ended box and pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PC</name>
+        <description>Parcel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PD</name>
+        <description>Pallet, modular, collars 80cm * 100cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PE</name>
+        <description>Pallet, modular, collars 80cm * 120cm</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PF</name>
+        <description>Pen</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PG</name>
+        <description>Plate</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PH</name>
+        <description>Pitcher</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PI</name>
+        <description>Pipe</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PJ</name>
+        <description>Punnet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PK</name>
+        <description>Package</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PL</name>
+        <description>Pail</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PN</name>
+        <description>Plank</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PO</name>
+        <description>Pouch</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PP</name>
+        <description>Piece</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PR</name>
+        <description>Receptacle, plastic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PT</name>
+        <description>Pot</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PU</name>
+        <description>Tray</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PV</name>
+        <description>Pipes, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PX</name>
+        <description>Pallet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PY</name>
+        <description>Plates, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>PZ</name>
+        <description>Planks, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QA</name>
+        <description>Drum, steel, non-removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QB</name>
+        <description>Drum, steel, removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QC</name>
+        <description>Drum, aluminium, non-removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QD</name>
+        <description>Drum, aluminium, removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QF</name>
+        <description>Drum, plastic, non-removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QG</name>
+        <description>Drum, plastic, removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QH</name>
+        <description>Barrel, wooden, bung type</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QJ</name>
+        <description>Barrel, wooden, removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QK</name>
+        <description>Jerrican, steel, non-removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QL</name>
+        <description>Jerrican, steel, removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QM</name>
+        <description>Jerrican, plastic, non-removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QN</name>
+        <description>Jerrican, plastic, removable head</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QP</name>
+        <description>Box, wooden, natural wood, ordinary</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QQ</name>
+        <description>Box, wooden, natural wood, with sift proof walls</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QR</name>
+        <description>Box, plastic, expanded</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>QS</name>
+        <description>Box, plastic, solid</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RD</name>
+        <description>Rod</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RG</name>
+        <description>Ring</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RJ</name>
+        <description>Rack, clothing hanger</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RK</name>
+        <description>Rack</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RL</name>
+        <description>Reel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RO</name>
+        <description>Roll</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RT</name>
+        <description>Rednet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>RZ</name>
+        <description>Rods, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SA</name>
+        <description>Sack</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SB</name>
+        <description>Slab</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SC</name>
+        <description>Crate, shallow</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SD</name>
+        <description>Spindle</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SE</name>
+        <description>Sea-chest</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SH</name>
+        <description>Sachet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SI</name>
+        <description>Skid</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SK</name>
+        <description>Case, skeleton</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SL</name>
+        <description>Slipsheet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SM</name>
+        <description>Sheetmetal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SO</name>
+        <description>Spool</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SP</name>
+        <description>Sheet, plastic wrapping</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SS</name>
+        <description>Case, steel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ST</name>
+        <description>Sheet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SU</name>
+        <description>Suitcase</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SV</name>
+        <description>Envelope, steel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SW</name>
+        <description>Shrinkwrapped</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SX</name>
+        <description>Set</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SY</name>
+        <description>Sleeve</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>SZ</name>
+        <description>Sheets, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>T1</name>
+        <description>Tablet</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TB</name>
+        <description>Tub</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TC</name>
+        <description>Tea-chest</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TD</name>
+        <description>Tube, collapsible</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TE</name>
+        <description>Tyre</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TG</name>
+        <description>Tank container, generic</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TI</name>
+        <description>Tierce</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TK</name>
+        <description>Tank, rectangular</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TL</name>
+        <description>Tub, with lid</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TN</name>
+        <description>Tin</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TO</name>
+        <description>Tun</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TR</name>
+        <description>Trunk</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TS</name>
+        <description>Truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TT</name>
+        <description>Bag, tote</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TU</name>
+        <description>Tube</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TV</name>
+        <description>Tube, with nozzle</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TW</name>
+        <description>Pallet, triwall</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TY</name>
+        <description>Tank, cylindrical</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>TZ</name>
+        <description>Tubes, in bundle/bunch/truss</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>UC</name>
+        <description>Uncaged</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>UN</name>
+        <description>Unit</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VA</name>
+        <description>Vat</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VG</name>
+        <description>Bulk, gas (at 1031 mbar and 15°C)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VI</name>
+        <description>Vial</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VK</name>
+        <description>Vanpack</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VL</name>
+        <description>Bulk, liquid</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VN</name>
+        <description>Vehicle</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VO</name>
+        <description>Bulk, solid, large particles (&quot;nodules&quot;)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VP</name>
+        <description>Vacuum-packed</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VQ</name>
+        <description>Bulk, liquefied gas (at abnormal temperature/pressure)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VR</name>
+        <description>Bulk, solid, granular particles (&quot;grains&quot;)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VS</name>
+        <description>Bulk, scrap metal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>VY</name>
+        <description>Bulk, solid, fine particles (&quot;powders&quot;)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WA</name>
+        <description>Intermediate bulk container</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WB</name>
+        <description>Wickerbottle</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WC</name>
+        <description>Intermediate bulk container, steel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WD</name>
+        <description>Intermediate bulk container, aluminium</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WF</name>
+        <description>Intermediate bulk container, metal</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WG</name>
+        <description>Intermediate bulk container, steel, pressurised &gt; 10 kpa</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WH</name>
+        <description>Intermediate bulk container, aluminium, pressurised &gt; 10 kpa</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WJ</name>
+        <description>Intermediate bulk container, metal, pressure 10 kpa</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WK</name>
+        <description>Intermediate bulk container, steel, liquid</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WL</name>
+        <description>Intermediate bulk container, aluminium, liquid</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WM</name>
+        <description>Intermediate bulk container, metal, liquid</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WN</name>
+        <description>Intermediate bulk container, woven plastic, without coat/liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WP</name>
+        <description>Intermediate bulk container, woven plastic, coated</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WQ</name>
+        <description>Intermediate bulk container, woven plastic, with liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WR</name>
+        <description>Intermediate bulk container, woven plastic, coated and liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WS</name>
+        <description>Intermediate bulk container, plastic film</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WT</name>
+        <description>Intermediate bulk container, textile without coat/liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WU</name>
+        <description>Intermediate bulk container, natural wood, with inner liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WV</name>
+        <description>Intermediate bulk container, textile, coated</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WW</name>
+        <description>Intermediate bulk container, textile, with liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WX</name>
+        <description>Intermediate bulk container, textile, coated and liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WY</name>
+        <description>Intermediate bulk container, plywood, with inner liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>WZ</name>
+        <description>Intermediate bulk container, reconstituted wood, with inner liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XA</name>
+        <description>Bag, woven plastic, without inner coat/liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XB</name>
+        <description>Bag, woven plastic, sift proof</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XC</name>
+        <description>Bag, woven plastic, water resistant</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XD</name>
+        <description>Bag, plastics film</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XF</name>
+        <description>Bag, textile, without inner coat/liner</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XG</name>
+        <description>Bag, textile, sift proof</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XH</name>
+        <description>Bag, textile, water resistant</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XJ</name>
+        <description>Bag, paper, multi-wall</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XK</name>
+        <description>Bag, paper, multi-wall, water resistant</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YA</name>
+        <description>Composite packaging, plastic receptacle in steel drum</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YB</name>
+        <description>Composite packaging, plastic receptacle in steel crate box</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YC</name>
+        <description>Composite packaging, plastic receptacle in aluminium drum</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YD</name>
+        <description>Composite packaging, plastic receptacle in aluminium crate</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YF</name>
+        <description>Composite packaging, plastic receptacle in wooden box</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YG</name>
+        <description>Composite packaging, plastic receptacle in plywood drum</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YH</name>
+        <description>Composite packaging, plastic receptacle in plywood box</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YJ</name>
+        <description>Composite packaging, plastic receptacle in fibre drum</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YK</name>
+        <description>Composite packaging, plastic receptacle in fibreboard box</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YL</name>
+        <description>Composite packaging, plastic receptacle in plastic drum</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YM</name>
+        <description>Composite packaging, plastic receptacle in solid plastic box</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YN</name>
+        <description>Composite packaging, glass receptacle in steel drum</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YP</name>
+        <description>Composite packaging, glass receptacle in steel crate box</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YQ</name>
+        <description>Composite packaging, glass receptacle in aluminium drum</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YR</name>
+        <description>Composite packaging, glass receptacle in aluminium crate</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YS</name>
+        <description>Composite packaging, glass receptacle in wooden box</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YT</name>
+        <description>Composite packaging, glass receptacle in plywood drum</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YV</name>
+        <description>Composite packaging, glass receptacle in wickerwork hamper</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YW</name>
+        <description>Composite packaging, glass receptacle in fibre drum</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YX</name>
+        <description>Composite packaging, glass receptacle in fibreboard box</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YY</name>
+        <description>Composite packaging, glass receptacle in expandable plastic pack</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>YZ</name>
+        <description>Composite packaging, glass receptacle in solid plastic pack</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZA</name>
+        <description>Intermediate bulk container, paper, multi-wall</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZB</name>
+        <description>Bag, large</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZC</name>
+        <description>Intermediate bulk container, paper, multi-wall, water resistant</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZD</name>
+        <description>Intermediate bulk container, rigid plastic, with structural equipment, solids</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZF</name>
+        <description>Intermediate bulk container, rigid plastic, freestanding, solids</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZG</name>
+        <description>Intermediate bulk container, rigid plastic, with structural equipment, pressurised</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZH</name>
+        <description>Intermediate bulk container, rigid plastic, freestanding, pressurised</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZJ</name>
+        <description>Intermediate bulk container, rigid plastic, with structural equipment, liquids</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZK</name>
+        <description>Intermediate bulk container, rigid plastic, freestanding, liquids</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZL</name>
+        <description>Intermediate bulk container, composite, rigid plastic, solids</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZM</name>
+        <description>Intermediate bulk container, composite, flexible plastic, solids</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZN</name>
+        <description>Intermediate bulk container, composite, rigid plastic, pressurised</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZP</name>
+        <description>Intermediate bulk container, composite, flexible plastic, pressurised</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZQ</name>
+        <description>Intermediate bulk container, composite, rigid plastic, liquids</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZR</name>
+        <description>Intermediate bulk container, composite, flexible plastic, liquids</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZS</name>
+        <description>Intermediate bulk container, composite</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZT</name>
+        <description>Intermediate bulk container, fibreboard</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZU</name>
+        <description>Intermediate bulk container, flexible</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZV</name>
+        <description>Intermediate bulk container, metal, other than steel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZW</name>
+        <description>Intermediate bulk container, natural wood</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZX</name>
+        <description>Intermediate bulk container, plywood</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZY</name>
+        <description>Intermediate bulk container, reconstituted wood</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>ZZ</name>
+        <description>Mutually defined</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+</codeList>

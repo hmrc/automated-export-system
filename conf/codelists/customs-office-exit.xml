@@ -1,20 +1,44 @@
 <!--Placeholder XML dummy data !-->
 <codeList>
     <item>
-        <name>GB000051</name>
-        <description>Dover Customs Office</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <name>XI000014</name>
+        <description>Belfast International Airpost</description>
+        <startDate>2025-12-05T00:00:00</startDate>
     </item>
 
     <item>
-        <name>GB000060</name>
-        <description>Felixstowe Customs Office</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <name>XI000081</name>
+        <description>NI Auth Consignor/Nees (Salford, Manchester)</description>
+        <startDate>2024-03-02T00:00:00</startDate>
     </item>
 
     <item>
-        <name>GB000070</name>
-        <description>Southampton Customs Office</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <name>XI000140</name>
+        <description>George Best (Belfast City) Airport</description>
+        <startDate>2025-12-05T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XI000142</name>
+        <description>Belfast Harbour/Docks</description>
+        <startDate>2025-11-15T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XI005160</name>
+        <description>Warrenpoint</description>
+        <startDate>2025-11-15T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XI005220</name>
+        <description>Lare</description>
+        <startDate>2025-11-15T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>XISOU001</name>
+        <description>NI Direct Exports (Salford)</description>
+        <startDate>2021-01-01T00:00:00</startDate>
     </item>
 </codeList>
