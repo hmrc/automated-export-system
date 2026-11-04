@@ -2,19 +2,49 @@
 <codeList>
     <item>
         <name>1</name>
-        <description>Sea Transport</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <description>Sea transport</description>
+        <startDate>2023-03-04T00:00:00</startDate>
     </item>
 
     <item>
         <name>2</name>
-        <description>Rail Transport</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <description>Rail transport</description>
+        <startDate>2025-04-24T00:00:00</startDate>
     </item>
 
     <item>
         <name>3</name>
-        <description>Road Transport</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <description>Road transport</description>
+        <startDate>2025-04-24T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>4</name>
+        <description>Air transport</description>
+        <startDate>2025-04-24T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>5</name>
+        <description>Postal Consignment</description>
+        <startDate>2025-04-24T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>7</name>
+        <description>Fixed transport installations</description>
+        <startDate>2024-10-04T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>8</name>
+        <description>Inland waterway transport</description>
+        <startDate>2025-04-24T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>9</name>
+        <description>Own propulsion</description>
+        <startDate>2025-04-24T00:00:00</startDate>
     </item>
 </codeList>

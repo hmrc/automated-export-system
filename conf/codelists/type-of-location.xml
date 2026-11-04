@@ -2,19 +2,25 @@
 <codeList>
     <item>
         <name>A</name>
-        <description>Designated Customs Location</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <description>Designated location</description>
+        <startDate>2025-11-01T00:00:00</startDate>
     </item>
 
     <item>
         <name>B</name>
-        <description>Authorised Place</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <description>Authorised place</description>
+        <startDate>2025-11-01T00:00:00</startDate>
     </item>
 
     <item>
         <name>C</name>
-        <description>Temporary Storage Facility</description>
-        <startDate>2025-01-01T00:00:00</startDate>
+        <description>Approved place</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>D</name>
+        <description>Other</description>
+        <startDate>2025-11-01T00:00:00</startDate>
     </item>
 </codeList>

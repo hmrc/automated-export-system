@@ -1,0 +1,50 @@
+<!--Placeholder XML dummy data !-->
+<codeList>
+    <item>
+        <name>10</name>
+        <description>IMO Ship Identification Number</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>11</name>
+        <description>Name of the sea-going vessel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>21</name>
+        <description>Train Number</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>30</name>
+        <description>Registration Number of the Road Vehicle</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>40</name>
+        <description>IATA flight number</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>41</name>
+        <description>Registration Number of the Aircraft</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>80</name>
+        <description>European Vessel Identification Number (ENI Code)</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+
+    <item>
+        <name>81</name>
+        <description>Name of the inland waterways vessel</description>
+        <startDate>2025-11-01T00:00:00</startDate>
+    </item>
+</codeList>
