@@ -31,10 +31,11 @@ import uk.gov.hmrc.automatedexportsystem.generators.MongoAesIE507MessageGenerato
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
-import uk.gov.hmrc.automatedexportsystem.models.mongo.read.{MongoAesIE507MessageSummary, MongoAesIE507MessageUnresolvedNotifications}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.read.{MongoAesIE507MessageNfrWarning, MongoAesIE507MessageSummary, MongoAesIE507MessageUnresolvedNotifications}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+import org.mongodb.scala.ObservableFuture
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -1068,6 +1069,278 @@ class AesIE507RepositoryISpec
             repository.getUnresolvedNotificationsMessages(TestData.instant).value.futureValue.left.value
 
           result shouldBe MongoError.DocumentNotFound("No unresolved notifications messages found")
+        }
+      }
+
+      ".markNfrWarning2" - {
+
+        "should mark and return a pending submission created on or before the cutoff" in {
+          val pendingEvent: NotificationEvent =
+            TestData.notificationEvent.copy(
+              isPending = true,
+              status = NotificationEventStatus.Awaiting
+            )
+
+          val message: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message]
+              .withSubmissionId(TestData.submissionId)
+              .withMrn(TestData.mrn)
+              .sample
+              .value
+              .copy(
+                createdAt = TestData.instant.minusSeconds(600),
+                metadata = NonEmptyList.one(pendingEvent),
+                nfrWarning2 = false
+              )
+
+          repository.collection.insertOne(message).head().futureValue
+
+          val result: List[MongoAesIE507MessageNfrWarning] =
+            repository
+              .markNfrWarning2(TestData.instant.minusSeconds(600))
+              .value
+              .futureValue
+              .value
+
+          result shouldBe List(
+            MongoAesIE507MessageNfrWarning(
+              mrn = message.exportOperation.mrn,
+              ducr = message.goodsShipment.map(_.consignment.referenceNumberUCR)
+            )
+          )
+
+          val updatedMessage: MongoAesIE507Message =
+            find(
+              Filters.eq(
+                "submissionId",
+                TestData.submissionId.value.toString
+              )
+            ).futureValue.head
+
+          updatedMessage.nfrWarning2 shouldBe true
+        }
+
+        "should mark and return all eligible pending submissions" in {
+          val pendingEvent: NotificationEvent =
+            TestData.notificationEvent.copy(
+              isPending = true,
+              status = NotificationEventStatus.Awaiting
+            )
+
+          val message1: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message]
+              .withMrn(TestData.mrn)
+              .sample
+              .value
+              .copy(
+                createdAt = TestData.instant.minusSeconds(601),
+                metadata = NonEmptyList.one(pendingEvent),
+                nfrWarning2 = false
+              )
+
+          val message2: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message].sample.value
+              .copy(
+                createdAt = TestData.instant.minusSeconds(900),
+                metadata = NonEmptyList.one(
+                  pendingEvent.copy(
+                    correlationId = CorrelationId("other-correlation-id")
+                  )
+                ),
+                nfrWarning2 = false
+              )
+
+          repository.collection
+            .insertMany(Seq(message1, message2))
+            .head()
+            .futureValue
+
+          val result: List[MongoAesIE507MessageNfrWarning] =
+            repository
+              .markNfrWarning2(TestData.instant.minusSeconds(600))
+              .value
+              .futureValue
+              .value
+
+          result should contain theSameElementsAs List(
+            MongoAesIE507MessageNfrWarning(
+              mrn = message1.exportOperation.mrn,
+              ducr = message1.goodsShipment.map(_.consignment.referenceNumberUCR)
+            ),
+            MongoAesIE507MessageNfrWarning(
+              mrn = message2.exportOperation.mrn,
+              ducr = message2.goodsShipment.map(_.consignment.referenceNumberUCR)
+            )
+          )
+
+          val updatedMessages: Seq[MongoAesIE507Message] =
+            repository.collection
+              .find(
+                Filters.in(
+                  "submissionId",
+                  message1.submissionId.value.toString,
+                  message2.submissionId.value.toString
+                )
+              )
+              .toFuture()
+              .futureValue
+
+          updatedMessages.map(_.nfrWarning2) should contain only true
+        }
+
+        "should not mark a submission created after the cutoff" in {
+          val pendingEvent: NotificationEvent =
+            TestData.notificationEvent.copy(
+              isPending = true,
+              status = NotificationEventStatus.Awaiting
+            )
+
+          val message: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message]
+              .withSubmissionId(TestData.submissionId)
+              .sample
+              .value
+              .copy(
+                createdAt = TestData.instant.minusSeconds(599),
+                metadata = NonEmptyList.one(pendingEvent),
+                nfrWarning2 = false
+              )
+
+          repository.collection.insertOne(message).head().futureValue
+
+          val result: List[MongoAesIE507MessageNfrWarning] =
+            repository
+              .markNfrWarning2(TestData.instant.minusSeconds(600))
+              .value
+              .futureValue
+              .value
+
+          result shouldBe Nil
+
+          val unchangedMessage: MongoAesIE507Message =
+            find(
+              Filters.eq(
+                "submissionId",
+                TestData.submissionId.value.toString
+              )
+            ).futureValue.head
+
+          unchangedMessage.nfrWarning2 shouldBe false
+        }
+
+        "should not mark a submission when NFR warning 2 has already been recorded" in {
+          val pendingEvent: NotificationEvent =
+            TestData.notificationEvent.copy(
+              isPending = true,
+              status = NotificationEventStatus.Awaiting
+            )
+
+          val message: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message]
+              .withSubmissionId(TestData.submissionId)
+              .sample
+              .value
+              .copy(
+                createdAt = TestData.instant.minusSeconds(601),
+                metadata = NonEmptyList.one(pendingEvent),
+                nfrWarning2 = true
+              )
+
+          repository.collection.insertOne(message).head().futureValue
+
+          val result: List[MongoAesIE507MessageNfrWarning] =
+            repository
+              .markNfrWarning2(TestData.instant.minusSeconds(600))
+              .value
+              .futureValue
+              .value
+
+          result shouldBe Nil
+        }
+
+        "should return a submission only once across successive calls" in {
+          val pendingEvent: NotificationEvent =
+            TestData.notificationEvent.copy(
+              isPending = true,
+              status = NotificationEventStatus.Awaiting
+            )
+
+          val message: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message]
+              .withSubmissionId(TestData.submissionId)
+              .withMrn(TestData.mrn)
+              .sample
+              .value
+              .copy(
+                createdAt = TestData.instant.minusSeconds(601),
+                metadata = NonEmptyList.one(pendingEvent),
+                nfrWarning2 = false
+              )
+
+          repository.collection.insertOne(message).head().futureValue
+
+          val firstResult: List[MongoAesIE507MessageNfrWarning] =
+            repository
+              .markNfrWarning2(TestData.instant.minusSeconds(600))
+              .value
+              .futureValue
+              .value
+
+          val secondResult: List[MongoAesIE507MessageNfrWarning] =
+            repository
+              .markNfrWarning2(TestData.instant.minusSeconds(600))
+              .value
+              .futureValue
+              .value
+
+          firstResult shouldBe List(
+            MongoAesIE507MessageNfrWarning(
+              mrn = message.exportOperation.mrn,
+              ducr = message.goodsShipment.map(_.consignment.referenceNumberUCR)
+            )
+          )
+
+          secondResult shouldBe Nil
+        }
+
+        "should not mark a submission when no notification event is pending" in {
+          val completedEvent: NotificationEvent =
+            TestData.notificationEvent.copy(
+              isPending = false,
+              status = NotificationEventStatus.Accepted
+            )
+
+          val message: MongoAesIE507Message =
+            arbitrary[MongoAesIE507Message]
+              .withSubmissionId(TestData.submissionId)
+              .sample
+              .value
+              .copy(
+                createdAt = TestData.instant.minusSeconds(601),
+                metadata = NonEmptyList.one(completedEvent),
+                nfrWarning2 = false
+              )
+
+          repository.collection.insertOne(message).head().futureValue
+
+          val result: List[MongoAesIE507MessageNfrWarning] =
+            repository
+              .markNfrWarning2(TestData.instant.minusSeconds(600))
+              .value
+              .futureValue
+              .value
+
+          result shouldBe Nil
+
+          val unchangedMessage: MongoAesIE507Message =
+            find(
+              Filters.eq(
+                "submissionId",
+                TestData.submissionId.value.toString
+              )
+            ).futureValue.head
+
+          unchangedMessage.nfrWarning2 shouldBe false
         }
       }
     }

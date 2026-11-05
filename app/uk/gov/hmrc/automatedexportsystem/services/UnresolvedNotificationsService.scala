@@ -21,7 +21,7 @@ import cats.syntax.all.toTraverseOps
 import play.api.Logging
 import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
-import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageUnresolvedNotifications
+import uk.gov.hmrc.automatedexportsystem.models.mongo.read.{MongoAesIE507MessageNfrWarning, MongoAesIE507MessageUnresolvedNotifications}
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
@@ -35,20 +35,43 @@ class UnresolvedNotificationsService @Inject() (
   appConfig:          AppConfig
 )(using ExecutionContext)
     extends Logging:
-  def updateUnresolvedNotifications(executionTime: Instant): EitherT[Future, MongoError, List[NotificationEvent]] =
+
+  def updateUnresolvedNotifications(
+    executionTime: Instant
+  ): EitherT[Future, MongoError, List[NotificationEvent]] =
+    val nfrWarning2MaxWaitMillis: Long =
+      appConfig.unresolvedNotificationsNfrWarning2MaxWaitTime.toMillis
+
+    val submittedBefore: Instant =
+      executionTime.minusMillis(nfrWarning2MaxWaitMillis)
+
     val maxPendingTimeMillis: Long =
       appConfig.unresolvedNotificationsDocumentMaxPendingTime.toMillis
 
-    val updatedBefore: Instant = executionTime.minusMillis(maxPendingTimeMillis)
+    val updatedBefore: Instant =
+      executionTime.minusMillis(maxPendingTimeMillis)
 
-    val unresolvedNotificationsMessages: EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageUnresolvedNotifications]] =
-      aesIE507Repository.getUnresolvedNotificationsMessages(updatedBefore)
+    val nfrWarnings: EitherT[
+      Future,
+      MongoError,
+      List[MongoAesIE507MessageNfrWarning]
+    ] =
+      aesIE507Repository.markNfrWarning2(submittedBefore)
 
-    unresolvedNotificationsMessages.semiflatMap(unresolvedMessages =>
-      val updatedEvents: NonEmptyList[Future[Either[MongoError, NotificationEvent]]] =
-        unresolvedMessages.flatMap(unresolvedMessage =>
-          unresolvedMessage.unresolvedEvents
-            .map(unresolvedEvent =>
+    nfrWarnings.flatMap { warnings =>
+      warnings.foreach(logNfrWarning2)
+
+      val unresolvedNotificationsMessages: EitherT[
+        Future,
+        MongoError,
+        NonEmptyList[MongoAesIE507MessageUnresolvedNotifications]
+      ] =
+        aesIE507Repository.getUnresolvedNotificationsMessages(updatedBefore)
+
+      unresolvedNotificationsMessages.semiflatMap { unresolvedMessages =>
+        val updatedEvents: NonEmptyList[Future[Either[MongoError, NotificationEvent]]] =
+          unresolvedMessages.flatMap { unresolvedMessage =>
+            unresolvedMessage.unresolvedEvents.map { unresolvedEvent =>
               aesIE507Repository
                 .updateNotification(
                   unresolvedMessage.eoriNumber,
@@ -58,18 +81,39 @@ class UnresolvedNotificationsService @Inject() (
                   status = NotificationEventStatus.Awaiting,
                   errors = None
                 )
-                .map(_ =>
-                  logUpdatedUnresolvedNotificationEvent(unresolvedMessage, unresolvedEvent)
+                .map { _ =>
+                  logUpdatedUnresolvedNotificationEvent(
+                    unresolvedMessage,
+                    unresolvedEvent
+                  )
 
                   unresolvedEvent
-                )
+                }
                 .value
-            )
-        )
+            }
+          }
 
-      updatedEvents.sequence.map(events => events.collect { case Right(value) => value })
-    )
+        updatedEvents.sequence.map(
+          _.collect { case Right(value) => value }
+        )
+      }
+    }
   end updateUnresolvedNotifications
+
+  private def logNfrWarning2(
+    warning: MongoAesIE507MessageNfrWarning
+  ): Unit =
+    val maxWaitMinutes: Long =
+      appConfig.unresolvedNotificationsNfrWarning2MaxWaitTime.toMinutes
+
+    val ducr: String =
+      warning.ducr.map(_.value).getOrElse("not provided")
+
+    logger.warn(
+      s"AESNFR-017 exceeded for MRN ${warning.mrn.value} " +
+        s"and DUCR $ducr ($maxWaitMinutes mins)"
+    )
+  end logNfrWarning2
 
   private def logUpdatedUnresolvedNotificationEvent(
     unresolvedMessage: MongoAesIE507MessageUnresolvedNotifications,
@@ -81,6 +125,13 @@ class UnresolvedNotificationsService @Inject() (
         "mrn"             -> unresolvedMessage.mrn.value,
         "correlationId"   -> unresolvedEvent.correlationId.value,
         "lastDateUpdated" -> unresolvedEvent.dateUpdated.atZone(ZoneOffset.UTC)
-      ).map { case (k, v) => s"$k: $v" }.mkString(", ")
+      ).map { case (k, v) =>
+        s"$k: $v"
+      }.mkString(", ")
 
-    logger.warn(s"Unresolved notification event has been resolved. $context")
+    logger.warn(
+      s"Unresolved notification event has been resolved. $context"
+    )
+  end logUpdatedUnresolvedNotificationEvent
+
+end UnresolvedNotificationsService
