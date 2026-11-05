@@ -32,11 +32,12 @@ final case class MongoAesIE507Message(
   exportOperation:           ExportOperation,
   customsOfficeOfExitActual: CustomsOfficeOfExitActual,
   goodsShipment:             Option[GoodsShipment],
-  metadata:                  NonEmptyList[NotificationEvent]
+  metadata:                  NonEmptyList[NotificationEvent],
+  nfrWarning2:               Boolean = false
 )
 
 object MongoAesIE507Message:
   import uk.gov.hmrc.automatedexportsystem.models.formats.MongoFormats.mongoDateInstantFormat
   import uk.gov.hmrc.automatedexportsystem.models.formats.NonEmptyListFormat.nonEmptyListFormat
 
-  val mongoFormat: Format[MongoAesIE507Message] = Json.format[MongoAesIE507Message]
+  val mongoFormat: Format[MongoAesIE507Message] = Json.using[Json.WithDefaultValues].format[MongoAesIE507Message]

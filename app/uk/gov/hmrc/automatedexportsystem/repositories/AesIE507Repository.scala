@@ -34,7 +34,7 @@ import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
-import uk.gov.hmrc.automatedexportsystem.models.mongo.read.{MongoAesIE507MessageSummary, MongoAesIE507MessageUnresolvedNotifications}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.read.{MongoAesIE507MessageNfrWarning, MongoAesIE507MessageSummary, MongoAesIE507MessageUnresolvedNotifications}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProjections, SingleUpdateStatus}
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
@@ -88,6 +88,10 @@ trait AesIE507Repository:
     notificationEvent: NotificationEvent
   ): EitherT[Future, MongoError, SingleUpdateStatus]
 
+  def markNfrWarning2(
+    submittedBefore: Instant
+  ): EitherT[Future, MongoError, List[MongoAesIE507MessageNfrWarning]]
+
   def getUnresolvedNotificationsMessages(
     lastUpdatedBefore: Instant
   ): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageUnresolvedNotifications]]
@@ -127,7 +131,8 @@ class AesIE507RepositoryImpl @Inject() (
         Codecs.playFormatCodec(MongoAesIE507MessageSummary.mongoFormat),
         Codecs.playFormatCodec(MongoAesIE507MessageUnresolvedNotifications.mongoFormat),
         Codecs.playFormatCodec(NotificationEvent.mongoFormat),
-        Codecs.playFormatCodec(NotificationError.mongoFormat)
+        Codecs.playFormatCodec(NotificationError.mongoFormat),
+        Codecs.playFormatCodec(MongoAesIE507MessageNfrWarning.mongoFormat)
       )
     ),
       AesIE507Repository,
@@ -524,6 +529,67 @@ class AesIE507RepositoryImpl @Inject() (
         )
     }
   end pushNotificationAfterDiversion
+
+  def markNfrWarning2(
+    submittedBefore: Instant
+  ): EitherT[Future, MongoError, List[MongoAesIE507MessageNfrWarning]] =
+    val operationName: String = "markNfrWarning2"
+
+    val filter: Bson =
+      Filters.and(
+        Filters.lte("createdAt", submittedBefore),
+        Filters.or(
+          Filters.eq("nfrWarning2", false),
+          Filters.exists("nfrWarning2", false)
+        ),
+        Filters.elemMatch(
+          "metadata",
+          Filters.eq("isPending", true)
+        )
+      )
+
+    retryOperation(
+      operationName,
+      context = Map.empty
+    ) {
+      collection
+        .find(filter)
+        .toFuture()
+        .flatMap { messages =>
+          Future
+            .sequence(
+              messages.map { message =>
+                val updateFilter: Bson =
+                  Filters.and(
+                    Filters.eq("submissionId", message.submissionId.value.toString),
+                    Filters.or(
+                      Filters.eq("nfrWarning2", false),
+                      Filters.exists("nfrWarning2", false)
+                    )
+                  )
+
+                collection
+                  .updateOne(
+                    updateFilter,
+                    Updates.set("nfrWarning2", true)
+                  )
+                  .toFuture()
+                  .map { result =>
+                    if result.getModifiedCount == 1 then
+                      Some(
+                        MongoAesIE507MessageNfrWarning(
+                          mrn = message.exportOperation.mrn,
+                          ducr = message.goodsShipment.map(_.consignment.referenceNumberUCR)
+                        )
+                      )
+                    else None
+                  }
+              }
+            )
+            .map(results => Right(results.flatten.toList))
+        }
+    }
+  end markNfrWarning2
 
   def getUnresolvedNotificationsMessages(
     lastUpdatedBefore: Instant
