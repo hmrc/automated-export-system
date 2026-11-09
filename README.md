@@ -11,10 +11,6 @@ It allows users to:
 * Retrieve a list of all submissions made by the user
 * Retrieve the details of a single submission by submission ID
 
-### License
-
-This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
-
 ### Running locally
 By default the service runs on port 5002
 
@@ -31,10 +27,10 @@ To use with sm2, add this line `-Dapplication.router=testOnlyDoNotUseInAppConf.R
 
 ### Running all tests and coverage report
 To run all tests and generate a coverage report, use this command
-`sbt scalafmt test:scalafmt it:test::scalafmt coverage test it:test coverageReport`
+`sbt scalafmt test:scalafmt it:test::scalafmt coverage test it/test coverageReport`
 
 ### Endpoints
-## Headers required are `Authorization: Bearer <token>` and `Content-Type: application/xml
+Headers required are `Authorization: Bearer <token>` and `Content-Type: application/xml
 
 ## Submissions
 `POST /message`: This is the submission from the UI to CREATE, AMEND or CANCEL an IE507 submission
@@ -151,9 +147,10 @@ To run all tests and generate a coverage report, use this command
                 </Packaging>
             </GoodsItem>
         </GoodsShipment>
-    </aes:Submission>```
+    </aes:Submission>
+   ```
 
-`POST /notification`: This is the async response from EIS/CDS
+`POST /notification: This is the async response from EIS/CDS`
 ```<?xml version="1.0" encoding="UTF-8" ?>
 <notification>
   <correlationId>1c9a77e2-1111-4f22-9abc-abcdef123456</correlationId>
@@ -175,7 +172,7 @@ To run all tests and generate a coverage report, use this command
   </errors>
 </notification>```
 
-`GET /submissions`: List of all submissions for the logged in user
+`GET /submissions`: List of all submissions for the logged in user`
 ```<?xml version="1.0" encoding="UTF-8"?>
 <Submissions>
   <Submission>
@@ -196,7 +193,8 @@ To run all tests and generate a coverage report, use this command
     <preparationDateAndTime>2026-07-07T11:45:00</preparationDateAndTime>
     <status>Rejected</status>
   </Submission>
-</Submissions>```
+</Submissions>
+```
 
 `GET /submission/:submissionId`
 
@@ -227,7 +225,8 @@ To run all tests and generate a coverage report, use this command
         </Consignment>
     </GoodsShipment>
     <updatedAt>2026-10-23T10:04:02.518</updatedAt>
-</Submission>```
+</Submission>
+```
 
 ## Code lists
 
@@ -249,7 +248,8 @@ To run all tests and generate a coverage report, use this command
         <startDate>2025-11-01T00:00:00</startDate>
     </item>
     <item>
-    ...```
+    ...
+```
     
 `GET  /codelists/transportmode`
 ```<codeList>
@@ -274,11 +274,10 @@ To run all tests and generate a coverage report, use this command
         <startDate>2025-04-24T00:00:00</startDate>
     </item>
     ...
-    ```
+```
     
 `GET  /codelists/typeoflocation`
-```
-<codeList>
+```<codeList>
     <item>
         <name>A</name>
         <description>Designated location</description>
@@ -299,4 +298,9 @@ To run all tests and generate a coverage report, use this command
         <description>Other</description>
         <startDate>2025-11-01T00:00:00</startDate>
     </item>
-</codeList>```
+</codeList>
+```
+
+### License
+
+This code is open source software licensed under the [Apache 2.0 License](LICENSE.official.txt).
