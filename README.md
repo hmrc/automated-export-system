@@ -31,7 +31,7 @@ To use with sm2, add this line `-Dapplication.router=testOnlyDoNotUseInAppConf.R
 
 ### Running all tests and coverage report
 To run all tests and generate a coverage report, use this command
-`sbt scalafmt test:scalafmt it:test::scalafmt coverage test it:test coverageReport`
+`sbt scalafmt test:scalafmt it:test::scalafmt coverage test it/test coverageReport`
 
 ### Endpoints
 ## Headers required are `Authorization: Bearer <token>` and `Content-Type: application/xml
@@ -277,8 +277,7 @@ To run all tests and generate a coverage report, use this command
     ```
     
 `GET  /codelists/typeoflocation`
-```
-<codeList>
+```<codeList>
     <item>
         <name>A</name>
         <description>Designated location</description>
