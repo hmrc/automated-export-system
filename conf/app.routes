@@ -16,6 +16,8 @@ GET /submission/:submissionId uk.gov.hmrc.automatedexportsystem.controllers.Subm
 
 GET /cancel/:submissionId uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController.cancel(submissionId: java.util.UUID)
 
+GET /codelists/transportMode uk.gov.hmrc.automatedexportsystem.controllers.CodeListJsonController.transportModes
+
 # POST REQUESTS
 
 POST /cds/aesIE507Request/v1 uk.gov.hmrc.automatedexportsystem.controllers.IE507StubController.submit
