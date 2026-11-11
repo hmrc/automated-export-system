@@ -66,8 +66,7 @@ class AesIE507Factory @Inject() (clock: Clock, idGenerator: IdGenerator) extends
       ),
       customsOfficeOfExitActual = aesIE507Message.customsOfficeOfExitActual,
       goodsShipment = aesIE507Message.goodsShipment,
-      metadata = NonEmptyList.one(notificationEvent),
-      nfrWarning2 = false
+      metadata = NonEmptyList.one(notificationEvent)
     )
   end mongoMessage
 end AesIE507Factory

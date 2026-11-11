@@ -362,7 +362,6 @@ trait MongoAesIE507MessageGenerator extends AesIE507Generators:
         exportOperation,
         customsOfficeOfExitActual,
         goodsShipment,
-        metadata,
-        nfrWarning2 = false
+        metadata
       )
     }

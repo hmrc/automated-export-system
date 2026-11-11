@@ -249,8 +249,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |      "path" : "path",
           |      "originalValue": "originalValue"
           |    } ]
-          |  } ],
-          |  "nfrWarning2": false
+          |  } ]
           |}
           |""".stripMargin)
 
@@ -335,8 +334,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |      "path" : "path",
           |      "originalValue": "originalValue"
           |    } ]
-          |  } ],
-          |  "nfrWarning2": false
+          |  } ]
           |}
           |""".stripMargin)
 
@@ -525,8 +523,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |      "path" : "path",
           |      "originalValue": "originalValue"
           |    } ]
-          |  } ],
-          |  "nfrWarning2": false
+          |  } ]
           |}
           |""".stripMargin)
 
@@ -640,8 +637,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |    },
           |    "isPending" : false,
           |    "status" : 0
-          |  } ],
-          |  "nfrWarning2": false
+          |  } ]
           |}
           |""".stripMargin)
 

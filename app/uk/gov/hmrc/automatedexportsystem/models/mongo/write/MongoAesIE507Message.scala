@@ -32,8 +32,7 @@ final case class MongoAesIE507Message(
   exportOperation:           ExportOperation,
   customsOfficeOfExitActual: CustomsOfficeOfExitActual,
   goodsShipment:             Option[GoodsShipment],
-  metadata:                  NonEmptyList[NotificationEvent],
-  nfrWarning2:               Boolean = false
+  metadata:                  NonEmptyList[NotificationEvent]
 )
 
 object MongoAesIE507Message:

@@ -42,6 +42,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import java.time.Instant
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -96,6 +97,10 @@ trait AesIE507Repository:
     lastUpdatedBefore: Instant
   ): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageUnresolvedNotifications]]
 
+object AesIE507Repository:
+  val NfrWarning2Field: String = "nfrWarning2"
+  val BatchIdField:     String = "batchId"
+
 @Singleton
 class AesIE507RepositoryImpl @Inject() (
   mongoComponent: MongoComponent,
@@ -125,6 +130,12 @@ class AesIE507RepositoryImpl @Inject() (
             Indexes.ascending("eoriNumber"),
             Indexes.ascending("submissionId")
           )
+        ),
+        IndexModel(
+          Indexes.ascending(AesIE507Repository.BatchIdField),
+          IndexOptions()
+            .name(AesIE507Repository.BatchIdField)
+            .sparse(true)
         )
       ),
       extraCodecs = Seq(
@@ -137,6 +148,8 @@ class AesIE507RepositoryImpl @Inject() (
     ),
       AesIE507Repository,
       Logging:
+
+  import AesIE507Repository.{BatchIdField, NfrWarning2Field}
 
   def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageSummary]] =
     val pipeline: Seq[Bson] = Seq(
@@ -539,8 +552,8 @@ class AesIE507RepositoryImpl @Inject() (
       Filters.and(
         Filters.lte("createdAt", submittedBefore),
         Filters.or(
-          Filters.eq("nfrWarning2", false),
-          Filters.exists("nfrWarning2", false)
+          Filters.eq(NfrWarning2Field, false),
+          Filters.exists(NfrWarning2Field, false)
         ),
         Filters.elemMatch(
           "metadata",
@@ -548,46 +561,33 @@ class AesIE507RepositoryImpl @Inject() (
         )
       )
 
+    val batchId: String = UUID.randomUUID().toString
+
     retryOperation(
       operationName,
       context = Map.empty
     ) {
       collection
-        .find(filter)
+        .updateMany(
+          filter,
+          Updates.combine(
+            Updates.set(NfrWarning2Field, true),
+            Updates.set(BatchIdField, batchId)
+          )
+        )
         .toFuture()
-        .flatMap { messages =>
-          Future
-            .sequence(
-              messages.map { message =>
-                val updateFilter: Bson =
-                  Filters.and(
-                    Filters.eq("submissionId", message.submissionId.value.toString),
-                    Filters.or(
-                      Filters.eq("nfrWarning2", false),
-                      Filters.exists("nfrWarning2", false)
-                    )
-                  )
-
-                collection
-                  .updateOne(
-                    updateFilter,
-                    Updates.set("nfrWarning2", true)
-                  )
-                  .toFuture()
-                  .map { result =>
-                    if result.getModifiedCount == 1 then
-                      Some(
-                        MongoAesIE507MessageNfrWarning(
-                          mrn = message.exportOperation.mrn,
-                          ducr = message.goodsShipment.map(_.consignment.referenceNumberUCR)
-                        )
-                      )
-                    else None
-                  }
-              }
+        .flatMap(_ =>
+          val pipeline: Seq[Bson] =
+            Seq(
+              Aggregates.filter(Filters.eq(BatchIdField, batchId)),
+              Aggregates.project(MongoAesIE507MessageProjections.nfrWarningProjection)
             )
-            .map(results => Right(results.flatten.toList))
-        }
+
+          collection
+            .aggregate[MongoAesIE507MessageNfrWarning](pipeline)
+            .toFuture()
+            .map(markedMessages => Right(markedMessages.toList))
+        )
     }
   end markNfrWarning2
 
