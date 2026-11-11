@@ -1,0 +1,9 @@
+Entity Name,Code List Entry Code,State,Start Date,Description
+TransportMode,TransportMode = 1  ,valid,04-03-2023,Sea transport
+TransportMode,TransportMode = 2  ,valid,24-04-2025,Rail transport
+TransportMode,TransportMode = 3  ,valid,24-04-2025,Road transport
+TransportMode,TransportMode = 4  ,valid,24-04-2025,Air transport
+TransportMode,TransportMode = 5  ,valid,24-04-2025,Postal Consignment
+TransportMode,TransportMode = 7  ,valid,04-10-2024,Fixed transport installations
+TransportMode,TransportMode = 8  ,valid,24-04-2025,Inland waterway transport
+TransportMode,TransportMode = 9  ,valid,24-04-2025,Own propulsion

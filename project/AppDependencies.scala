@@ -8,7 +8,8 @@ object AppDependencies {
   val compile: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"       %% s"bootstrap-backend-$playVersion" % bootstrapVersion,
     "uk.gov.hmrc.mongo" %% s"hmrc-mongo-$playVersion"        % hmrcMongoVersion,
-    "org.typelevel"     %% "cats-core"                       % "2.13.0"
+    "org.typelevel"     %% "cats-core"                       % "2.13.0",
+    "org.apache.pekko"  %% "pekko-connectors-csv"            % "1.0.2"
   )
 
   val test: Seq[ModuleID] = Seq(
