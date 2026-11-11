@@ -39,11 +39,7 @@ class UnresolvedNotificationsService @Inject() (
   def updateUnresolvedNotifications(
     executionTime: Instant
   ): EitherT[Future, MongoError, List[NotificationEvent]] =
-    val nfrWarning2MaxWaitMillis: Long =
-      appConfig.unresolvedNotificationsNfrWarning2MaxWaitTime.toMillis
-
-    val submittedBefore: Instant =
-      executionTime.minusMillis(nfrWarning2MaxWaitMillis)
+    checkNfrWarning2(executionTime)
 
     val maxPendingTimeMillis: Long =
       appConfig.unresolvedNotificationsDocumentMaxPendingTime.toMillis
@@ -51,52 +47,41 @@ class UnresolvedNotificationsService @Inject() (
     val updatedBefore: Instant =
       executionTime.minusMillis(maxPendingTimeMillis)
 
-    val nfrWarnings: EitherT[
+    val unresolvedNotificationsMessages: EitherT[
       Future,
       MongoError,
-      List[MongoAesIE507MessageNfrWarning]
+      NonEmptyList[MongoAesIE507MessageUnresolvedNotifications]
     ] =
-      aesIE507Repository.markNfrWarning2(submittedBefore)
+      aesIE507Repository.getUnresolvedNotificationsMessages(updatedBefore)
 
-    nfrWarnings.flatMap { warnings =>
-      warnings.foreach(logNfrWarning2)
-
-      val unresolvedNotificationsMessages: EitherT[
-        Future,
-        MongoError,
-        NonEmptyList[MongoAesIE507MessageUnresolvedNotifications]
-      ] =
-        aesIE507Repository.getUnresolvedNotificationsMessages(updatedBefore)
-
-      unresolvedNotificationsMessages.semiflatMap { unresolvedMessages =>
-        val updatedEvents: NonEmptyList[Future[Either[MongoError, NotificationEvent]]] =
-          unresolvedMessages.flatMap { unresolvedMessage =>
-            unresolvedMessage.unresolvedEvents.map { unresolvedEvent =>
-              aesIE507Repository
-                .updateNotification(
-                  unresolvedMessage.eoriNumber,
-                  unresolvedMessage.mrn,
-                  unresolvedEvent.correlationId,
-                  updatedAt = executionTime,
-                  status = NotificationEventStatus.Awaiting,
-                  errors = None
-                )
-                .map { _ =>
-                  logUpdatedUnresolvedNotificationEvent(
-                    unresolvedMessage,
-                    unresolvedEvent
-                  )
-
+    unresolvedNotificationsMessages.semiflatMap { unresolvedMessages =>
+      val updatedEvents: NonEmptyList[Future[Either[MongoError, NotificationEvent]]] =
+        unresolvedMessages.flatMap { unresolvedMessage =>
+          unresolvedMessage.unresolvedEvents.map { unresolvedEvent =>
+            aesIE507Repository
+              .updateNotification(
+                unresolvedMessage.eoriNumber,
+                unresolvedMessage.mrn,
+                unresolvedEvent.correlationId,
+                updatedAt = executionTime,
+                status = NotificationEventStatus.Awaiting,
+                errors = None
+              )
+              .map { _ =>
+                logUpdatedUnresolvedNotificationEvent(
+                  unresolvedMessage,
                   unresolvedEvent
-                }
-                .value
-            }
-          }
+                )
 
-        updatedEvents.sequence.map(
-          _.collect { case Right(value) => value }
-        )
-      }
+                unresolvedEvent
+              }
+              .value
+          }
+        }
+
+      updatedEvents.sequence.map(
+        _.collect { case Right(value) => value }
+      )
     }
   end updateUnresolvedNotifications
 
@@ -114,6 +99,29 @@ class UnresolvedNotificationsService @Inject() (
         s"and DUCR $ducr ($maxWaitMinutes mins)"
     )
   end logNfrWarning2
+
+  private def checkNfrWarning2(
+    executionTime: Instant
+  ): Unit =
+    val maxWaitTime =
+      appConfig.unresolvedNotificationsNfrWarning2MaxWaitTime
+
+    val submittedBefore: Instant =
+      executionTime.minusMillis(maxWaitTime.toMillis)
+
+    aesIE507Repository
+      .markNfrWarning2(submittedBefore)
+      .value
+      .foreach {
+        case Right(warnings) =>
+          warnings.foreach(logNfrWarning2)
+
+        case Left(error) =>
+          logger.warn(
+            s"Failed to check whether AESNFR-017 was exceeded due to: $error"
+          )
+      }
+  end checkNfrWarning2
 
   private def logUpdatedUnresolvedNotificationEvent(
     unresolvedMessage: MongoAesIE507MessageUnresolvedNotifications,
