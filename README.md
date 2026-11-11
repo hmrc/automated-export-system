@@ -30,7 +30,7 @@ To run all tests and generate a coverage report, use this command
 `sbt scalafmt test:scalafmt it:test::scalafmt coverage test it/test coverageReport`
 
 ### Endpoints
-Headers required are `Authorization: Bearer <token>` and `Content-Type: application/xml
+Headers required are `Authorization: Bearer <token>` and `Content-Type: application/xml`
 
 ## Submissions
 `POST /message`: This is the submission from the UI to CREATE, AMEND or CANCEL an IE507 submission
