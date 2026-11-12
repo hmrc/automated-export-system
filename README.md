@@ -12,7 +12,7 @@ It allows users to:
 * Retrieve the details of a single submission by submission ID
 
 ### Running locally
-By default the service runs on port 5002
+By default the service runs on port 5000
 
 ## Using service manager 2
 Start the service and its dependencies in service manager 2 by running `sm2 --start AUTOMATED_EXPORT_SYSTEM_ALL`
