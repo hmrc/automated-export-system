@@ -1,0 +1,9 @@
+Entity Name,Code List Entry Code,State,Start Date,Description
+TypeOfIdentificationofMeansOfTransportActive,TypeOfIdentificationofMeansOfTransportActiveCode = 10  ,valid,01-11-2025,IMO Ship Identification Number
+TypeOfIdentificationofMeansOfTransportActive,TypeOfIdentificationofMeansOfTransportActiveCode = 11  ,valid,01-11-2025,Name of the sea-going vessel
+TypeOfIdentificationofMeansOfTransportActive,TypeOfIdentificationofMeansOfTransportActiveCode = 21  ,valid,01-11-2025,Train Number
+TypeOfIdentificationofMeansOfTransportActive,TypeOfIdentificationofMeansOfTransportActiveCode = 30  ,valid,01-11-2025,Registration Number of the Road Vehicle
+TypeOfIdentificationofMeansOfTransportActive,TypeOfIdentificationofMeansOfTransportActiveCode = 40  ,valid,01-11-2025,IATA flight number
+TypeOfIdentificationofMeansOfTransportActive,TypeOfIdentificationofMeansOfTransportActiveCode = 41  ,valid,01-11-2025,Registration Number of the Aircraft
+TypeOfIdentificationofMeansOfTransportActive,TypeOfIdentificationofMeansOfTransportActiveCode = 80  ,valid,01-11-2025,European Vessel Identification Number (ENI Code)
+TypeOfIdentificationofMeansOfTransportActive,TypeOfIdentificationofMeansOfTransportActiveCode = 81  ,valid,01-11-2025,Name of the inland waterways vessel
