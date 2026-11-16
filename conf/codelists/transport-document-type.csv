@@ -1,0 +1,19 @@
+Entity Name,Code List Entry Code,State,Start Date,Description
+TransportDocumentType,Type = C613  ,valid,04-10-2024,Consignment note CIM (T2)
+TransportDocumentType,Type = C614  ,valid,04-10-2024,Consignment note CIM (T2F)
+TransportDocumentType,Type = N235  ,valid,04-10-2024,Container list
+TransportDocumentType,Type = N271  ,valid,04-10-2024,Packing list
+TransportDocumentType,Type = N703  ,valid,18-10-2024,House waybill
+TransportDocumentType,Type = N704  ,valid,18-10-2024,Master bill of lading
+TransportDocumentType,Type = N705  ,valid,18-10-2024,Bill of lading
+TransportDocumentType,Type = N714  ,valid,18-10-2024,House bill of lading
+TransportDocumentType,Type = N720  ,valid,04-10-2024,Consignment note CIM
+TransportDocumentType,Type = N722  ,valid,18-10-2024,Road list - SMGS
+TransportDocumentType,Type = N730  ,valid,04-10-2024,Road consignment note
+TransportDocumentType,Type = N740  ,valid,18-10-2024,Air waybill
+TransportDocumentType,Type = N741  ,valid,18-10-2024,Master airwaybill
+TransportDocumentType,Type = N750  ,valid,04-10-2024,movement by post including parcel post
+TransportDocumentType,Type = N760  ,valid,04-10-2024,Multimodal/combined transport document
+TransportDocumentType,Type = N785  ,valid,04-10-2024,Cargo manifest
+TransportDocumentType,Type = N787  ,valid,18-10-2024,Bordereau (cargo load list)
+TransportDocumentType,Type = N955  ,valid,02-04-2025,ATA carnet
