@@ -78,3 +78,10 @@ object MongoAesIE507MessageProjections:
       ),
       Projections.excludeId()
     )
+
+  val nfrWarningProjection: Bson =
+    Projections.fields(
+      Projections.computed("mrn", "$exportOperation.mrn"),
+      Projections.computed("ducr", "$goodsShipment.consignment.referenceNumberUCR"),
+      Projections.excludeId()
+    )

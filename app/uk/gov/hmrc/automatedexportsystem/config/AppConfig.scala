@@ -40,3 +40,8 @@ class AppConfig @Inject() (config: Configuration):
 
   lazy val unresolvedNotificationsDocumentMaxPendingTime: FiniteDuration =
     config.get[FiniteDuration]("scheduler.unresolvedNotifications.documentMaxPendingTimeInSeconds")
+
+  lazy val unresolvedNotificationsNfrWarning2MaxWaitTime: FiniteDuration =
+    config.get[FiniteDuration](
+      "scheduler.unresolvedNotifications.nfrWarning2MaxWaitTimeInSeconds"
+    )

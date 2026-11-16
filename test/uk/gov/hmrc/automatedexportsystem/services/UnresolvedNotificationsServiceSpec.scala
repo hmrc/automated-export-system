@@ -28,7 +28,7 @@ import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, Mrn}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.SingleUpdateStatus
-import uk.gov.hmrc.automatedexportsystem.models.mongo.read.MongoAesIE507MessageUnresolvedNotifications
+import uk.gov.hmrc.automatedexportsystem.models.mongo.read.{MongoAesIE507MessageNfrWarning, MongoAesIE507MessageUnresolvedNotifications}
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationEvent, NotificationEventStatus}
 import uk.gov.hmrc.automatedexportsystem.repositories.AesIE507Repository
 
@@ -101,6 +101,10 @@ class UnresolvedNotificationsServiceSpec extends AnyFreeSpecLike, Matchers, Eith
     val appConfig: AppConfig = mock
 
     when(appConfig.unresolvedNotificationsDocumentMaxPendingTime).thenReturn(TestData.maxPendingTimeInMillis.milli)
+
+    when(appConfig.unresolvedNotificationsNfrWarning2MaxWaitTime).thenReturn(10.minutes)
+
+    when(aesIE507Repository.markNfrWarning2(TestData.instant.minusSeconds(600))).thenReturn(List.empty[MongoAesIE507MessageNfrWarning].toEitherTRight)
 
     val unresolvedNotificationsService: UnresolvedNotificationsService =
       UnresolvedNotificationsService(aesIE507Repository, appConfig)

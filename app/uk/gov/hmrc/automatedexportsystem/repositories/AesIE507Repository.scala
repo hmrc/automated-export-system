@@ -34,7 +34,7 @@ import uk.gov.hmrc.automatedexportsystem.config.AppConfig
 import uk.gov.hmrc.automatedexportsystem.errors.MongoError
 import uk.gov.hmrc.automatedexportsystem.models.IE507.aes.SubmissionId
 import uk.gov.hmrc.automatedexportsystem.models.IE507.{CorrelationId, EoriNumber, ExportOperationType, Mrn}
-import uk.gov.hmrc.automatedexportsystem.models.mongo.read.{MongoAesIE507MessageSummary, MongoAesIE507MessageUnresolvedNotifications}
+import uk.gov.hmrc.automatedexportsystem.models.mongo.read.{MongoAesIE507MessageNfrWarning, MongoAesIE507MessageSummary, MongoAesIE507MessageUnresolvedNotifications}
 import uk.gov.hmrc.automatedexportsystem.models.mongo.write.MongoAesIE507Message
 import uk.gov.hmrc.automatedexportsystem.models.mongo.{MongoAesIE507MessageProjections, SingleUpdateStatus}
 import uk.gov.hmrc.automatedexportsystem.models.notification.{NotificationError, NotificationEvent, NotificationEventStatus}
@@ -42,6 +42,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import java.time.Instant
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -88,9 +89,17 @@ trait AesIE507Repository:
     notificationEvent: NotificationEvent
   ): EitherT[Future, MongoError, SingleUpdateStatus]
 
+  def markNfrWarning2(
+    submittedBefore: Instant
+  ): EitherT[Future, MongoError, List[MongoAesIE507MessageNfrWarning]]
+
   def getUnresolvedNotificationsMessages(
     lastUpdatedBefore: Instant
   ): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageUnresolvedNotifications]]
+
+object AesIE507Repository:
+  val NfrWarning2Field: String = "nfrWarning2"
+  val BatchIdField:     String = "batchId"
 
 @Singleton
 class AesIE507RepositoryImpl @Inject() (
@@ -121,17 +130,26 @@ class AesIE507RepositoryImpl @Inject() (
             Indexes.ascending("eoriNumber"),
             Indexes.ascending("submissionId")
           )
+        ),
+        IndexModel(
+          Indexes.ascending(AesIE507Repository.BatchIdField),
+          IndexOptions()
+            .name(AesIE507Repository.BatchIdField)
+            .sparse(true)
         )
       ),
       extraCodecs = Seq(
         Codecs.playFormatCodec(MongoAesIE507MessageSummary.mongoFormat),
         Codecs.playFormatCodec(MongoAesIE507MessageUnresolvedNotifications.mongoFormat),
         Codecs.playFormatCodec(NotificationEvent.mongoFormat),
-        Codecs.playFormatCodec(NotificationError.mongoFormat)
+        Codecs.playFormatCodec(NotificationError.mongoFormat),
+        Codecs.playFormatCodec(MongoAesIE507MessageNfrWarning.mongoFormat)
       )
     ),
       AesIE507Repository,
       Logging:
+
+  import AesIE507Repository.{BatchIdField, NfrWarning2Field}
 
   def getMessages(eori: EoriNumber): EitherT[Future, MongoError, NonEmptyList[MongoAesIE507MessageSummary]] =
     val pipeline: Seq[Bson] = Seq(
@@ -524,6 +542,54 @@ class AesIE507RepositoryImpl @Inject() (
         )
     }
   end pushNotificationAfterDiversion
+
+  def markNfrWarning2(
+    submittedBefore: Instant
+  ): EitherT[Future, MongoError, List[MongoAesIE507MessageNfrWarning]] =
+    val operationName: String = "markNfrWarning2"
+
+    val filter: Bson =
+      Filters.and(
+        Filters.lte("createdAt", submittedBefore),
+        Filters.or(
+          Filters.eq(NfrWarning2Field, false),
+          Filters.exists(NfrWarning2Field, false)
+        ),
+        Filters.elemMatch(
+          "metadata",
+          Filters.eq("isPending", true)
+        )
+      )
+
+    val batchId: String = UUID.randomUUID().toString
+
+    retryOperation(
+      operationName,
+      context = Map.empty
+    ) {
+      collection
+        .updateMany(
+          filter,
+          Updates.combine(
+            Updates.set(NfrWarning2Field, true),
+            Updates.set(BatchIdField, batchId)
+          )
+        )
+        .toFuture()
+        .flatMap(_ =>
+          val pipeline: Seq[Bson] =
+            Seq(
+              Aggregates.filter(Filters.eq(BatchIdField, batchId)),
+              Aggregates.project(MongoAesIE507MessageProjections.nfrWarningProjection)
+            )
+
+          collection
+            .aggregate[MongoAesIE507MessageNfrWarning](pipeline)
+            .toFuture()
+            .map(markedMessages => Right(markedMessages.toList))
+        )
+    }
+  end markNfrWarning2
 
   def getUnresolvedNotificationsMessages(
     lastUpdatedBefore: Instant
