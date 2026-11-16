@@ -353,7 +353,7 @@
 																	</xs:documentation>
 																</xs:annotation>
 															</xs:element>
-															<xs:element name="type" type="UK_AlphaNumeric4NoSpacesType" minOccurs="0" maxOccurs="1">
+															<xs:element name="type" type="UK_AlphaNumeric_MAX70_NoSpaces" minOccurs="0" maxOccurs="1">
 																<xs:annotation>
 																	<xs:appinfo source="urn:hmrc:error-key">TRANSPORT_DOCUMENT_TYPE</xs:appinfo>
 																	<xs:documentation>
