@@ -122,3 +122,7 @@ enum CsvResourceReaderError(
   val exception:    Option[Throwable]
 ) extends AesError:
   case CsvResourceNotFound(path: String) extends CsvResourceReaderError(s"CSV resource $path not found", InternalServerError, None)
+
+enum StringParserError(val message: String):
+  case EmptyString extends StringParserError("Value is empty")
+  case ParseError(override val message: String) extends StringParserError(message)
