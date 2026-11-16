@@ -25,10 +25,7 @@ import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeListEntry
 import java.time.{Clock, Instant, LocalDate, ZoneOffset}
 import scala.concurrent.{ExecutionContext, Future}
 
-class CodeListJsonServiceSpec
-  extends AnyWordSpec
-    with Matchers
-    with ScalaFutures {
+class CodeListJsonServiceSpec extends AnyWordSpec with Matchers with ScalaFutures {
 
   private given ExecutionContext = ExecutionContext.global
 
@@ -41,11 +38,11 @@ class CodeListJsonServiceSpec
     )
 
   private def entry(
-                     key: String,
-                     state: String = "valid",
-                     startDate: LocalDate = today.minusDays(1),
-                     endDate: Option[LocalDate] = None
-                   ): CodeListEntry =
+    key:       String,
+    state:     String = "valid",
+    startDate: LocalDate = today.minusDays(1),
+    endDate:   Option[LocalDate] = None
+  ): CodeListEntry =
     CodeListEntry(
       key = key,
       value = s"Transport $key",
@@ -91,7 +88,7 @@ class CodeListJsonServiceSpec
 
     "re-evaluate validity when the date changes" in {
       val loader = mock(classOf[CsvCodeListLoader])
-      val clock = mock(classOf[Clock])
+      val clock  = mock(classOf[Clock])
 
       when(loader.transportModes).thenReturn(
         Future.successful(
@@ -116,7 +113,7 @@ class CodeListJsonServiceSpec
     }
 
     "propagate a loading failure" in {
-      val loader = mock(classOf[CsvCodeListLoader])
+      val loader  = mock(classOf[CsvCodeListLoader])
       val failure = new IllegalArgumentException("Invalid CSV")
 
       when(loader.transportModes)

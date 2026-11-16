@@ -153,7 +153,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                 NonEmptyList.one(
                   TransportDocument(
                     sequenceNumber = Some(SequenceNumber(1)),
-                    transportDocumentType = Some(TransportDocumentType(1)),
+                    transportDocumentType = Some(TransportDocumentType("ABC1")),
                     referenceNumber = Some(ReferenceNumber("referenceNumber"))
                   )
                 )
@@ -300,12 +300,12 @@ class SubmissionControllerITSpec extends BaseISpec:
             </ActiveBorderTransportMeans>
             <TransportDocument>
               <sequenceNumber>1</sequenceNumber>
-              <type>2</type>
+              <type>ABC2</type>
               <referenceNumber>REF123</referenceNumber>
             </TransportDocument>
             <TransportDocument>
               <sequenceNumber>2</sequenceNumber>
-              <type>2</type>
+              <type>ABC2</type>
               <referenceNumber>REF124</referenceNumber>
             </TransportDocument>
           </Consignment>
@@ -415,12 +415,12 @@ class SubmissionControllerITSpec extends BaseISpec:
               </ActiveBorderTransportMeans>
               <TransportDocument>
                 <sequenceNumber>1</sequenceNumber>
-                <type>2</type>
+                <type>ABC2</type>
                 <referenceNumber>REF123</referenceNumber>
               </TransportDocument>
               <TransportDocument>
                 <sequenceNumber>2</sequenceNumber>
-                <type>2</type>
+                <type>ABC2</type>
                 <referenceNumber>REF124</referenceNumber>
               </TransportDocument>
             </Consignment>
@@ -904,7 +904,8 @@ class SubmissionControllerITSpec extends BaseISpec:
 
         "when the request contains a valid XML body that passes AES IE507 request schema validation" - {
 
-          "due to an unexpected error encountered when upserting the submission" in new Setup {
+          "due to an unexpected error encountered when saving the message to MongoDB" in new Setup {
+
             val requestXml: Elem = aesIE507MessageNoOptionalsXml
 
             stubFor(
@@ -942,7 +943,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                 .overrides(inject.bind[AesIE507Repository].toInstance(aesIE507Repository))
                 .build()
 
-            val submissionEisSubmitFailureXml: Elem =
+            val submissionMongoSubmitFailureXml: Elem =
               <errorResponse>
                 <status>500</status>
                 <code>INTERNAL_SERVER_ERROR</code>
@@ -964,7 +965,7 @@ class SubmissionControllerITSpec extends BaseISpec:
 
               Helpers.status(result)      shouldBe Helpers.INTERNAL_SERVER_ERROR
               Helpers.contentType(result) shouldBe Some(Helpers.XML)
-              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionEisSubmitFailureXml)
+              XmlOps.normalize(resultXml) shouldBe XmlOps.normalize(submissionMongoSubmitFailureXml)
             }
           }
 
@@ -1239,7 +1240,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                     </ActiveBorderTransportMeans>
                     <TransportDocument>
                       <sequenceNumber>1</sequenceNumber>
-                      <type>1</type>
+                      <type>ABC1</type>
                       <referenceNumber>referenceNumber</referenceNumber>
                     </TransportDocument>
                   </Consignment>
@@ -1427,7 +1428,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                         </ActiveBorderTransportMeans>
                         <TransportDocument>
                           <sequenceNumber>1</sequenceNumber>
-                          <type>1</type>
+                          <type>ABC1</type>
                           <referenceNumber>referenceNumber</referenceNumber>
                         </TransportDocument>
                       </Consignment>

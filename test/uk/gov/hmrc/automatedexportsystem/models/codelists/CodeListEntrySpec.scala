@@ -78,8 +78,8 @@ class CodeListEntrySpec extends AnyWordSpec with Matchers {
 
     "return only key, value and properties" in {
       Json.toJson(entry) shouldBe Json.obj(
-        "key" -> "1",
-        "value" -> "Sea transport",
+        "key"        -> "1",
+        "value"      -> "Sea transport",
         "properties" -> Json.obj()
       )
     }

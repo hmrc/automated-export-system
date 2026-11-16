@@ -213,7 +213,7 @@ trait AesIE507Generators extends BaseGenerators:
 
   given transportDocumentTypeArb: Arbitrary[TransportDocumentType] =
     Arbitrary {
-      arbitrary[Int].map(TransportDocumentType.apply)
+      arbitrary[String].map(TransportDocumentType.apply)
     }
 
   given transportDocumentArb: Arbitrary[TransportDocument] =

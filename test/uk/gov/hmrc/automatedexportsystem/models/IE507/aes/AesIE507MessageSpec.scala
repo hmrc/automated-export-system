@@ -94,12 +94,12 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
               </ActiveBorderTransportMeans>
               <TransportDocument>
                 <sequenceNumber>1</sequenceNumber>
-                <type>1</type>
+                <type>ABC1</type>
                 <referenceNumber>referenceNumber1</referenceNumber>
               </TransportDocument>
               <TransportDocument>
                 <sequenceNumber>2</sequenceNumber>
-                <type>2</type>
+                <type>ABC2</type>
                 <referenceNumber>referenceNumber2</referenceNumber>
               </TransportDocument>
             </Consignment>
@@ -480,12 +480,12 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
                     NonEmptyList.of(
                       TransportDocument(
                         sequenceNumber = Some(SequenceNumber(1)),
-                        transportDocumentType = Some(TransportDocumentType(1)),
+                        transportDocumentType = Some(TransportDocumentType("ABC1")),
                         referenceNumber = Some(ReferenceNumber("referenceNumber1"))
                       ),
                       TransportDocument(
                         sequenceNumber = Some(SequenceNumber(2)),
-                        transportDocumentType = Some(TransportDocumentType(2)),
+                        transportDocumentType = Some(TransportDocumentType("ABC2")),
                         referenceNumber = Some(ReferenceNumber("referenceNumber2"))
                       )
                     )
@@ -864,9 +864,7 @@ class AesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues:
               "Failed to parse 'two' to Int"
             ),
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportDocument/[0]/sequenceNumber", "Failed to parse 'one' to Int"),
-            XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportDocument/[0]/type", "Failed to parse 'one' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportDocument/[1]/sequenceNumber", "Failed to parse 'two' to Int"),
-            XmlReaderError.ParseError("/GoodsShipment/Consignment/TransportDocument/[1]/type", "Failed to parse 'two' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/declarationGoodsItemNumber", "Failed to parse 'one' to Int"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/Commodity/GoodsMeasure/grossMass", "Failed to parse 'hundred' to BigDecimal"),
             XmlReaderError.ParseError("/GoodsShipment/GoodsItem/[0]/Commodity/GoodsMeasure/netMass", "Failed to parse 'eighty' to BigDecimal"),

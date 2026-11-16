@@ -21,18 +21,18 @@ import play.api.libs.json.{JsObject, Json, Writes}
 import java.time.{Clock, LocalDate}
 
 case class CodeListEntry(
-                          key: String,
-                          value: String,
-                          state: String,
-                          startDate: LocalDate,
-                          endDate: Option[LocalDate] = None
-                        ) {
+  key:       String,
+  value:     String,
+  state:     String,
+  startDate: LocalDate,
+  endDate:   Option[LocalDate] = None
+) {
   def isValid(clock: Clock): Boolean = {
     val today = LocalDate.now(clock)
 
     state.trim.equalsIgnoreCase("valid") &&
-      !startDate.isAfter(today) &&
-      endDate.forall(date => !date.isBefore(today))
+    !startDate.isAfter(today) &&
+    endDate.forall(date => !date.isBefore(today))
   }
 }
 

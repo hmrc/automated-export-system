@@ -33,11 +33,7 @@ import scala.concurrent.duration.*
 import scala.io.Source as IoSource
 import scala.util.Using
 
-class CodeListCsvParserSpec
-  extends AnyWordSpec
-    with Matchers
-    with ScalaFutures
-    with BeforeAndAfterAll {
+class CodeListCsvParserSpec extends AnyWordSpec with Matchers with ScalaFutures with BeforeAndAfterAll {
 
   private val system = ActorSystem("CodeListCsvParserSpec")
 
@@ -57,9 +53,7 @@ class CodeListCsvParserSpec
     try {
       Await.result(system.terminate(), 10.seconds)
       ()
-    } finally {
-      super.afterAll()
-    }
+    } finally super.afterAll()
 
   "CodeListCsvParser" should {
 
@@ -71,7 +65,14 @@ class CodeListCsvParserSpec
       val entries = parse(csv).futureValue
 
       entries.map(_.key) shouldBe Seq(
-        "1", "2", "3", "4", "5", "7", "8", "9"
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "7",
+        "8",
+        "9"
       )
 
       entries.head shouldBe CodeListEntry(
@@ -90,7 +91,7 @@ class CodeListCsvParserSpec
 
       val entry = parse(csv).futureValue.head
 
-      entry.key shouldBe "1"
+      entry.key   shouldBe "1"
       entry.value shouldBe "Sea transport"
       entry.state shouldBe "valid"
     }
@@ -114,8 +115,8 @@ class CodeListCsvParserSpec
 
       val entries = parse(csv).futureValue
 
-      entries should have size 2
-      entries.head.state shouldBe "invalid"
+      entries                should have size 2
+      entries.head.state   shouldBe "invalid"
       entries(1).startDate shouldBe LocalDate.of(2099, 1, 1)
     }
 

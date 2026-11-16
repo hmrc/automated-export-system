@@ -27,10 +27,7 @@ import play.api.test.Helpers.*
 
 import java.time.{Clock, Instant, ZoneOffset}
 
-class CodeListJsonControllerSpec
-  extends AnyWordSpec
-    with Matchers
-    with OptionValues {
+class CodeListJsonControllerSpec extends AnyWordSpec with Matchers with OptionValues {
 
   "GET /automated-export-system/codelists/transportMode" should {
 
@@ -53,7 +50,7 @@ class CodeListJsonControllerSpec
 
         val result = route(app, request).value
 
-        status(result) shouldBe OK
+        status(result)      shouldBe OK
         contentType(result) shouldBe Some("application/json")
 
         val entries = contentAsJson(result).as[JsArray].value
@@ -62,8 +59,8 @@ class CodeListJsonControllerSpec
           Seq("1", "2", "3", "4", "5", "7", "8", "9")
 
         entries.head shouldBe Json.obj(
-          "key" -> "1",
-          "value" -> "Sea transport",
+          "key"        -> "1",
+          "value"      -> "Sea transport",
           "properties" -> Json.obj()
         )
 
