@@ -100,7 +100,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
                 NonEmptyList.one(
                   TransportDocument(
                     sequenceNumber = Some(SequenceNumber(1)),
-                    transportDocumentType = Some(TransportDocumentType(1)),
+                    transportDocumentType = Some(TransportDocumentType("ABC1")),
                     referenceNumber = Some(ReferenceNumber("referenceNumber"))
                   )
                 )
@@ -209,7 +209,7 @@ class MongoAesIE507MessageSpec extends AnyFreeSpecLike, Matchers, EitherValues, 
           |      },
           |      "transportDocument" : [ {
           |        "sequenceNumber" : 1,
-          |        "transportDocumentType" : 1,
+          |        "transportDocumentType" : "ABC1",
           |        "referenceNumber" : "referenceNumber"
           |      } ]
           |    },

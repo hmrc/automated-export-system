@@ -28,8 +28,8 @@ import scala.concurrent.Future
 
 @Singleton
 class CsvCodeListLoader @Inject() (
-                                    environment: Environment
-                                  )(using Materializer) {
+  environment: Environment
+)(using Materializer) {
 
   val transportModes: Future[Seq[CodeListEntry]] =
     StreamConverters

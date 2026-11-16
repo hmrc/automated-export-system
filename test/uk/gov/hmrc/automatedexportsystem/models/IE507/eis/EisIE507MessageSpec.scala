@@ -124,12 +124,12 @@ class EisIE507MessageSpec extends AnyFreeSpecLike, Matchers:
                   NonEmptyList.of(
                     TransportDocument(
                       sequenceNumber = Some(SequenceNumber(1)),
-                      transportDocumentType = Some(TransportDocumentType(1)),
+                      transportDocumentType = Some(TransportDocumentType("ABC1")),
                       referenceNumber = Some(ReferenceNumber("referenceNumber1"))
                     ),
                     TransportDocument(
                       sequenceNumber = Some(SequenceNumber(2)),
-                      transportDocumentType = Some(TransportDocumentType(2)),
+                      transportDocumentType = Some(TransportDocumentType("ABC2")),
                       referenceNumber = Some(ReferenceNumber("referenceNumber2"))
                     )
                   )
@@ -478,12 +478,12 @@ class EisIE507MessageSpec extends AnyFreeSpecLike, Matchers:
                   </ActiveBorderTransportMeans>
                   <TransportDocument>
                     <sequenceNumber>1</sequenceNumber>
-                    <type>1</type>
+                    <type>ABC1</type>
                     <referenceNumber>referenceNumber1</referenceNumber>
                   </TransportDocument>
                   <TransportDocument>
                     <sequenceNumber>2</sequenceNumber>
-                    <type>2</type>
+                    <type>ABC2</type>
                     <referenceNumber>referenceNumber2</referenceNumber>
                   </TransportDocument>
                 </Consignment>

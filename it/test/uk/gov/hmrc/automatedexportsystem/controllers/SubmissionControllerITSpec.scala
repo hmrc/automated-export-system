@@ -153,7 +153,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                 NonEmptyList.one(
                   TransportDocument(
                     sequenceNumber = Some(SequenceNumber(1)),
-                    transportDocumentType = Some(TransportDocumentType(1)),
+                    transportDocumentType = Some(TransportDocumentType("ABC1")),
                     referenceNumber = Some(ReferenceNumber("referenceNumber"))
                   )
                 )
@@ -300,12 +300,12 @@ class SubmissionControllerITSpec extends BaseISpec:
             </ActiveBorderTransportMeans>
             <TransportDocument>
               <sequenceNumber>1</sequenceNumber>
-              <type>2</type>
+              <type>ABC2</type>
               <referenceNumber>REF123</referenceNumber>
             </TransportDocument>
             <TransportDocument>
               <sequenceNumber>2</sequenceNumber>
-              <type>2</type>
+              <type>ABC2</type>
               <referenceNumber>REF124</referenceNumber>
             </TransportDocument>
           </Consignment>
@@ -415,12 +415,12 @@ class SubmissionControllerITSpec extends BaseISpec:
               </ActiveBorderTransportMeans>
               <TransportDocument>
                 <sequenceNumber>1</sequenceNumber>
-                <type>2</type>
+                <type>ABC2</type>
                 <referenceNumber>REF123</referenceNumber>
               </TransportDocument>
               <TransportDocument>
                 <sequenceNumber>2</sequenceNumber>
-                <type>2</type>
+                <type>ABC2</type>
                 <referenceNumber>REF124</referenceNumber>
               </TransportDocument>
             </Consignment>
@@ -1239,7 +1239,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                     </ActiveBorderTransportMeans>
                     <TransportDocument>
                       <sequenceNumber>1</sequenceNumber>
-                      <type>1</type>
+                      <type>ABC1</type>
                       <referenceNumber>referenceNumber</referenceNumber>
                     </TransportDocument>
                   </Consignment>
@@ -1427,7 +1427,7 @@ class SubmissionControllerITSpec extends BaseISpec:
                         </ActiveBorderTransportMeans>
                         <TransportDocument>
                           <sequenceNumber>1</sequenceNumber>
-                          <type>1</type>
+                          <type>ABC1</type>
                           <referenceNumber>referenceNumber</referenceNumber>
                         </TransportDocument>
                       </Consignment>
