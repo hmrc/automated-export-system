@@ -38,13 +38,13 @@ object SchemaError:
       XsdStructureError(saxe.getLineNumber, saxe.getColumnNumber, saxe.getMessage)
 end SchemaError
 
-case class XmlSchemaValidationError(line: Int, column: Int, message: String)
+final case class XmlSchemaValidationError(line: Int, column: Int, message: String)
 
 object XmlSchemaValidationError:
   def fromSaxe(saxe: SAXParseException): XmlSchemaValidationError =
     XmlSchemaValidationError(saxe.getLineNumber, saxe.getColumnNumber, saxe.getMessage)
 
-case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationError]) extends AesError:
+final case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationError]) extends AesError:
   val message:      String            = "XML failed schema validation"
   val responseCode: ResponseCode      = BadRequest
   val exception:    Option[Exception] = None
@@ -62,7 +62,7 @@ enum XmlReaderError(val path: String, val message: String):
   case Missing(override val path: String) extends XmlReaderError(path, "Element is missing")
   case ParseError(override val path: String, override val message: String) extends XmlReaderError(path, message)
 
-case class XmlFailedReadError(errors: NonEmptyList[XmlReaderError]) extends AesError:
+final case class XmlFailedReadError(errors: NonEmptyList[XmlReaderError]) extends AesError:
   val message:      String            = "XML failed deserialization"
   val responseCode: ResponseCode      = UnprocessableEntity
   val exception:    Option[Throwable] = None
@@ -115,3 +115,10 @@ enum EisServiceError(val message: String, val responseCode: ResponseCode) extend
   val exception: Option[Throwable] = None
 
   case SubmissionFailedError(override val message: String) extends EisServiceError(message, InternalServerError)
+
+enum CsvResourceReaderError(
+  val message:      String,
+  val responseCode: ResponseCode,
+  val exception:    Option[Throwable]
+) extends AesError:
+  case CsvResourceNotFound(path: String) extends CsvResourceReaderError(s"CSV resource $path not found", InternalServerError, None)
