@@ -126,3 +126,7 @@ enum CsvResourceReaderError(
 enum StringParserError(val message: String):
   case EmptyString extends StringParserError("Value is empty")
   case ParseError(override val message: String) extends StringParserError(message)
+
+enum CsvMapperError(val message: String, val col: String):
+  case MissingColumn(override val col: String) extends CsvMapperError(s"Column `$col` missing", col)
+  case ParseError(override val message: String, override val col: String) extends CsvMapperError(message, col)
