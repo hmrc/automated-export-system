@@ -922,7 +922,7 @@ class SubmissionControllerITSpec extends BaseISpec:
             when(
               aesIE507Repository.submit(
                 mongoAesIE507Message2.copy(exportOperation =
-                  mongoAesIE507Message2.exportOperation.copy(exportOperationType = ExportOperationType.Standard)
+                  mongoAesIE507Message2.exportOperation.copy(exportOperationType = ExportOperationType.Cancel)
                 )
               )
             )
