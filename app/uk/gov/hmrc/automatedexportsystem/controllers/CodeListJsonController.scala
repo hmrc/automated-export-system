@@ -26,10 +26,10 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class CodeListJsonController @Inject() (
-                                         cc: ControllerComponents,
-                                         service: CodeListJsonService
-                                       )(using ec: ExecutionContext)
-  extends BackendController(cc) {
+  cc:      ControllerComponents,
+  service: CodeListJsonService
+)(using ec: ExecutionContext)
+    extends BackendController(cc) {
 
   def transportModes: Action[AnyContent] = Action.async {
     service.getTransportModes().map { entries =>

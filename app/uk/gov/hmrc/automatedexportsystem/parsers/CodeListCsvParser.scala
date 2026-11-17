@@ -51,9 +51,9 @@ object CodeListCsvParser {
       )
 
   private def toEntry(
-                       row: Map[String, String],
-                       entityName: String
-                     ): CodeListEntry = {
+    row:        Map[String, String],
+    entityName: String
+  ): CodeListEntry = {
     val actualEntity = required(row, "Entity Name")
 
     require(

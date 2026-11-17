@@ -11,7 +11,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class CsvResourceReader @Inject()(env: Environment):
+class CsvResourceReader @Inject() (env: Environment):
   def read(csv: CsvResource): Either[CsvResourceReaderError, Source[List[ByteString], Future[IOResult]]] =
     val csvPath: String = csv.path
 

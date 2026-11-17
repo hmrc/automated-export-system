@@ -30,11 +30,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import scala.concurrent.Await
 import scala.concurrent.duration.*
 
-class CsvCodeListLoaderSpec
-  extends AnyWordSpec
-    with Matchers
-    with ScalaFutures
-    with BeforeAndAfterAll {
+class CsvCodeListLoaderSpec extends AnyWordSpec with Matchers with ScalaFutures with BeforeAndAfterAll {
 
   private val system = ActorSystem("CsvCodeListLoaderSpec")
 
@@ -52,9 +48,7 @@ class CsvCodeListLoaderSpec
     try {
       Await.result(system.terminate(), 10.seconds)
       ()
-    } finally {
-      super.afterAll()
-    }
+    } finally super.afterAll()
 
   "CsvCodeListLoader" should {
 
@@ -62,18 +56,16 @@ class CsvCodeListLoaderSpec
       val environment = mock(classOf[Environment])
 
       when(environment.resourceAsStream(resource))
-        .thenAnswer(_ =>
-          Some(new ByteArrayInputStream(csv.getBytes(UTF_8)))
-        )
+        .thenAnswer(_ => Some(new ByteArrayInputStream(csv.getBytes(UTF_8))))
 
       val loader = new CsvCodeListLoader(environment)
 
-      val first = loader.transportModes.futureValue
+      val first  = loader.transportModes.futureValue
       val second = loader.transportModes.futureValue
 
       first.map(_.key) shouldBe Seq("1")
       first.head.value shouldBe "Sea transport"
-      second shouldBe first
+      second           shouldBe first
 
       verify(environment, times(1)).resourceAsStream(resource)
     }
@@ -91,13 +83,11 @@ class CsvCodeListLoaderSpec
     }
 
     "fail when the resource contains malformed data" in {
-      val environment = mock(classOf[Environment])
+      val environment  = mock(classOf[Environment])
       val malformedCsv = csv.replace("04-03-2023", "not-a-date")
 
       when(environment.resourceAsStream(resource))
-        .thenAnswer(_ =>
-          Some(new ByteArrayInputStream(malformedCsv.getBytes(UTF_8)))
-        )
+        .thenAnswer(_ => Some(new ByteArrayInputStream(malformedCsv.getBytes(UTF_8))))
 
       val loader = new CsvCodeListLoader(environment)
 

@@ -24,9 +24,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CodeListJsonService @Inject() (
-                                      loader: CsvCodeListLoader,
-                                      clock: Clock
-                                    )(using ec: ExecutionContext) {
+  loader: CsvCodeListLoader,
+  clock:  Clock
+)(using ec: ExecutionContext) {
 
   def getTransportModes(): Future[Seq[CodeListEntry]] =
     loader.transportModes.map(
