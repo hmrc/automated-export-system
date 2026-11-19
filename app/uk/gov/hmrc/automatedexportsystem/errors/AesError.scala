@@ -38,13 +38,13 @@ object SchemaError:
       XsdStructureError(saxe.getLineNumber, saxe.getColumnNumber, saxe.getMessage)
 end SchemaError
 
-case class XmlSchemaValidationError(line: Int, column: Int, message: String)
+final case class XmlSchemaValidationError(line: Int, column: Int, message: String)
 
 object XmlSchemaValidationError:
   def fromSaxe(saxe: SAXParseException): XmlSchemaValidationError =
     XmlSchemaValidationError(saxe.getLineNumber, saxe.getColumnNumber, saxe.getMessage)
 
-case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationError]) extends AesError:
+final case class XmlFailedValidationError(errors: NonEmptyList[XmlSchemaValidationError]) extends AesError:
   val message:      String            = "XML failed schema validation"
   val responseCode: ResponseCode      = BadRequest
   val exception:    Option[Exception] = None
@@ -62,7 +62,7 @@ enum XmlReaderError(val path: String, val message: String):
   case Missing(override val path: String) extends XmlReaderError(path, "Element is missing")
   case ParseError(override val path: String, override val message: String) extends XmlReaderError(path, message)
 
-case class XmlFailedReadError(errors: NonEmptyList[XmlReaderError]) extends AesError:
+final case class XmlFailedReadError(errors: NonEmptyList[XmlReaderError]) extends AesError:
   val message:      String            = "XML failed deserialization"
   val responseCode: ResponseCode      = UnprocessableEntity
   val exception:    Option[Throwable] = None
@@ -115,3 +115,23 @@ enum EisServiceError(val message: String, val responseCode: ResponseCode) extend
   val exception: Option[Throwable] = None
 
   case SubmissionFailedError(override val message: String) extends EisServiceError(message, InternalServerError)
+
+enum CsvResourceReaderError(val message: String):
+  case CsvResourceNotFound(path: String) extends CsvResourceReaderError(s"CSV resource $path not found")
+
+enum StringParserError(val message: String):
+  case EmptyString extends StringParserError("Value is empty")
+  case ParseError(override val message: String) extends StringParserError(message)
+
+enum CsvMapperError(val message: String, val col: String):
+  case MissingColumn(override val col: String) extends CsvMapperError(s"Column `$col` missing", col)
+  case ParseError(override val message: String, override val col: String) extends CsvMapperError(message, col)
+
+enum CsvLoaderError(val message: String):
+  case ReadFailed(error: CsvResourceReaderError) extends CsvLoaderError(error.message)
+  case MappingFailed(
+    row:          Long,
+    expectedType: String,
+    errors:       NonEmptyList[CsvMapperError]
+  ) extends CsvLoaderError(s"Failed to map row $row to $expectedType")
+  case EmptyCsvResource(path: String) extends CsvLoaderError(s"CSV resource $path is empty")
