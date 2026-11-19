@@ -27,11 +27,15 @@ import uk.gov.hmrc.automatedexportsystem.parsers.StringParser.parse
 
 import javax.inject.{Inject, Singleton}
 import scala.collection.immutable.{SortedMap, SortedSet}
+import scala.reflect.ClassTag
 
-sealed abstract class CsvRowMapper[T](val headerRow: NonEmptySet[WithColumnName]):
+abstract class CsvRowMapper[T](val headerRow: NonEmptySet[WithColumnName])(using val ct: ClassTag[T]):
   def mapRow(row: Map[String, String]): ValidatedNel[CsvMapperError, T]
 
-  protected def parseValue[U: StringParser](verifiedRow: VerifiedRow, column: String): ValidatedNel[CsvMapperError, U] =
+  protected def parseValue[U: StringParser](
+    verifiedRow: VerifiedRow,
+    column:      String
+  ): ValidatedNel[CsvMapperError, U] =
     verifiedRow
       .get(column)
       .parse[U]

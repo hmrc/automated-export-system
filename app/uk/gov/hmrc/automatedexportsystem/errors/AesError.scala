@@ -116,12 +116,8 @@ enum EisServiceError(val message: String, val responseCode: ResponseCode) extend
 
   case SubmissionFailedError(override val message: String) extends EisServiceError(message, InternalServerError)
 
-enum CsvResourceReaderError(
-  val message:      String,
-  val responseCode: ResponseCode,
-  val exception:    Option[Throwable]
-) extends AesError:
-  case CsvResourceNotFound(path: String) extends CsvResourceReaderError(s"CSV resource $path not found", InternalServerError, None)
+enum CsvResourceReaderError(val message: String):
+  case CsvResourceNotFound(path: String) extends CsvResourceReaderError(s"CSV resource $path not found")
 
 enum StringParserError(val message: String):
   case EmptyString extends StringParserError("Value is empty")
@@ -130,3 +126,12 @@ enum StringParserError(val message: String):
 enum CsvMapperError(val message: String, val col: String):
   case MissingColumn(override val col: String) extends CsvMapperError(s"Column `$col` missing", col)
   case ParseError(override val message: String, override val col: String) extends CsvMapperError(message, col)
+
+enum CsvLoaderError(val message: String):
+  case ReadFailed(error: CsvResourceReaderError) extends CsvLoaderError(error.message)
+  case MappingFailed(
+    row:          Long,
+    expectedType: String,
+    errors:       NonEmptyList[CsvMapperError]
+  ) extends CsvLoaderError(s"Failed to map row $row to $expectedType")
+  case EmptyCsvResource(path: String) extends CsvLoaderError(s"CSV resource $path is empty")
