@@ -41,34 +41,35 @@ abstract class CsvRowMapper[T](val headerRow: NonEmptySet[WithColumnName])(using
       .parse[U]
       .leftMap(nel => nel.map(error => CsvMapperError.ParseError(error.message, column)))
 
-  protected final case class VerifiedRow(row: SortedMap[String, String]):
-    def get(column: String): String = row(column)
-
-@Singleton
-class GlcCodeListRowMapper @Inject() extends CsvRowMapper[GlcCodeListEntry](GlcCodeListRowMapper.headers):
-  def mapRow(row: Map[String, String]): ValidatedNel[CsvMapperError, GlcCodeListEntry] = {
+  protected def ensureColumns(row: Map[String, String]): ValidatedNel[CsvMapperError, VerifiedRow] =
     given stringCaseInsensitiveOrdering: Ordering[String] =
       WithColumnName.StringCaseInsensitiveOrdering
 
-    val missingColumns: Validated[NonEmptyList[CsvMapperError], VerifiedRow] =
-      headerRow
-        .map(_.columnName)
-        .toSortedSet
-        .diff(SortedSet.from(row.keySet))
-        .toList
-        .traverse(col => CsvMapperError.MissingColumn(col).invalidNel)
-        .map(_ => VerifiedRow(SortedMap.from(row)))
+    headerRow
+      .map(_.columnName)
+      .toSortedSet
+      .diff(SortedSet.from(row.keySet))
+      .toList
+      .traverse(col => CsvMapperError.MissingColumn(col).invalidNel)
+      .map(_ => VerifiedRow(SortedMap.from(row)))
 
-    missingColumns.andThen(verifiedRow =>
-      (
-        parseValue[GlcLocationCode](verifiedRow, GlcLocationCode.columnName),
-        parseValue[GlcLocation](verifiedRow, GlcLocation.columnName),
-        parseValue[GlcDescription](verifiedRow, GlcDescription.columnName),
-        parseValue[GlcOfficeOfExitName](verifiedRow, GlcOfficeOfExitName.columnName),
-        parseValue[GlcOfficeOfExit](verifiedRow, GlcOfficeOfExit.columnName)
-      ).mapN(GlcCodeListEntry.apply)
-    )
-  }
+  protected final case class VerifiedRow(row: SortedMap[String, String]):
+    def get(column: String): String = row(column)
+end CsvRowMapper
+
+@Singleton
+class GlcCodeListRowMapper @Inject() extends CsvRowMapper[GlcCodeListEntry](GlcCodeListRowMapper.headers):
+  def mapRow(row: Map[String, String]): ValidatedNel[CsvMapperError, GlcCodeListEntry] =
+    ensureColumns(row)
+      .andThen(verifiedRow =>
+        (
+          parseValue[GlcLocationCode](verifiedRow, GlcLocationCode.columnName),
+          parseValue[GlcLocation](verifiedRow, GlcLocation.columnName),
+          parseValue[GlcDescription](verifiedRow, GlcDescription.columnName),
+          parseValue[GlcOfficeOfExitName](verifiedRow, GlcOfficeOfExitName.columnName),
+          parseValue[GlcOfficeOfExit](verifiedRow, GlcOfficeOfExit.columnName)
+        ).mapN(GlcCodeListEntry.apply)
+      )
 
 object GlcCodeListRowMapper:
   val headers: NonEmptySet[WithColumnName] =

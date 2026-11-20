@@ -19,8 +19,8 @@ package uk.gov.hmrc.automatedexportsystem.config
 import com.google.inject.AbstractModule
 import play.api.libs.concurrent.PekkoGuiceSupport
 import play.api.{Configuration, Environment}
+import uk.gov.hmrc.automatedexportsystem.services.{CsvCodeListLoader, GlcCodeListService}
 import uk.gov.hmrc.automatedexportsystem.tasks.UnresolvedNotificationsTask
-import uk.gov.hmrc.automatedexportsystem.services.CsvCodeListLoader
 
 import java.time.Clock
 import scala.annotation.unused
@@ -34,4 +34,5 @@ class GuiceModule(
     bind(classOf[Clock]).toInstance(Clock.systemUTC())
     bind(classOf[UnresolvedNotificationsTask]).asEagerSingleton()
     bind(classOf[CsvCodeListLoader]).asEagerSingleton()
+    bind(classOf[GlcCodeListService]).asEagerSingleton()
   }
