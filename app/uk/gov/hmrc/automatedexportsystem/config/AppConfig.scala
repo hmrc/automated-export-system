@@ -40,3 +40,6 @@ class AppConfig @Inject() (config: Configuration):
 
   lazy val unresolvedNotificationsDocumentMaxPendingTime: FiniteDuration =
     config.get[FiniteDuration]("scheduler.unresolvedNotifications.documentMaxPendingTimeInSeconds")
+
+  lazy val csvLoaderStartupLoadTimeInSecondsGlcCodeList: FiniteDuration =
+    config.get[FiniteDuration]("csvLoader.startup.loadTimeInSeconds.glcCodeList")
