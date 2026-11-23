@@ -45,3 +45,6 @@ class AppConfig @Inject() (config: Configuration):
     config.get[FiniteDuration](
       "scheduler.unresolvedNotifications.nfrWarning2MaxWaitTimeInSeconds"
     )
+
+  lazy val csvLoaderStartupLoadTimeInSecondsGlcCodeList: FiniteDuration =
+    config.get[FiniteDuration]("csvLoader.startup.loadTimeInSeconds.glcCodeList")
