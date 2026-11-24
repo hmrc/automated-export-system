@@ -21,7 +21,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsArray, Json}
+import play.api.libs.json.{JsArray, JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 
@@ -29,44 +29,76 @@ import java.time.{Clock, Instant, ZoneOffset}
 
 class CodeListJsonControllerSpec extends AnyWordSpec with Matchers with OptionValues {
 
-  "GET /automated-export-system/codelists/transportMode" should {
+  private val fixedClock =
+    Clock.fixed(
+      Instant.parse("2026-11-04T12:00:00Z"),
+      ZoneOffset.UTC
+    )
 
-    "return the bundled transport modes as JSON without authentication" in {
-      val clock =
-        Clock.fixed(
-          Instant.parse("2026-11-04T12:00:00Z"),
-          ZoneOffset.UTC
-        )
+  private val codeLists = Seq(
+    (
+      "transport-mode",
+      8,
+      "1",
+      "Sea transport"
+    ),
+    (
+      "transport-means",
+      8,
+      "10",
+      "IMO Ship Identification Number"
+    ),
+    (
+      "nationality",
+      242,
+      "CI",
+      "Côte d'Ivoire"
+    )
+  )
 
-      val app = new GuiceApplicationBuilder()
-        .overrides(bind[Clock].toInstance(clock))
-        .build()
+  codeLists.foreach { case (path, expectedCount, exampleCode, exampleDescription) =>
 
-      running(app) {
-        val request = FakeRequest(
-          GET,
-          "/automated-export-system/codelists/transportMode"
-        )
+    s"GET /automated-export-system/codelist/$path" should {
 
-        val result = route(app, request).value
+      "return the bundled entries as JSON without authentication" in {
+        val app = new GuiceApplicationBuilder()
+          .overrides(bind[Clock].toInstance(fixedClock))
+          .build()
 
-        status(result)      shouldBe OK
-        contentType(result) shouldBe Some("application/json")
+        running(app) {
+          val request = FakeRequest(
+            GET,
+            s"/automated-export-system/codelist/$path"
+          )
 
-        val entries = contentAsJson(result).as[JsArray].value
+          val result = route(app, request).value
 
-        entries.map(json => (json \ "key").as[String]) shouldBe
-          Seq("1", "2", "3", "4", "5", "7", "8", "9")
+          status(result)      shouldBe OK
+          contentType(result) shouldBe Some("application/json")
 
-        entries.head shouldBe Json.obj(
-          "key"        -> "1",
-          "value"      -> "Sea transport",
-          "properties" -> Json.obj()
-        )
+          val entries = contentAsJson(result).as[JsArray].value
+          val codes   = entries.map(json => (json \ "key").as[String])
 
-        entries.foreach { json =>
-          json.as[play.api.libs.json.JsObject].keys shouldBe
-            Set("key", "value", "properties")
+          entries        should have size expectedCount
+          codes        shouldBe codes.sorted
+          codes.distinct should have size expectedCount
+
+          entries should contain(
+            Json.obj(
+              "key"        -> exampleCode,
+              "value"      -> exampleDescription,
+              "properties" -> Json.obj()
+            )
+          )
+
+          entries.foreach { json =>
+            json.as[JsObject].keys shouldBe
+              Set("key", "value", "properties")
+          }
+
+          if (path == "transport-mode") {
+            codes shouldBe Seq("1", "2", "3", "4", "5", "7", "8", "9")
+          }
         }
       }
     }

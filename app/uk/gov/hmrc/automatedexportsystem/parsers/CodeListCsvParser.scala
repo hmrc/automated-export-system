@@ -33,11 +33,14 @@ object CodeListCsvParser {
       .ofPattern("dd-MM-uuuu")
       .withResolverStyle(ResolverStyle.STRICT)
 
-  def flow(entityName: String): Flow[ByteString, CodeListEntry, NotUsed] =
+  def flow(
+    entityName:    String,
+    codeFieldName: String
+  ): Flow[ByteString, CodeListEntry, NotUsed] =
     Flow[ByteString]
       .via(CsvParsing.lineScanner())
       .via(CsvToMap.toMapAsStrings(StandardCharsets.UTF_8))
-      .map(row => toEntry(row, entityName))
+      .map(row => toEntry(row, entityName, codeFieldName))
 
   private def required(row: Map[String, String], column: String): String =
     row
@@ -51,8 +54,9 @@ object CodeListCsvParser {
       )
 
   private def toEntry(
-    row:        Map[String, String],
-    entityName: String
+    row:           Map[String, String],
+    entityName:    String,
+    codeFieldName: String
   ): CodeListEntry = {
     val actualEntity = required(row, "Entity Name")
 
@@ -66,7 +70,7 @@ object CodeListCsvParser {
 
     require(
       parts.length == 2 &&
-        parts(0) == entityName &&
+        parts(0) == codeFieldName &&
         parts(1).nonEmpty,
       s"Invalid code list entry code: $rawCode"
     )

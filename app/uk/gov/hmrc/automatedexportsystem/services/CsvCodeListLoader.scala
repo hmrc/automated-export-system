@@ -32,16 +32,44 @@ class CsvCodeListLoader @Inject() (
 )(using Materializer) {
 
   val transportModes: Future[Seq[CodeListEntry]] =
+    load(
+      "transport-mode.csv",
+      "TransportMode",
+      "TransportMode"
+    )
+
+  val transportMeans: Future[Seq[CodeListEntry]] =
+    load(
+      "transport-means.csv",
+      "TypeOfIdentificationofMeansOfTransportActive",
+      "TypeOfIdentificationofMeansOfTransportActiveCode"
+    )
+
+  val nationalities: Future[Seq[CodeListEntry]] =
+    load(
+      "nationality.csv",
+      "Nationality",
+      "CountryCode"
+    )
+
+  private def load(
+    fileName:      String,
+    entityName:    String,
+    codeFieldName: String
+  ): Future[Seq[CodeListEntry]] = {
+    val resourcePath = s"codelists/$fileName"
+
     StreamConverters
       .fromInputStream(() =>
         environment
-          .resourceAsStream("codelists/transport-mode.csv")
+          .resourceAsStream(resourcePath)
           .getOrElse(
             throw new FileNotFoundException(
-              "Missing resource: codelists/transport-mode.csv"
+              s"Missing resource: $resourcePath"
             )
           )
       )
-      .via(CodeListCsvParser.flow("TransportMode"))
+      .via(CodeListCsvParser.flow(entityName, codeFieldName))
       .runWith(Sink.seq)
+  }
 }

@@ -43,10 +43,14 @@ class CodeListCsvParserSpec extends AnyWordSpec with Matchers with ScalaFutures 
   private val header =
     "Entity Name,Code List Entry Code,State,Start Date,Description"
 
-  private def parse(csv: String): Future[Seq[CodeListEntry]] =
+  private def parse(
+    csv:           String,
+    entityName:    String = "TransportMode",
+    codeFieldName: String = "TransportMode"
+  ): Future[Seq[CodeListEntry]] =
     Source
       .single(ByteString(csv))
-      .via(CodeListCsvParser.flow("TransportMode"))
+      .via(CodeListCsvParser.flow(entityName, codeFieldName))
       .runWith(Sink.seq)
 
   override def afterAll(): Unit =
@@ -177,6 +181,51 @@ class CodeListCsvParserSpec extends AnyWordSpec with Matchers with ScalaFutures 
       parse(csv).failed.futureValue.getMessage should include(
         "Invalid code list entry code"
       )
+    }
+
+    "parse transport means using its code field name" in {
+      val csv =
+        s"""$header
+           |TypeOfIdentificationofMeansOfTransportActive,TypeOfIdentificationofMeansOfTransportActiveCode = 10  ,valid,01-11-2025,IMO Ship Identification Number
+           |""".stripMargin
+
+      parse(
+        csv,
+        "TypeOfIdentificationofMeansOfTransportActive",
+        "TypeOfIdentificationofMeansOfTransportActiveCode"
+      ).futureValue shouldBe Seq(
+        CodeListEntry(
+          key = "10",
+          value = "IMO Ship Identification Number",
+          state = "valid",
+          startDate = LocalDate.of(2025, 11, 1)
+        )
+      )
+    }
+
+    "parse nationality and preserve accented descriptions" in {
+      val csv =
+        s"""$header
+           |Nationality,CountryCode = CI  ,valid,01-11-2025,Côte d'Ivoire
+           |""".stripMargin
+
+      parse(csv, "Nationality", "CountryCode").futureValue shouldBe Seq(
+        CodeListEntry(
+          key = "CI",
+          value = "Côte d'Ivoire",
+          state = "valid",
+          startDate = LocalDate.of(2025, 11, 1)
+        )
+      )
+    }
+
+    "reject an unexpected code field name" in {
+      val csv =
+        s"""$header
+           |Nationality,Nationality = CI,valid,01-11-2025,Côte d'Ivoire
+           |""".stripMargin
+
+      parse(csv, "Nationality", "CountryCode").failed.futureValue.getMessage should include("Invalid code list entry code")
     }
   }
 }

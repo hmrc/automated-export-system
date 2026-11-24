@@ -37,6 +37,18 @@ class CodeListJsonServiceSpec extends AnyWordSpec with Matchers with ScalaFuture
       ZoneOffset.UTC
     )
 
+  private val codeLists: Seq[
+    (
+      String,
+      CsvCodeListLoader => Future[Seq[CodeListEntry]],
+      CodeListJsonService => Future[Seq[CodeListEntry]]
+    )
+  ] = Seq(
+    ("transport modes", _.transportModes, _.getTransportModes()),
+    ("transport means", _.transportMeans, _.getTransportMeans()),
+    ("nationalities", _.nationalities, _.getNationalities())
+  )
+
   private def entry(
     key:       String,
     state:     String = "valid",
@@ -45,83 +57,86 @@ class CodeListJsonServiceSpec extends AnyWordSpec with Matchers with ScalaFuture
   ): CodeListEntry =
     CodeListEntry(
       key = key,
-      value = s"Transport $key",
+      value = s"Description $key",
       state = state,
       startDate = startDate,
       endDate = endDate
     )
 
-  "CodeListJsonService" should {
+  "CodeListJsonService" should
+    codeLists.foreach { case (name, loadedEntries, getEntries) =>
 
-    "return only currently valid entries sorted by key" in {
-      val loader = mock(classOf[CsvCodeListLoader])
+      s"return only currently valid $name sorted by key" in {
+        val loader = mock(classOf[CsvCodeListLoader])
 
-      when(loader.transportModes).thenReturn(
-        Future.successful(
-          Seq(
-            entry("3"),
-            entry("2", state = "invalid"),
-            entry("4", startDate = today.plusDays(1)),
-            entry("5", endDate = Some(today.minusDays(1))),
-            entry("1", startDate = today)
+        when(loadedEntries(loader)).thenReturn(
+          Future.successful(
+            Seq(
+              entry("3"),
+              entry("2", state = "invalid", startDate = today),
+              entry("4", startDate = today.plusDays(1)),
+              entry("5", endDate = Some(today.minusDays(1))),
+              entry("1", startDate = today),
+              entry("6", state = "invalid", startDate = today.minusDays(1)),
+              entry("7", endDate = Some(today))
+            )
           )
         )
-      )
 
-      val service = new CodeListJsonService(loader, fixedClock)
+        val service = new CodeListJsonService(loader, fixedClock)
 
-      service.getTransportModes().futureValue.map(_.key) shouldBe
-        Seq("1", "3")
-    }
+        getEntries(service).futureValue.map(_.key) shouldBe
+          Seq("1", "3", "7")
+      }
 
-    "return an empty list when no entries are valid" in {
-      val loader = mock(classOf[CsvCodeListLoader])
+      s"return an empty list when no $name are valid" in {
+        val loader = mock(classOf[CsvCodeListLoader])
 
-      when(loader.transportModes).thenReturn(
-        Future.successful(Seq(entry("1", state = "invalid")))
-      )
-
-      val service = new CodeListJsonService(loader, fixedClock)
-
-      service.getTransportModes().futureValue shouldBe empty
-    }
-
-    "re-evaluate validity when the date changes" in {
-      val loader = mock(classOf[CsvCodeListLoader])
-      val clock  = mock(classOf[Clock])
-
-      when(loader.transportModes).thenReturn(
-        Future.successful(
-          Seq(entry("1", startDate = today.plusDays(1)))
+        when(loadedEntries(loader)).thenReturn(
+          Future.successful(Seq(entry("1", state = "invalid")))
         )
-      )
 
-      when(clock.getZone).thenReturn(ZoneOffset.UTC)
-      when(clock.instant()).thenReturn(
-        Instant.parse("2026-11-04T12:00:00Z")
-      )
+        val service = new CodeListJsonService(loader, fixedClock)
 
-      val service = new CodeListJsonService(loader, clock)
+        getEntries(service).futureValue shouldBe empty
+      }
 
-      service.getTransportModes().futureValue shouldBe empty
+      s"re-evaluate $name validity when the date changes" in {
+        val loader = mock(classOf[CsvCodeListLoader])
+        val clock  = mock(classOf[Clock])
 
-      when(clock.instant()).thenReturn(
-        Instant.parse("2026-11-05T12:00:00Z")
-      )
+        when(loadedEntries(loader)).thenReturn(
+          Future.successful(
+            Seq(entry("1", startDate = today.plusDays(1)))
+          )
+        )
 
-      service.getTransportModes().futureValue.map(_.key) shouldBe Seq("1")
+        when(clock.getZone).thenReturn(ZoneOffset.UTC)
+        when(clock.instant()).thenReturn(
+          Instant.parse("2026-11-04T12:00:00Z")
+        )
+
+        val service = new CodeListJsonService(loader, clock)
+
+        getEntries(service).futureValue shouldBe empty
+
+        when(clock.instant()).thenReturn(
+          Instant.parse("2026-11-05T12:00:00Z")
+        )
+
+        getEntries(service).futureValue.map(_.key) shouldBe Seq("1")
+      }
+
+      s"propagate a loading failure for $name" in {
+        val loader  = mock(classOf[CsvCodeListLoader])
+        val failure = new IllegalArgumentException("Invalid CSV")
+
+        when(loadedEntries(loader))
+          .thenReturn(Future.failed(failure))
+
+        val service = new CodeListJsonService(loader, fixedClock)
+
+        getEntries(service).failed.futureValue shouldBe failure
+      }
     }
-
-    "propagate a loading failure" in {
-      val loader  = mock(classOf[CsvCodeListLoader])
-      val failure = new IllegalArgumentException("Invalid CSV")
-
-      when(loader.transportModes)
-        .thenReturn(Future.failed(failure))
-
-      val service = new CodeListJsonService(loader, fixedClock)
-
-      service.getTransportModes().failed.futureValue shouldBe failure
-    }
-  }
 }
