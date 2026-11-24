@@ -29,7 +29,18 @@ class CodeListJsonService @Inject() (
 )(using ec: ExecutionContext) {
 
   def getTransportModes(): Future[Seq[CodeListEntry]] =
-    loader.transportModes.map(
+    validEntries(loader.transportModes)
+
+  def getTransportMeans(): Future[Seq[CodeListEntry]] =
+    validEntries(loader.transportMeans)
+
+  def getNationalities(): Future[Seq[CodeListEntry]] =
+    validEntries(loader.nationalities)
+
+  private def validEntries(
+    entries: Future[Seq[CodeListEntry]]
+  ): Future[Seq[CodeListEntry]] =
+    entries.map(
       _.filter(_.isValid(clock)).sortBy(_.key)
     )
 }

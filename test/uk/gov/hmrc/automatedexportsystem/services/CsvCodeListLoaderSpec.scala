@@ -24,10 +24,12 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.Environment
+import uk.gov.hmrc.automatedexportsystem.models.codelists.CodeListEntry
 
 import java.io.{ByteArrayInputStream, FileNotFoundException}
 import java.nio.charset.StandardCharsets.UTF_8
-import scala.concurrent.Await
+import java.time.format.DateTimeParseException
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.*
 
 class CsvCodeListLoaderSpec extends AnyWordSpec with Matchers with ScalaFutures with BeforeAndAfterAll {
@@ -37,12 +39,56 @@ class CsvCodeListLoaderSpec extends AnyWordSpec with Matchers with ScalaFutures 
   private given Materializer =
     SystemMaterializer(system).materializer
 
-  private val resource = "codelists/transport-mode.csv"
+  private val header =
+    "Entity Name,Code List Entry Code,State,Start Date,Description"
 
-  private val csv =
-    """Entity Name,Code List Entry Code,State,Start Date,Description
-      |TransportMode,TransportMode = 1,valid,04-03-2023,Sea transport
-      |""".stripMargin
+  private val codeLists: Seq[
+    (String, String, String, String, CsvCodeListLoader => Future[Seq[CodeListEntry]])
+  ] = Seq(
+    (
+      "transport-mode.csv",
+      "TransportMode",
+      "TransportMode",
+      "1",
+      _.transportModes
+    ),
+    (
+      "transport-means.csv",
+      "TypeOfIdentificationofMeansOfTransportActive",
+      "TypeOfIdentificationofMeansOfTransportActiveCode",
+      "10",
+      _.transportMeans
+    ),
+    (
+      "nationality.csv",
+      "Nationality",
+      "CountryCode",
+      "CI",
+      _.nationalities
+    )
+  )
+
+  private def csv(
+    entityName:    String,
+    codeFieldName: String,
+    code:          String
+  ): String =
+    s"""$header
+       |$entityName,$codeFieldName = $code,valid,01-11-2025,Example description
+       |""".stripMargin
+
+  private def environmentWithResources(): Environment = {
+    val environment = mock(classOf[Environment])
+
+    codeLists.foreach { case (fileName, entityName, codeFieldName, code, _) =>
+      val contents = csv(entityName, codeFieldName, code)
+
+      when(environment.resourceAsStream(s"codelists/$fileName"))
+        .thenAnswer(_ => Some(new ByteArrayInputStream(contents.getBytes(UTF_8))))
+    }
+
+    environment
+  }
 
   override def afterAll(): Unit =
     try {
@@ -50,49 +96,51 @@ class CsvCodeListLoaderSpec extends AnyWordSpec with Matchers with ScalaFutures 
       ()
     } finally super.afterAll()
 
-  "CsvCodeListLoader" should {
+  "CsvCodeListLoader" should
+    codeLists.foreach { case (fileName, entityName, codeFieldName, code, loadEntries) =>
 
-    "load and reuse the parsed resource" in {
-      val environment = mock(classOf[Environment])
+      s"load and reuse $fileName" in {
+        val environment = environmentWithResources()
+        val loader      = new CsvCodeListLoader(environment)
 
-      when(environment.resourceAsStream(resource))
-        .thenAnswer(_ => Some(new ByteArrayInputStream(csv.getBytes(UTF_8))))
+        val first  = loadEntries(loader).futureValue
+        val second = loadEntries(loader).futureValue
 
-      val loader = new CsvCodeListLoader(environment)
+        first.map(_.key) shouldBe Seq(code)
+        first.head.value shouldBe "Example description"
+        second           shouldBe first
 
-      val first  = loader.transportModes.futureValue
-      val second = loader.transportModes.futureValue
+        verify(environment, times(1))
+          .resourceAsStream(s"codelists/$fileName")
+      }
 
-      first.map(_.key) shouldBe Seq("1")
-      first.head.value shouldBe "Sea transport"
-      second           shouldBe first
+      s"fail when $fileName is missing" in {
+        val environment = environmentWithResources()
 
-      verify(environment, times(1)).resourceAsStream(resource)
+        when(environment.resourceAsStream(s"codelists/$fileName"))
+          .thenReturn(None)
+
+        val loader = new CsvCodeListLoader(environment)
+
+        val failure = loadEntries(loader).failed.futureValue
+
+        failure          shouldBe a[FileNotFoundException]
+        failure.getMessage should include(s"codelists/$fileName")
+      }
+
+      s"fail when $fileName contains malformed data" in {
+        val environment  = environmentWithResources()
+        val malformedCsv =
+          csv(entityName, codeFieldName, code)
+            .replace("01-11-2025", "not-a-date")
+
+        when(environment.resourceAsStream(s"codelists/$fileName"))
+          .thenAnswer(_ => Some(new ByteArrayInputStream(malformedCsv.getBytes(UTF_8))))
+
+        val loader = new CsvCodeListLoader(environment)
+
+        loadEntries(loader).failed.futureValue shouldBe
+          a[DateTimeParseException]
+      }
     }
-
-    "fail when the resource is missing" in {
-      val environment = mock(classOf[Environment])
-
-      when(environment.resourceAsStream(resource))
-        .thenReturn(None)
-
-      val loader = new CsvCodeListLoader(environment)
-
-      loader.transportModes.failed.futureValue shouldBe
-        a[FileNotFoundException]
-    }
-
-    "fail when the resource contains malformed data" in {
-      val environment  = mock(classOf[Environment])
-      val malformedCsv = csv.replace("04-03-2023", "not-a-date")
-
-      when(environment.resourceAsStream(resource))
-        .thenAnswer(_ => Some(new ByteArrayInputStream(malformedCsv.getBytes(UTF_8))))
-
-      val loader = new CsvCodeListLoader(environment)
-
-      loader.transportModes.failed.futureValue shouldBe
-        a[java.time.format.DateTimeParseException]
-    }
-  }
 }

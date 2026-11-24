@@ -16,7 +16,11 @@ GET /submission/:submissionId uk.gov.hmrc.automatedexportsystem.controllers.Subm
 
 GET /cancel/:submissionId uk.gov.hmrc.automatedexportsystem.controllers.SubmissionController.cancel(submissionId: java.util.UUID)
 
-GET /codelists/transportMode uk.gov.hmrc.automatedexportsystem.controllers.CodeListJsonController.transportModes
+GET /codelist/transport-mode uk.gov.hmrc.automatedexportsystem.controllers.CodeListJsonController.transportModes
+
+GET /codelist/transport-means uk.gov.hmrc.automatedexportsystem.controllers.CodeListJsonController.transportMeans
+
+GET /codelist/nationality uk.gov.hmrc.automatedexportsystem.controllers.CodeListJsonController.nationalities
 
 # POST REQUESTS
 

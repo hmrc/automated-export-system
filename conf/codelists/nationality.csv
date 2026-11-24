@@ -238,3 +238,6 @@ Nationality,CountryCode = XK  ,valid,01-11-2025,Kosovo
 Nationality,CountryCode = XL  ,valid,01-11-2025,Melilla
 Nationality,CountryCode = XS  ,valid,01-11-2025,Serbia
 Nationality,CountryCode = YE  ,valid,01-11-2025,Yemen
+Nationality,CountryCode = ZA  ,valid,01-11-2025,South Africa
+Nationality,CountryCode = ZM  ,valid,01-11-2025,Zambia
+Nationality,CountryCode = ZW  ,valid,01-11-2025,Zimbabwe

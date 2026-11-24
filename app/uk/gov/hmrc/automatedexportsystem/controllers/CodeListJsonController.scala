@@ -36,4 +36,16 @@ class CodeListJsonController @Inject() (
       Ok(Json.toJson(entries))
     }
   }
+
+  def transportMeans: Action[AnyContent] = Action.async {
+    service.getTransportMeans().map { entries =>
+      Ok(Json.toJson(entries))
+    }
+  }
+
+  def nationalities: Action[AnyContent] = Action.async {
+    service.getNationalities().map { entries =>
+      Ok(Json.toJson(entries))
+    }
+  }
 }
