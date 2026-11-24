@@ -921,7 +921,11 @@ class SubmissionControllerITSpec extends BaseISpec:
             val aesIE507Repository: AesIE507Repository = mock[AesIE507Repository]
 
             when(
-              aesIE507Repository.submit(mAny())
+              aesIE507Repository.submit(
+                mongoAesIE507Message2.copy(exportOperation =
+                  mongoAesIE507Message2.exportOperation.copy(exportOperationType = ExportOperationType.Cancel)
+                )
+              )
             )
               .thenReturn(
                 MongoError

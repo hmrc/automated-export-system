@@ -4,10 +4,10 @@ import uk.gov.hmrc.DefaultBuildSettings
 val appName = "automated-export-system"
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "3.3.8"
+ThisBuild / scalaVersion := "3.3.9"
 ThisBuild / scalacOptions ++= Seq(
   "-Wconf:src=routes/.*:s", // Silence all warnings in generated routes
-  "-Xlint:all",
+  "-Wunused:all",
   "-Werror",
   "-feature"
 )
