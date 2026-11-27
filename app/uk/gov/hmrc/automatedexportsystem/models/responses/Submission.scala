@@ -36,7 +36,10 @@ final case class Submission(
   customsOfficeOfExitActual: CustomsOfficeOfExitActual,
   goodsShipment:             Option[GoodsShipment],
   updatedAt:                 LocalDateTime,
-  metadata:                  Option[NonEmptyList[NotificationError]]
+  metadata:                  Option[NonEmptyList[NotificationError]],
+  canAmend:                  Boolean,
+  canCancel:                 Boolean,
+  isReadOnly:                Boolean
 )
 
 object Submission:
@@ -52,13 +55,37 @@ object Submission:
           ++ o.goodsShipment.toXmlRoot
           ++ o.updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).toXml("updatedAt")
           ++ XmlWriter.optElem("metadata", o.metadata.toXmlRoot)
+          ++ o.canAmend.toXml("canAmend")
+          ++ o.canCancel.toXml("canCancel")
+          ++ o.isReadOnly.toXml("isReadOnly")
 
       XmlWriter.elem(label, children)
 
   def fromMongoAesIE507Message(message: MongoAesIE507Message): Submission = {
-    val mostRecentNotificationEvent: NotificationEvent =
+    val notificationEvents: List[NotificationEvent] =
       message.metadata.toList
-        .maxBy(event => (event.dateUpdated, event.dateCreated))
+
+    val mostRecentNotificationEvent: NotificationEvent =
+      notificationEvents.maxBy(event => (event.dateUpdated, event.dateCreated))
+
+    val completedNotificationEvents: List[NotificationEvent] =
+      notificationEvents.filterNot(_.isPending)
+
+    val canAmend: Boolean =
+      completedNotificationEvents.exists(
+        _.status != NotificationEventStatus.Rejected
+      )
+
+    val canCancel: Boolean =
+      mostRecentNotificationEvent.status match
+        case NotificationEventStatus.Accepted | NotificationEventStatus.Amended =>
+          true
+
+        case _ =>
+          false
+
+    val isReadOnly: Boolean =
+      completedNotificationEvents.isEmpty
 
     Submission(
       submissionId = message.submissionId,
@@ -67,6 +94,9 @@ object Submission:
       customsOfficeOfExitActual = message.customsOfficeOfExitActual,
       goodsShipment = message.goodsShipment,
       updatedAt = LocalDateTime.ofInstant(message.updatedAt, ZoneOffset.UTC),
-      metadata = mostRecentNotificationEvent.errors
+      metadata = mostRecentNotificationEvent.errors,
+      canAmend = canAmend,
+      canCancel = canCancel,
+      isReadOnly = isReadOnly
     )
   }
